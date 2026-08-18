@@ -1,0 +1,4 @@
+interface:
+  display_name: "Triad Loop Developer"
+  short_description: "Implement one scoped feature card"
+  default_prompt: "Use $triad-loop-developer to implement and verify the assigned feature card."

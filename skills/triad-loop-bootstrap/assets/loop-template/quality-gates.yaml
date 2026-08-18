@@ -1,0 +1,14 @@
+version: 1
+gates:
+  - id: test
+    description: Replace with the project test command.
+    command: REPLACE_ME_TEST_COMMAND
+    required: true
+  - id: lint
+    description: Replace with the project lint command or remove with a recorded reason.
+    command: REPLACE_ME_LINT_COMMAND
+    required: true
+  - id: build
+    description: Replace with the project build command or remove with a recorded reason.
+    command: REPLACE_ME_BUILD_COMMAND
+    required: true

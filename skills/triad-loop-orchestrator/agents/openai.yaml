@@ -1,0 +1,4 @@
+interface:
+  display_name: "Triad Loop Orchestrator"
+  short_description: "Run an evidence-driven delivery loop"
+  default_prompt: "Use $triad-loop-orchestrator to run the next ready feature card in a triad engineering loop."

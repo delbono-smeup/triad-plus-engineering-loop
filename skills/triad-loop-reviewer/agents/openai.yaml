@@ -1,0 +1,4 @@
+interface:
+  display_name: "Triad Loop Reviewer"
+  short_description: "Independently review feature evidence"
+  default_prompt: "Use $triad-loop-reviewer to independently review an implementation attempt and its evidence."

@@ -1,0 +1,46 @@
+version: 1
+
+project:
+  id: REPLACE_ME_PROJECT_ID
+  title: REPLACE_ME_PROJECT_TITLE
+  owner: REPLACE_ME_OWNER
+  prd_source: REPLACE_ME_PRD_SOURCE
+  prd: artifacts/prd.md
+  prd_baseline:
+    source: REPLACE_ME_PRD_SOURCE
+    collected_at: null
+    snapshot: artifacts/prd.md
+    sha256: null
+    source_revision: null
+  loop: .loop
+  branch_policy: isolated-project-branches
+  create_missing_local_branches: false
+  delivery:
+    git:
+      commit_policy: one-local-commit-per-approved-feature-card
+      push_policy: automatic-after-project-goals-and-delivery-checks
+      pull_request_policy: owner_decides
+    practical_test: post_delivery_informative
+    post_delivery_feedback:
+      in_scope_defect: create_follow_up_feature_card
+      changed_objective: create_successor_project
+    demo:
+      enabled: false
+      start_policy: only_on_owner_request
+      stop_policy: only_on_owner_completion
+      services: []
+
+integration:
+  enabled: false
+  strategy: local-worktrees
+  automatic_package_publication: forbidden
+  automatic_release: forbidden
+  links: []
+
+repositories:
+  - id: product-repository
+    path: REPLACE_ME_REPOSITORY_PATH
+    base_branch: main
+    project_branch: feat/REPLACE_ME_PROJECT_ID/product-repository
+    worktree: worktrees/product-repository
+    instructions: AGENTS.md

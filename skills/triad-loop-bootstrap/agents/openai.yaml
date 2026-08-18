@@ -1,0 +1,4 @@
+interface:
+  display_name: "Triad Loop Bootstrap"
+  short_description: "Prepare an evidence-driven loop"
+  default_prompt: "Use $triad-loop-bootstrap to prepare a triad engineering project from a PRD."

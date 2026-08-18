@@ -1,0 +1,26 @@
+version: 1
+policy:
+  max_rework_attempts_per_item: 2
+  require_reviewer_approval: true
+  require_feature_plan_declaration: true
+  require_clean_diff_check: true
+  forbid_unapproved_dependencies: true
+  orchestrator_is_final_operational_arbiter: true
+  escalation_on:
+    - unclear_acceptance_criterion
+    - scope_change
+    - architecture_decision
+    - security_or_data_loss_risk
+    - unavailable_required_gate
+
+items:
+  - id: EXAMPLE-001
+    title: Replace with a measurable outcome
+    card: features/EXAMPLE-001.md
+    target_repository: product-repository
+    depends_on: []
+    state: draft
+    required_gates: []
+    acceptance_metric_ids: []
+    attempts: 0
+    owner: null

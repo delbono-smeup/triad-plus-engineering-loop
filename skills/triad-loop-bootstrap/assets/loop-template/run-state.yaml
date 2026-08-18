@@ -1,0 +1,18 @@
+version: 1
+updated_at: null
+project_decision: not_started
+
+feature_plan:
+  path: feature-plan.md
+  status: declared
+  presented_at: null
+
+bootstrap_verification: []
+attempts: []
+escalations: []
+arbitrations: []
+coordinator_exceptions: []
+git_delivery: []
+post_delivery_feedback: []
+demo_sessions: []
+prd_rebaselines: []
