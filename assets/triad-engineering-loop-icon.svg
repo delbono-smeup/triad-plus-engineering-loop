@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Triad Engineering Loop</title>
+  <desc id="desc">Three role nodes form a directional loop around verified evidence.</desc>
+  <rect width="512" height="512" rx="112" fill="#0E172A"/>
+  <path d="M155 176C191 130 260 117 311 145" fill="none" stroke="#7C8CFF" stroke-width="22" stroke-linecap="round"/>
+  <path d="M328 137l11 47-47-11" fill="#7C8CFF"/>
+  <path d="M350 206c30 51 20 116-24 157" fill="none" stroke="#35C3B1" stroke-width="22" stroke-linecap="round"/>
+  <path d="M345 378l-46-14 29-39" fill="#35C3B1"/>
+  <path d="M265 387c-59 6-113-32-133-87" fill="none" stroke="#F5B95E" stroke-width="22" stroke-linecap="round"/>
+  <path d="M119 316l11-47 40 28" fill="#F5B95E"/>
+  <circle cx="142" cy="202" r="42" fill="#7C8CFF"/>
+  <circle cx="354" cy="202" r="42" fill="#35C3B1"/>
+  <circle cx="248" cy="386" r="42" fill="#F5B95E"/>
+  <circle cx="256" cy="264" r="79" fill="#16233E" stroke="#C8D2FF" stroke-width="10"/>
+  <path d="M221 264l23 24 49-55" fill="none" stroke="#FFFFFF" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

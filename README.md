@@ -1,5 +1,9 @@
 # Triad Engineering Loop
 
+<p align="center">
+  <img src="assets/triad-engineering-loop-icon.svg" width="152" alt="Triad Engineering Loop icon: three connected roles and verified evidence">
+</p>
+
 Triad Engineering Loop is an evidence-driven delivery method for one
 orchestrator, one developer, and one independent reviewer. It separates project
 control records from product source code and keeps human intervention limited to
