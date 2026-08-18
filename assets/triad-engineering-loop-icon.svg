@@ -1,21 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
   <title id="title">Triad Engineering Loop</title>
   <desc id="desc">Three role nodes form a directional loop around verified evidence.</desc>
-  <defs>
-    <marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="10" markerHeight="10" orient="auto">
-      <path d="M0 0L10 5L0 10Z" fill="#7C8CFF"/>
-    </marker>
-    <marker id="arrow-teal" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="10" markerHeight="10" orient="auto">
-      <path d="M0 0L10 5L0 10Z" fill="#35C3B1"/>
-    </marker>
-    <marker id="arrow-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="10" markerHeight="10" orient="auto">
-      <path d="M0 0L10 5L0 10Z" fill="#F5B95E"/>
-    </marker>
-  </defs>
   <rect width="512" height="512" rx="112" fill="#0E172A"/>
-  <path d="M256 102A154 154 0 0 1 408 283" fill="none" stroke="#7C8CFF" stroke-width="20" stroke-linecap="round" marker-end="url(#arrow-blue)"/>
-  <path d="M256 102A154 154 0 0 1 408 283" fill="none" stroke="#35C3B1" stroke-width="20" stroke-linecap="round" marker-end="url(#arrow-teal)" transform="rotate(120 256 256)"/>
-  <path d="M256 102A154 154 0 0 1 408 283" fill="none" stroke="#F5B95E" stroke-width="20" stroke-linecap="round" marker-end="url(#arrow-amber)" transform="rotate(240 256 256)"/>
+  <path d="M256 102A154 154 0 0 1 408 283" fill="none" stroke="#7C8CFF" stroke-width="20" stroke-linecap="round"/>
+  <path d="M256 102A154 154 0 0 1 408 283" fill="none" stroke="#35C3B1" stroke-width="20" stroke-linecap="round" transform="rotate(120 256 256)"/>
+  <path d="M256 102A154 154 0 0 1 408 283" fill="none" stroke="#F5B95E" stroke-width="20" stroke-linecap="round" transform="rotate(240 256 256)"/>
+  <path d="M406 293L401 269L419 273Z" fill="#7C8CFF"/>
+  <path d="M406 293L401 269L419 273Z" fill="#35C3B1" transform="rotate(120 256 256)"/>
+  <path d="M406 293L401 269L419 273Z" fill="#F5B95E" transform="rotate(240 256 256)"/>
   <circle cx="357" cy="171" r="37" fill="#7C8CFF"/>
   <circle cx="357" cy="171" r="37" fill="#35C3B1" transform="rotate(120 256 256)"/>
   <circle cx="357" cy="171" r="37" fill="#F5B95E" transform="rotate(240 256 256)"/>
