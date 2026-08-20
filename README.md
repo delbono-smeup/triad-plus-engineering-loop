@@ -13,7 +13,11 @@ real product decisions.
 - [Guida operativa italiana](docs/operating-guide.it.md) is the complete Italian localization.
 - [Codex replication guide](docs/codex-replication.md) explains how to install
   and operate the reusable Agent Skills.
+- [OpenCode replication guide](docs/opencode-replication.md) explains the
+  installable OpenCode adapter and its `/triad` command.
 - `skills/` contains the four standard Agent Skills that implement the method.
+- `adapters/opencode/` contains project-local OpenCode agents, a command, and a
+  collision-safe installer for the same skills.
 
 The method does not require a particular organization, repository host, or
 product stack. The examples use Git, a private project-control repository, and
