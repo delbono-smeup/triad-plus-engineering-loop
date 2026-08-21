@@ -17,7 +17,30 @@ Each skill has a `SKILL.md` with standard frontmatter and `agents/openai.yaml`
 metadata. Bootstrap contains copyable workspace templates. Keep the five skills
 together so their state model and file names remain compatible.
 
-## Install the skills
+## Install the Codex adapter and skills
+
+The repository includes a collision-safe Codex adapter. Install the project
+parts into every project-control repository, then install the user-level prompt
+once:
+
+```bash
+./adapters/codex/install.sh --project /path/to/project-control-repository
+./adapters/codex/install.sh --global
+```
+
+The project installation writes the five skills to `.agents/skills/` and the
+control-plane runner to `.triad-runtime/`. The global installation writes the
+same skills and the native Codex prompt to `$CODEX_HOME/prompts/triad.md`
+(`$HOME/.codex` by default). Both modes stop before overwriting an existing
+path.
+
+Start Codex in the control repository and invoke `/prompts:triad`, optionally
+followed by a PRD path or project request. Codex's native custom-prompt form is
+namespaced, so the equivalent of the `/triad` command in OpenCode and Claude
+Code is deliberately `/prompts:triad`. The prompt makes the current
+conversation the Orchestrator; it does not create a second hidden coordinator.
+
+## Install the skills manually
 
 Choose a skill directory that the target Codex environment discovers, for
 example a project-local `.agents/skills/` directory. Copy the five skill
@@ -80,7 +103,9 @@ planning records, agent reports, credentials, or worktrees in them.
 
 The orchestrator verifies configuration, branch/worktree isolation, PRD hash,
 and runnable gates. It presents the feature plan and then starts the first ready
-card without waiting for an extra approval.
+card without waiting for an extra approval. `/prompts:triad` is the normal
+Codex entry point; `$triad-loop-bootstrap` and `$triad-loop-orchestrator` remain
+available for a direct skill-level invocation.
 
 For each iteration, call the developer profile with the card, PRD excerpt,
 repository instructions, and gates. When the external verification control plane

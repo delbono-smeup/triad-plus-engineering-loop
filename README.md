@@ -11,8 +11,8 @@ code and keeps human intervention limited to real product decisions.
 
 - [Operating guide](docs/operating-guide.md) explains the method for people.
 - [Guida operativa italiana](docs/operating-guide.it.md) is the complete Italian localization.
-- [Codex replication guide](docs/codex-replication.md) explains how to install
-  and operate the reusable Agent Skills.
+- [Codex replication guide](docs/codex-replication.md) explains the installable
+  Codex adapter and its native `/prompts:triad` command.
 - [OpenCode replication guide](docs/opencode-replication.md) explains the
   installable OpenCode adapter and its `/triad` command.
 - [Claude Code replication guide](docs/claude-code-replication.md) explains the
@@ -20,7 +20,7 @@ code and keeps human intervention limited to real product decisions.
 - [Gauntlet evolution](docs/gauntlet-evolution.md) explains the optional
   quality-optimization loop and its external verification control plane.
 - `skills/` contains the five standard Agent Skills that implement the method.
-- `adapters/` contains project-local OpenCode and Claude Code adapters with
+- `adapters/` contains Codex, OpenCode, and Claude Code adapters with
   collision-safe installers for the same skills.
 - `runtime/`, `schemas/`, and `integrations/codex/` contain the host-agnostic
   verification runner, formal evidence contracts, and the version-gated Codex
