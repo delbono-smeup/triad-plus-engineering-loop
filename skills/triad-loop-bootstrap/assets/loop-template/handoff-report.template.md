@@ -14,6 +14,16 @@
 - Deferred items or waivers: `<none or owner decision>`
 - Known risks: `<none or list>`
 
+## Gauntlet quality-loop audit
+
+| Feature | Quality bar / enforcement | Verification runs | Evaluation rounds | Stop | Final candidate fingerprint | Reviewer decision |
+| --- | --- | --- | --- | --- | --- | --- |
+| `<ID>` | `<none or ID / required|aspirational>` | `<count>` | `<count>` | `<not applicable|reason>` | `<SHA-256>` | `<approved|rework|blocked>` |
+
+- Largest gaps addressed: `<ordered IDs or not applicable>`
+- Residual quality gaps: `<none or exact bounded gap and evidence>`
+- Evidence/review chain: `<verification/evaluation/review references>`
+
 ## Local-worktree integration
 
 | Card | Consumer worktree | Provider worktree | Branch/commit map | Setup command | Data/event/callback gate |

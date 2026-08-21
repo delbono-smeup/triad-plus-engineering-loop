@@ -3,13 +3,13 @@
 ## Purpose
 
 The Triad Engineering Loop is tool-neutral. This adapter connects its existing
-four standard Agent Skills to OpenCode's project-local agent and command
-configuration. It provides one primary orchestrator, two hidden subagents, and
+five standard Agent Skills to OpenCode's project-local agent and command
+configuration. It provides one primary orchestrator, three hidden subagents, and
 the `/triad` entry command without placing any personal configuration, model
 credentials, product source, worktrees, or delivery records in this repository.
 
 The source files are under `adapters/opencode/`. Use the installer to copy them
-and the four skills into the OpenCode configuration scope of your choice.
+and the five skills into the OpenCode configuration scope of your choice.
 
 ## Installation
 
@@ -41,13 +41,14 @@ run the installer again.
 | --- | --- | --- |
 | `agents/triad-orchestrator.md` | Primary agent | Governs state and decisions; delegates by default. |
 | `agents/triad-developer.md` | Hidden subagent | Implements one bounded card and reports evidence. |
+| `agents/triad-evaluator.md` | Hidden subagent | Freshly compares a verified candidate to a quality bar. |
 | `agents/triad-reviewer.md` | Hidden subagent | Independently reviews without editing. |
 | `commands/triad.md` | `/triad` command | Enters or resumes the loop through the orchestrator. |
 | `skills/triad-loop-*/` | Standard Agent Skills | Shared process instructions and workspace templates. |
 
-The orchestrator's task permission allows only the developer and reviewer. The
-developer cannot call subagents. The reviewer cannot edit files or make routine
-fixes. All three may access external directories because the method operates
+The orchestrator's task permission allows only the developer, evaluator, and
+reviewer. The developer cannot call subagents. The evaluator and reviewer cannot
+edit files or make routine fixes. All four may access external directories because the method operates
 declared product worktrees outside the control repository; their prompts and
 the project manifest restrict that access to the declared scope.
 
@@ -66,7 +67,7 @@ model: provider/model-id
 ```
 
 Select a strong implementation model for `triad-developer` and reliable,
-independent planning/review models for the orchestrator and reviewer. Consult
+independent planning/evaluation/review models for the other roles. Consult
 `opencode models` for the identifiers exposed by the configured providers. If a
 role-specific model is unavailable, keep the default routing or explicitly
 change the operational configuration before starting a real project; do not
@@ -87,8 +88,10 @@ project, provide its control-workspace path or ID. The orchestrator validates
 the recorded baseline, branches, worktrees, state, and runnable gates before
 choosing exactly one ready card.
 
-The rest of the loop remains unchanged: developer evidence, independent review,
-evidence-based transition, local commit per approved card, normal branch push
+For a Gauntlet-enabled card, OpenCode dispatches a new `triad-evaluator`
+subagent after valid verification; it receives the blind packet only and returns
+one largest gap when the quality bar wins. The rest of the loop remains
+unchanged: developer evidence, independent review, evidence-based transition, local commit per approved card, normal branch push
 after all declared delivery gates, then owner-controlled demos. Pull requests,
 releases, package publication, force pushes, and demo lifecycle remain explicit
 owner decisions.
@@ -101,7 +104,7 @@ After installation, run this local discovery check from the control repository:
 opencode agent list
 ```
 
-Confirm that `triad-orchestrator`, `triad-developer`, and `triad-reviewer` are
+Confirm that `triad-orchestrator`, `triad-developer`, `triad-evaluator`, and `triad-reviewer` are
 listed, then open OpenCode and verify that `/triad` is offered. Use the small,
 disposable forward test described in the [Codex replication guide](codex-replication.md#forward-test-before-adopting)
 before applying the loop to a production project. That test proves actual

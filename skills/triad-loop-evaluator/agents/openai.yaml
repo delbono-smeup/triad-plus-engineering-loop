@@ -1,0 +1,4 @@
+interface:
+  display_name: "Triad Loop Evaluator"
+  short_description: "Fresh quality-bar evaluation for Triad"
+  default_prompt: "Use $triad-loop-evaluator to assess one fresh, blind quality comparison."

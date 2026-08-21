@@ -1,0 +1,20 @@
+{
+  "minimum_codex_cli_version": "0.148.0",
+  "purpose": "Triad external verification dispatch only; this hook never changes card state.",
+  "hooks": {
+    "SubagentStop": [
+      {
+        "matcher": "^triad_developer$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node <TRIAD_RUNTIME>/triad-verify.mjs --project <TRIAD_CONTROL_ROOT>",
+            "async": true,
+            "timeout": 900,
+            "statusMessage": "Running Triad verification"
+          }
+        ]
+      }
+    ]
+  }
+}

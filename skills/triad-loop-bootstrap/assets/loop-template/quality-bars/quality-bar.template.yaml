@@ -1,0 +1,28 @@
+version: 1
+id: REPLACE_ME_QUALITY_BAR_ID
+title: Replace with a concrete, observable quality target
+enforcement: aspirational
+snapshot:
+  source: REPLACE_ME_SOURCE_OR_REFERENCE
+  collected_at: null
+  path: artifacts/quality-bars/REPLACE_ME_QUALITY_BAR_ID
+  sha256: null
+  source_revision: null
+references:
+  - id: primary-reference
+    type: screenshot
+    path: artifacts/quality-bars/REPLACE_ME_QUALITY_BAR_ID/reference.png
+    sha256: null
+observable_dimensions:
+  - REPLACE_ME_OBSERVABLE_DIMENSION
+objective_thresholds:
+  - id: REPLACE_ME_MEASUREMENT
+    evidence: command
+    target: pass
+comparison:
+  mode: blind_when_possible
+  verdicts:
+    - candidate_wins
+    - bar_wins
+    - indeterminate
+  return_largest_gap: true

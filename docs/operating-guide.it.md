@@ -15,7 +15,8 @@ metriche e quality gate superati, più una review indipendente.
 | Proprietario del progetto | Fornisce il PRD, decide su prodotto e PR, avvia e chiude la demo. | Approvare manualmente ogni card o decisione ordinaria. |
 | Orchestratore | Gestisce sequenza, stato, delega, evidenze, escalation e consegna. | Svolgere sviluppo o review di routine. |
 | Sviluppatore | Implementa una card assegnata, aggiunge test e riporta evidenze. | Estendere lo scope o revisionare il proprio lavoro. |
-| Reviewer | Verifica indipendentemente card, diff, test, metriche e rischi. | Revisionare il proprio codice o rinunciare a un gate. |
+| Evaluator | Solo per card Gauntlet, confronta in contesto fresco l’artefatto verificato con un quality bar concreto e restituisce un solo gap principale. | Implementare, approvare la consegna o vedere narrativa/storico dello sviluppatore nel primo giudizio. |
+| Reviewer | Verifica indipendentemente card, diff, test, metriche, rischi e trail qualitativo completo. | Revisionare il proprio codice o rinunciare a un gate. |
 
 I profili modello sono configurabili. In Codex è sensato usare un coordinatore a
 ragionamento medio, uno sviluppatore a ragionamento massimo e un reviewer
@@ -33,7 +34,7 @@ accettato.
 Baseline del PRD
   -> piano delle card dichiarato
   -> una card pronta
-  -> sviluppo -> gate obbligatori -> review indipendente
+  -> sviluppo -> evidence di verifica esterna -> valutazione Gauntlet opzionale -> review indipendente
   -> approvata -> prossima card
      rework    -> nuovo sviluppo
      bloccata  -> decisione del proprietario
@@ -117,6 +118,29 @@ raccomandazione indipendente:
 Il limite di retry è configurabile. Un gate fallito o indisponibile non diventa
 un pass: al limite si produce un’escalation documentata.
 
+### Gauntlet qualitativo opzionale
+
+Correttezza e ottimizzazione qualitativa restano separate. Ogni card usa per
+default `optimization.mode: none`. Una card `gauntlet` dichiara invece un quality
+bar osservabile, snapshotizzato e con hash, più enforcement `required` oppure
+`aspirational`. Il riferimento può essere screenshot, golden output, benchmark,
+implementazione di riferimento o rubric misurabile; “bello” o “production
+ready” non sono quality bar sufficienti.
+
+Quando termina lo sviluppatore, un runner esterno esegue i gate configurati e
+scrive evidence atomica del preciso candidate fingerprint. Una patch successiva
+la invalida. Solo dopo una verification valida l’Evaluator, in un contesto nuovo,
+riceve un packet cieco con outcome, quality bar, artefatto reale, istruzioni di
+osservazione e sintesi della verification: niente report/ragionamenti/storico
+dello sviluppatore. Restituisce `candidate_wins`, `bar_wins` o `indeterminate`;
+in caso di perdita indica un solo largest gap e una riparazione circoscritta.
+
+L’orchestratore applica plateau, tempo, budget e safety ceiling con evidence
+osservabile. Un bar `required` blocca se non si vince senza waiver del
+proprietario; uno `aspirational` può arrivare alla review con residual gap
+registrato. L’Evaluator non sostituisce mai il Reviewer. Vedi
+[evoluzione Gauntlet](gauntlet-evolution.md).
+
 ## 5. Eccezioni dell’orchestratore
 
 Sviluppo e review appartengono normalmente ai rispettivi ruoli. Se uno
@@ -183,7 +207,8 @@ Non dichiarare completamento dalla sola prosa degli agenti. Servono baseline PRD
 stabile, card con criteri pass/fail, evidenze esatte di sviluppo e review,
 risultati dei comandi sul branch/worktree reale, decisione indipendente, commit
 per card, push alla consegna e handoff finale; per i casi applicabili servono
-anche evidenze di integrazione e demo.
+anche evidence immutabile legata al fingerprint, quality bar/trail di evaluation
+e residual gap, oltre a evidenze di integrazione e demo.
 
 ## 10. Checklist del proprietario
 

@@ -6,8 +6,17 @@
 | --- | --- | --- | --- |
 | `draft` | complete card, declared plan, configured gates | `ready` | orchestrator |
 | `ready` | dependencies approved | `in_progress` | orchestrator |
-| `in_progress` | developer gates pass | `in_review` | orchestrator |
-| `in_progress` | a required gate fails | `rework` | orchestrator |
+| `in_progress` | developer completes its bounded attempt | `verifying` | orchestrator |
+| `verifying` | valid current-fingerprint required-gate evidence passes, optimization `none` | `in_review` | orchestrator |
+| `verifying` | valid current-fingerprint required-gate evidence passes, optimization `gauntlet` | `evaluating` | orchestrator |
+| `verifying` | a required gate fails | `rework` | orchestrator |
+| `verifying` | evidence missing, stale, invalid, or infrastructure fails | `verification_error` or `blocked` | orchestrator |
+| `evaluating` | fresh evaluator returns `candidate_wins` | `in_review` | orchestrator |
+| `evaluating` | fresh evaluator returns `bar_wins` | `quality_rework` | orchestrator |
+| `evaluating` | indeterminate evaluation | `evaluator_retry` or `blocked` | orchestrator |
+| `evaluating` | aspirational plateau/budget/safety stop | `in_review` with residual gap | orchestrator |
+| `evaluating` | required plateau/budget/safety stop | `blocked` | orchestrator |
+| `quality_rework` | one bounded repair is assigned | `in_progress` | orchestrator |
 | `in_review` | independent reviewer verifies all evidence | `approved` | orchestrator |
 | `in_review` | reviewer identifies a bounded fix | `rework` | orchestrator |
 | active state | material ambiguity or required external decision | `blocked` | orchestrator |
@@ -17,6 +26,34 @@ An item is approved only when every acceptance criterion, metric, and required
 gate has passing evidence on the actual declared branch/worktree; the review is
 independent; the change remains in scope; and no unresolved blocker, security
 issue, or accidental dependency remains.
+
+## Verification and Gauntlet
+
+The developer may run local checks, but a configured `control-plane` gate is
+authoritative only through immutable verification evidence produced by the
+external runner. The runner never changes card state. The orchestrator accepts
+evidence only when feature, attempt, PRD/card/gates hashes, and candidate
+fingerprint all match the active assignment. A patch after verification
+invalidates both verification and evaluation evidence.
+
+For `optimization.mode: gauntlet`, snapshot the declared quality bar and use a
+fresh evaluator with an auditable packet that excludes developer narrative and
+prior evaluation/review history. `bar_wins` must contain exactly one largest
+remaining gap and a bounded repair. The evaluator never approves delivery.
+
+At least one quality-loop safety limit is required. Record one stop reason:
+`quality_bar_won`, `plateau`, `budget_exhausted`,
+`safety_iteration_ceiling`, `owner_stop`, or `external_blocker`. A required bar
+blocks on a non-winning stop absent an owner waiver. An aspirational bar may
+enter review with the residual gap and stop evidence preserved.
+
+Failures are never approval: `verification_gate_failed`,
+`verification_context_invalid`, `verification_timeout`,
+`verification_hook_missing`, `verification_infrastructure_error`,
+`candidate_changed_after_verification`, `evaluator_unavailable`,
+`evaluator_indeterminate`, `quality_bar_missing`, `quality_bar_changed`,
+`quality_plateau`, `quality_budget_exhausted`, and `developer_aborted` must be
+recorded as product, quality, infrastructure, or owner-decision failures.
 
 ## Retry and arbitration
 

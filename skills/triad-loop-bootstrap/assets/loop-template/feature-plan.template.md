@@ -2,9 +2,9 @@
 
 PRD baseline SHA-256: `<project.prd_baseline.sha256>`
 
-| ID | Outcome | Repository | Depends on | Metrics | Required gates | Owner practical test |
-| --- | --- | --- | --- | --- | --- | --- |
-| `<ID>` | `<observable result>` | `<repository ID or integration/local-worktrees>` | `<IDs or none>` | `<exact target>` | `<gate IDs>` | `<scenario/environment>` |
+| ID | Outcome | Repository | Depends on | Metrics | Required gates | Optimization | Owner practical test |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `<ID>` | `<observable result>` | `<repository ID or integration/local-worktrees>` | `<IDs or none>` | `<exact target>` | `<gate IDs>` | `<none or bar/enforcement>` | `<scenario/environment>` |
 
 Plan status: `declared | changed_by_owner`
 

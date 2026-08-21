@@ -20,10 +20,44 @@ PRD baseline, `.loop/decision-policy.md`, the queue, and current state first.
 ## Apply the loop
 
 Require developer evidence: changed files, tests, exact command results,
-metrics, and unresolved risks. If a required gate fails, mark `rework`; do not
-send it to review as a success.
+metrics, and unresolved risks. When external verification is configured, create
+an immutable dispatch record under `.loop/runtime/assignments/<agent-id>.json`
+before delegation. Bind it to the active card/attempt, worktree, expected PRD,
+card and gate hashes, and expected verification run ID.
 
-Give a fresh reviewer the card, diff, evidence, and failure history. Record its
+After the developer completes, move only to `verifying`. Wait for the external
+runner's atomic `verification.json`; never accept a developer claim as the
+authoritative result of a `control-plane` gate. Validate run ID, feature,
+attempt, assignment, PRD/card/gate hashes, and candidate fingerprint against the
+active worktree. Reject stale, missing, invalid-context, failed, timed-out, or
+invalidated evidence. A watchdog expiry records `verification_hook_missing` or
+`verification_timeout` and does not advance the card.
+
+If optimization is `none`, valid passing verification moves to `in_review`. For
+`gauntlet`, build an auditable minimal evaluation packet containing only feature
+outcome, snapshotted quality bar, candidate artifact/observation instructions,
+and valid verification summary. Exclude developer reports, reasoning, historic
+attempts, prior evaluation/review findings, and improvement narrative. Dispatch
+a new evaluator context—never resume or fork a developer/evaluator context.
+
+Record the evaluator result only when its candidate fingerprint and quality-bar
+hash match the active artifacts:
+
+- `candidate_wins`: move to `in_review`;
+- `bar_wins`: require exactly one largest gap, append it, and move to
+  `quality_rework`; assign only that bounded repair to the developer;
+- `indeterminate`: retry with a new fresh evaluator up to declared policy, then
+  block with `evaluator_indeterminate` if observation remains unavailable.
+
+Detect plateau from recorded observable evidence, not a numeric LLM score: a
+repeated largest-gap fingerprint, no closed observable dimension within the
+window, below-threshold objective delta, or fresh evaluators converging on the
+same substantive gap. Enforce elapsed/budget/safety limits. For aspirational
+bars, record stop and residual gap then enter review. For required bars, block
+unless the owner explicitly waives the quality boundary.
+
+Give the final reviewer the card, diff, developer report, verification evidence,
+evaluation trail, stop/residual-gap evidence, and failure history. Record its
 independent recommendation and make the workflow transition:
 
 - `approved`: verify scope and evidence, commit the card locally, record its
@@ -35,6 +69,10 @@ independent recommendation and make the workflow transition:
 
 Resolve ordinary developer-reviewer disagreements from evidence and record both
 positions, the decision, and rationale. Do not delegate this authority upward.
+
+Every patch after accepted verification invalidates prior verification and
+evaluation evidence. A reviewer `rework` returns the card to `in_progress`; the
+new artifact must traverse verification and, when enabled, a fresh evaluation.
 
 ## Exceptions
 
@@ -52,8 +90,10 @@ branch. Never force-push or create/update a pull request, publish a package,
 change a registry version, or create a release without explicit owner direction.
 
 Write a final handoff with card decisions, branches and commits, push evidence,
-gate results, risks, exception audit, and integration evidence. A delivered
-handoff is immutable evidence.
+gate results, candidate fingerprints, quality-bar identities/hashes, verification
+run count, evaluation rounds, largest gaps addressed, quality stop/residual gap,
+risks, exception audit, and integration evidence. A delivered handoff is
+immutable evidence.
 
 ## Integration and demos
 

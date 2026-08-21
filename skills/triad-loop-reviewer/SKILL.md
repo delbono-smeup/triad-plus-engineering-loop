@@ -15,9 +15,16 @@ routine fixes and do not let developer claims substitute for evidence.
 2. Inspect the actual diff and branch/worktree named in the report. Confirm that
    the change stays within the allowed surface and does not include accidental
    dependencies, generated output, secrets, or unrelated edits.
-3. Independently rerun enough required gates to verify the claimed evidence.
+3. Verify the accepted candidate fingerprint matches the current artifact and
+   that external verification evidence matches the active feature, attempt, PRD
+   hash, card hash, gate hash, and fingerprint. Reject stale, missing, or
+   invalidated evidence.
+4. For Gauntlet cards, inspect the quality-bar identity/hash, blind evaluation
+   trail, stop reason, and any aspirational residual gap. Confirm that a
+   required bar did not bypass a non-winning stop.
+5. Independently rerun enough required gates to verify the claimed evidence.
    Verify each acceptance criterion and metric as pass/fail, not by impression.
-4. Check tests for meaningful coverage of behavior and regression risk. For an
+6. Check tests for meaningful coverage of behavior and regression risk. For an
    integration card, check the exact local-worktree setup and the data, event,
    and callback path.
 
@@ -32,4 +39,6 @@ routine fixes and do not let developer claims substitute for evidence.
 
 Report severity-ranked findings first, then gate/metric results, residual risks,
 and recommendation. Do not commit, push, publish packages, create releases, or
-change the card state; the orchestrator owns those transitions.
+change the card state; the orchestrator owns those transitions. A `rework`
+recommendation invalidates prior verification/evaluation for any subsequent
+patch; that patch must traverse the configured route again.

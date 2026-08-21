@@ -21,11 +21,18 @@ not the orchestrator and you are not the independent reviewer.
 ## Implement and verify
 
 1. Make the bounded change and add or update focused tests.
-2. Run every required card gate in the declared worktree.
+2. Run useful local checks, but treat `control-plane` gate results as
+   non-authoritative until the external verifier writes valid evidence for this
+   exact candidate fingerprint.
 3. Measure every declared metric with reproducible commands or observations.
-4. If a required gate fails, report it honestly with the command output and
+4. On `quality_rework`, receive only the current largest gap, direct evidence,
+   and bounded repair scope. Make the smallest meaningful repair; do not request
+   the evaluator's history by default.
+5. If a required local check fails, report it honestly with the command output and
    likely cause; do not label the card ready for review.
-5. Do not commit, push, open a pull request, publish a package, or create a
+6. Finish the attempt and leave the external control plane to verify it. Do not
+   alter assignment, evidence, evaluation, queue, or run-state records.
+7. Do not commit, push, open a pull request, publish a package, or create a
    release unless the orchestrator explicitly assigns that operation.
 
 ## Return implementation evidence
@@ -37,6 +44,8 @@ Report all of the following to the orchestrator:
 - exact changed files and any deliberately unchanged relevant files;
 - tests added or changed;
 - every required command with pass/fail result;
+- the resulting worktree state and any candidate artifact references, without
+  claiming that control-plane gates have passed;
 - metric evidence and acceptance-criterion mapping;
 - known risks, skipped optional checks, and blockers;
 - for a multi-repository integration card, the local setup command and exact

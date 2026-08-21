@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "status": "active",
+  "agent_id": "REPLACE_ME_RUNTIME_AGENT_ID",
+  "agent_type": "triad_developer",
+  "feature_id": "REPLACE_ME_FEATURE_ID",
+  "attempt": 1,
+  "project_root": "REPLACE_ME_ABSOLUTE_CONTROL_WORKSPACE",
+  "worktree": "REPLACE_ME_DECLARED_WORKTREE_OR_ABSOLUTE_PATH",
+  "allow_external_worktree": false,
+  "prd_path": "artifacts/prd.md",
+  "card_path": "features/REPLACE_ME_FEATURE_ID.md",
+  "gates_path": ".loop/quality-gates.yaml",
+  "expected_prd_sha256": "REPLACE_ME_SHA256",
+  "expected_card_sha256": "REPLACE_ME_SHA256",
+  "expected_gates_sha256": "REPLACE_ME_SHA256",
+  "verification_run_id": "REPLACE_ME_UUID",
+  "evidence_directory": ".loop/evidence/REPLACE_ME_FEATURE_ID/attempt-001"
+}

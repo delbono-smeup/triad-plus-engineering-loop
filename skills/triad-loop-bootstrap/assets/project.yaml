@@ -1,4 +1,4 @@
-version: 1
+version: 2
 
 project:
   id: REPLACE_ME_PROJECT_ID
@@ -13,6 +13,11 @@ project:
     sha256: null
     source_revision: null
   loop: .loop
+  control_plane:
+    verification: optional
+    runtime: .triad-runtime
+    watchdog_seconds: 900
+    hook_adapter: codex-0.148-or-newer-when-installed
   branch_policy: isolated-project-branches
   create_missing_local_branches: false
   delivery:

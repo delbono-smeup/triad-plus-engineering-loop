@@ -1,4 +1,4 @@
-version: 1
+version: 2
 updated_at: null
 project_decision: not_started
 
@@ -9,6 +9,11 @@ feature_plan:
 
 bootstrap_verification: []
 attempts: []
+verification_runs: []
+evaluation_runs: []
+quality_repairs: []
+quality_stops: []
+runtime_errors: []
 escalations: []
 arbitrations: []
 coordinator_exceptions: []

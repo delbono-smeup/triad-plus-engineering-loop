@@ -46,10 +46,26 @@ modify registry versions, or create releases as a bootstrap or integration step.
 
 ## Verify before starting
 
+Create `.loop/quality-bars/`, `.loop/evidence/`, `.loop/evaluations/`, and
+`.loop/runtime/assignments/`. Copy `evaluation-policy.template.yaml` and require
+at least one quality-loop safety limit. A card with `optimization.mode: none`
+needs no quality bar. A `gauntlet` card must name a concrete observable quality
+bar, snapshot its mutable references where possible, record source/timestamp/
+SHA-256, and declare `required` or `aspirational` enforcement.
+
+For configured external verification, hash the trusted gate file before every
+developer dispatch and include its hash, PRD hash, card hash, worktree, attempt,
+and runtime agent ID in an append-only assignment record. Do not construct gate
+commands from agent prose. Configure a supported runtime hook only after its
+version/schema and trust boundary are verified; otherwise record
+`verification_hook_missing` and use an explicit runner dispatch, never a
+developer claim.
+
 Verify all YAML files, the PRD snapshot hash, repository paths, branch names,
-worktree paths, repository-local instructions, and runnable gates. Record the
-result in `.loop/run-state.yaml`, select exactly one dependency-free item as
-`ready`, then invoke `$triad-loop-orchestrator`.
+worktree paths, repository-local instructions, quality-bar snapshots, safety
+budget, and runnable gates. Record the result in `.loop/run-state.yaml`, select
+exactly one dependency-free item as `ready`, then invoke
+`$triad-loop-orchestrator`.
 
 ## Re-baseline procedure
 

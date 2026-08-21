@@ -1,6 +1,6 @@
 # Triad Engineering Loop for OpenCode
 
-This adapter makes the repository's existing four standard Agent Skills
+This adapter makes the repository's existing five standard Agent Skills
 operational in OpenCode. It installs three specialized agents and the `/triad`
 command; it does not duplicate the method or alter `opencode.json`.
 
@@ -18,11 +18,13 @@ directory:
 ```text
 agents/triad-orchestrator.md
 agents/triad-developer.md
+agents/triad-evaluator.md
 agents/triad-reviewer.md
 commands/triad.md
 skills/triad-loop-bootstrap/
 skills/triad-loop-orchestrator/
 skills/triad-loop-developer/
+skills/triad-loop-evaluator/
 skills/triad-loop-reviewer/
 ```
 
@@ -53,11 +55,12 @@ file when role-specific routing is wanted:
 | --- | --- |
 | `triad-orchestrator` | Reliable planning and orchestration model, medium reasoning. |
 | `triad-developer` | Highest-capability implementation model. |
+| `triad-evaluator` | Fresh, independent quality-comparison model. |
 | `triad-reviewer` | Independent, reliable review model, medium reasoning. |
 
 Use `opencode models` to inspect the provider/model identifiers available in
-the local installation. Keep the developer and reviewer separately configured
-when independent model routing is required.
+the local installation. Keep the developer, evaluator, and reviewer separately
+configured when independent model routing is required.
 
 ## Start the loop
 
@@ -73,9 +76,9 @@ product repositories, declares the card plan, and begins. For an existing
 project, give its project ID or control-workspace path after `/triad` and it
 resumes from the recorded state.
 
-The developer and reviewer are hidden implementation subagents. The
-orchestrator can invoke only those two through the Task tool; the reviewer has
-read-only file permissions but can run verification commands. The agents allow
+The developer, evaluator, and reviewer are hidden implementation subagents. The
+orchestrator can invoke only those three through the Task tool; the evaluator and
+reviewer have read-only file permissions but can run verification commands. The agents allow
 access to declared external worktrees so a multi-repository project can operate
 from its control repository. Their prompts still restrict work to paths,
 branches, and worktrees declared in the project manifest.

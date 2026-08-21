@@ -19,7 +19,8 @@ evidence.
 | Project owner | Supplies the PRD, makes product decisions, chooses if and when to open a pull request, starts and ends a demo. | Review every routine decision or approve every feature card manually. |
 | Orchestrator | Owns state, sequencing, delegation, evidence, escalation, delivery bookkeeping, and ordinary disagreements. | Become the routine developer or reviewer. |
 | Developer | Implements exactly one assigned feature card, adds tests, and reports commands and evidence. | Change scope, decide completion, or review its own work. |
-| Reviewer | Independently checks the card, diff, tests, metrics, and risks; recommends approval, rework, or a block. | Review its own implementation or silently waive a required gate. |
+| Evaluator | For a Gauntlet card only, freshly compares the real verified artifact with a concrete quality bar and returns one largest remaining gap. | Implement, approve delivery, or see developer narrative/history during the first judgement. |
+| Reviewer | Independently checks the card, diff, tests, metrics, risks, and complete quality trail; recommends approval, rework, or a block. | Review its own implementation or silently waive a required gate. |
 
 Recommended model profiles are configurable rather than intrinsic to the
 method. In a Codex deployment, a practical profile is a medium-reasoning
@@ -39,7 +40,8 @@ PRD baseline
   -> feature plan declared
   -> one ready feature card
   -> development
-  -> required gates
+  -> external verification evidence
+  -> optional fresh Gauntlet evaluation
   -> independent review
   -> approved -> next ready card
      rework   -> development again
@@ -141,6 +143,30 @@ the claim and recommends one of three outcomes:
 The retry limit is project-configurable. Reaching it does not transform a failed
 gate into a pass; it creates a documented escalation.
 
+### Optional Gauntlet quality loop
+
+Correctness and quality optimization are deliberately separate. Every card has
+`optimization.mode: none` by default. A `gauntlet` card additionally declares a
+snapshotted, hashed quality bar and whether it is `required` or `aspirational`.
+The bar is an observable reference—such as a screenshot, golden output,
+benchmark, reference implementation, or structured measurable rubric—not a
+phrase such as “production ready”.
+
+After the developer stops, an external runner—not the developer report—runs
+configured deterministic gates and records atomic evidence for the exact
+candidate fingerprint. A changed artifact invalidates the evidence. Only then
+does a fresh evaluator receive a minimal, blind packet: outcome, quality bar,
+artifact, observation instructions, and passing verification summary. It returns
+`candidate_wins`, `bar_wins`, or `indeterminate`; a loss contains one largest
+gap and one bounded repair, never a long improvement backlog.
+
+The orchestrator detects plateau from repeated observable gaps or no measurable
+progress, and applies elapsed-time, budget, and safety limits. A required bar
+blocks on a non-winning stop unless the owner waives it. An aspirational bar may
+go to final review with the residual gap explicitly recorded. The evaluator does
+not replace the reviewer. See [Gauntlet evolution](gauntlet-evolution.md) for
+the complete contract.
+
 ## 5. Exceptional work by the orchestrator
 
 Routine development belongs to the developer and routine review to the
@@ -219,6 +245,10 @@ Do not claim completion from agent prose alone. A complete record has:
 - a feature card with pass/fail criteria;
 - exact developer and reviewer evidence;
 - required command results against the actual project branch/worktree;
+- for configured verification, immutable evidence tied to the active candidate
+  fingerprint;
+- for Gauntlet cards, quality-bar snapshot/hash, blind evaluation trail, stop
+  reason, and any residual gap;
 - an independent review decision;
 - one commit per approved card;
 - normal push evidence at delivery;

@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "feature_id": "REPLACE_ME",
+  "feature_outcome": "REPLACE_ME_OBSERVABLE_OUTCOME",
+  "candidate": {
+    "fingerprint": "REPLACE_ME_SHA256",
+    "artifact_refs": ["REPLACE_ME_CANDIDATE_ARTIFACT"],
+    "observation_instructions": ["REPLACE_ME_HOW_TO_OBSERVE"]
+  },
+  "quality_bar": {
+    "id": "REPLACE_ME_QUALITY_BAR_ID",
+    "sha256": "REPLACE_ME_SHA256",
+    "snapshot_refs": ["REPLACE_ME_REFERENCE_ARTIFACT"],
+    "observable_dimensions": ["REPLACE_ME_DIMENSION"],
+    "comparison_mode": "blind_when_possible"
+  },
+  "verification": {
+    "run_id": "REPLACE_ME_RUN_ID",
+    "candidate_fingerprint": "REPLACE_ME_SHA256",
+    "required_gates_passed": true,
+    "evidence_ref": "REPLACE_ME_VERIFICATION_JSON"
+  }
+}

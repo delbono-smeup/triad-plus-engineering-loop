@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://triad.engineering/schemas/quality-bar.schema.json",
+  "title": "Triad quality bar",
+  "type": "object",
+  "required": ["version", "id", "title", "enforcement", "snapshot", "references", "observable_dimensions", "comparison"],
+  "properties": {
+    "version": { "const": 1 },
+    "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$" },
+    "title": { "type": "string", "minLength": 1 },
+    "enforcement": { "enum": ["required", "aspirational"] },
+    "snapshot": { "type": "object", "required": ["source", "collected_at", "path", "sha256"], "properties": { "source": { "type": "string" }, "collected_at": { "type": ["string", "null"] }, "path": { "type": "string" }, "sha256": { "type": ["string", "null"], "pattern": "^[a-f0-9]{64}$" } } },
+    "references": { "type": "array", "minItems": 1, "items": { "type": "object", "required": ["id", "type", "path"], "properties": { "id": { "type": "string" }, "type": { "enum": ["screenshot", "golden-output", "benchmark", "reference-implementation", "scenario-suite", "rubric", "other"] }, "path": { "type": "string" }, "sha256": { "type": ["string", "null"] } } } },
+    "observable_dimensions": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+    "comparison": { "type": "object", "required": ["mode", "return_largest_gap"], "properties": { "mode": { "enum": ["blind_when_possible", "direct", "rubric"] }, "return_largest_gap": { "const": true } } }
+  }
+}

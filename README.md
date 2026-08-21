@@ -5,9 +5,9 @@
 </p>
 
 Triad Engineering Loop is an evidence-driven delivery method for one
-orchestrator, one developer, and one independent reviewer. It separates project
-control records from product source code and keeps human intervention limited to
-real product decisions.
+orchestrator, one developer, one fresh quality evaluator when needed, and one
+independent reviewer. It separates project control records from product source
+code and keeps human intervention limited to real product decisions.
 
 - [Operating guide](docs/operating-guide.md) explains the method for people.
 - [Guida operativa italiana](docs/operating-guide.it.md) is the complete Italian localization.
@@ -15,9 +15,14 @@ real product decisions.
   and operate the reusable Agent Skills.
 - [OpenCode replication guide](docs/opencode-replication.md) explains the
   installable OpenCode adapter and its `/triad` command.
-- `skills/` contains the four standard Agent Skills that implement the method.
+- [Gauntlet evolution](docs/gauntlet-evolution.md) explains the optional
+  quality-optimization loop and its external verification control plane.
+- `skills/` contains the five standard Agent Skills that implement the method.
 - `adapters/opencode/` contains project-local OpenCode agents, a command, and a
   collision-safe installer for the same skills.
+- `runtime/`, `schemas/`, and `integrations/codex/` contain the host-agnostic
+  verification runner, formal evidence contracts, and the version-gated Codex
+  lifecycle-hook adapter.
 
 The method does not require a particular organization, repository host, or
 product stack. The examples use Git, a private project-control repository, and

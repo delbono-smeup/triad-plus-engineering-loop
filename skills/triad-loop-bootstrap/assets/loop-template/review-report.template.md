@@ -5,6 +5,9 @@
 - Branch/worktree: `<branch and path>`
 - Commit or diff: `<SHA/range>`
 - Card and PRD baseline: `<references>`
+- Candidate fingerprint: `<verification/reviewed candidate SHA-256>`
+- External verification evidence: `<run ID, status, and reference>`
+- Quality bar/evaluation trail: `<not applicable or ID/hash/rounds/stop>`
 
 ## Findings
 
@@ -18,6 +21,8 @@
 - Metrics: `<pass/fail mapping>`
 - Gates rerun: `<command/result>`
 - Scope/dependency check: `<result>`
+- Evidence freshness and state-transition check: `<pass/fail>`
+- Residual quality gap: `<none or preserved aspirational gap>`
 - Residual risk: `<none or exact risk>`
 
 ## Recommendation
