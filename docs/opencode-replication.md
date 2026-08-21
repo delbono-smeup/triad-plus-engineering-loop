@@ -22,7 +22,9 @@ For a project-control repository, clone this repository and run from its root:
 This creates or extends only the target's `.opencode/agents/`,
 `.opencode/commands/`, and `.opencode/skills/` directories. The target is the
 control repository: planning records and evidence live there; product
-repositories remain declared targets in `project.yaml`.
+repositories remain declared targets in `project.yaml`. It also copies the
+host-agnostic Node control plane to `<target>/.triad-runtime/` so that OpenCode
+can perform explicit verification without relying on a global path.
 
 For a personal installation shared by all local projects, run:
 
@@ -59,7 +61,7 @@ portable and ensures that an installation never assumes access to a provider.
 Without a `model` field, OpenCode uses its globally selected model for the
 primary agent and normally inherits it for subagents.
 
-To route roles independently, edit the three installed agent files and add a
+To route roles independently, edit the four installed agent files and add a
 provider-specific model field to each YAML frontmatter block:
 
 ```yaml
@@ -95,6 +97,22 @@ unchanged: developer evidence, independent review, evidence-based transition, lo
 after all declared delivery gates, then owner-controlled demos. Pull requests,
 releases, package publication, force pushes, and demo lifecycle remain explicit
 owner decisions.
+
+## Runtime capability selection
+
+At bootstrap and when resuming after a runtime configuration change, the
+orchestrator runs:
+
+```bash
+.triad-runtime/triad-runtime-capabilities.mjs --host opencode
+```
+
+It records the output in `.loop/runtime/capabilities.json`. OpenCode currently
+selects `explicit_dispatch`: after Developer completion the orchestrator invokes
+`.triad-runtime/triad-verify.mjs` with the active assignment, then accepts only
+the matching atomic evidence. This is a first-class, fail-closed route, not a
+degraded developer self-report. If a future OpenCode lifecycle adapter is
+verified and installed, the detector can be extended to select `async_hook`.
 
 ## Verify before real delivery
 

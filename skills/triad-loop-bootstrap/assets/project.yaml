@@ -16,6 +16,7 @@ project:
   control_plane:
     verification: optional
     runtime: .triad-runtime
+    host: auto # auto | codex | opencode
     watchdog_seconds: 900
     dispatch_mode: auto # auto | async_hook | explicit_dispatch
     capability_snapshot: .loop/runtime/capabilities.json

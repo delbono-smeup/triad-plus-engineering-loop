@@ -30,6 +30,13 @@ exactly. Keep the project-control workspace separate from product repositories,
 operate only declared branches and worktrees, and treat the recorded PRD
 snapshot as immutable until an explicit re-baseline.
 
+When operating in OpenCode, run the project runtime capability detector with
+`--host opencode` during bootstrap and resume. It records `explicit_dispatch` as
+the verification route unless a future verified OpenCode lifecycle adapter is
+installed. After each developer completion, invoke the declared Node verifier
+yourself and consume only its matching atomic evidence; never ask the developer
+to self-verify a control-plane gate.
+
 For each card, provide the developer and reviewer with the card, relevant PRD
 excerpt, repository instructions, gates, known risks, and prior evidence. Make
 the binding state transition from recorded evidence. Resolve ordinary

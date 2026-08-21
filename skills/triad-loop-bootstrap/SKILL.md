@@ -54,12 +54,14 @@ bar, snapshot its mutable references where possible, record source/timestamp/
 SHA-256, and declare `required` or `aspirational` enforcement.
 
 Before enabling the loop, detect the host control-plane capability and write
-`.loop/runtime/capabilities.json` from `capabilities.template.json`. For Codex,
-run `runtime/triad-runtime-capabilities.mjs` against the installed CLI and the
-actual hook configuration. With `dispatch_mode: auto`, select `async_hook` only
-when the required lifecycle hook is both available and configured; otherwise
-select `explicit_dispatch`. Record the CLI version, detected capability, selected
-mode, reason, and timestamp. Never infer support from a version string alone.
+`.loop/runtime/capabilities.json` from `capabilities.template.json`. Run
+`runtime/triad-runtime-capabilities.mjs --host <codex|opencode>` against the
+active host and its actual hook configuration. With `dispatch_mode: auto`, select
+`async_hook` only when the host lifecycle hook is both available and configured;
+otherwise select `explicit_dispatch`. OpenCode currently selects explicit
+dispatch because it has no verified async lifecycle adapter in this package.
+Record host/Node versions, detected capability, selected mode, reason, and
+timestamp. Never infer support from a version string alone.
 
 For configured external verification, hash the trusted gate file before every
 developer dispatch and include its hash, PRD hash, card hash, worktree, attempt,

@@ -24,7 +24,12 @@ function atLeast(actual, minimum) {
   return true;
 }
 
-async function hookConfiguration(pathname) {
+function commandVersion(binary, overriddenOutput) {
+  const result = overriddenOutput ? { status: 0, stdout: overriddenOutput } : spawnSync(binary, ["--version"], { encoding: "utf8" });
+  return result.status === 0 ? versionParts(result.stdout)?.join(".") ?? null : null;
+}
+
+async function codexHookConfiguration(pathname) {
   if (!pathname) return { configured: false, reason: "hook_configuration_not_declared", minimum: "0.148.0" };
   try {
     const source = await readFile(pathname, "utf8");
@@ -38,33 +43,58 @@ async function hookConfiguration(pathname) {
   }
 }
 
+const requestedHost = option("--host") ?? "codex";
 const requestedMode = option("--requested-mode") ?? "auto";
-const codexBinary = option("--codex-bin") ?? "codex";
 const versionOutput = option("--version-output");
-const versionResult = versionOutput ? { status: 0, stdout: versionOutput } : spawnSync(codexBinary, ["--version"], { encoding: "utf8" });
-const installedVersion = versionResult.status === 0 ? versionParts(versionResult.stdout)?.join(".") ?? null : null;
-const hook = await hookConfiguration(option("--hook-config"));
-const asyncAvailable = Boolean(installedVersion && atLeast(installedVersion, hook.minimum));
+const host = requestedHost === "auto"
+  ? commandVersion(option("--codex-bin") ?? "codex") ? "codex" : "opencode"
+  : requestedHost;
+if (!['codex', 'opencode'].includes(host)) throw new Error(`unsupported host: ${host}`);
+
+const hostBinary = option(host === "codex" ? "--codex-bin" : "--opencode-bin") ?? host;
+const hostVersion = commandVersion(hostBinary, versionOutput);
+const nodeVersion = commandVersion(option("--node-bin") ?? "node");
+let lifecycle;
+if (host === "codex") {
+  const hook = await codexHookConfiguration(option("--hook-config"));
+  lifecycle = {
+    kind: "SubagentStop",
+    minimum_version: hook.minimum,
+    available: Boolean(hostVersion && atLeast(hostVersion, hook.minimum)),
+    configured: hook.configured,
+    reason: hook.reason,
+  };
+} else {
+  lifecycle = {
+    kind: null,
+    minimum_version: null,
+    available: false,
+    configured: false,
+    reason: "no_verified_opencode_async_lifecycle_adapter",
+  };
+}
+
+const explicitAvailable = Boolean(hostVersion && nodeVersion);
+const asyncAvailable = lifecycle.available && lifecycle.configured;
 let selectedMode = "unavailable";
 let reason = "verification_runtime_unavailable";
-if (requestedMode === "async_hook" && asyncAvailable && hook.configured) {
+if (requestedMode === "async_hook" && asyncAvailable) {
   selectedMode = "async_hook";
   reason = "validated_async_hook_available";
-} else if (requestedMode === "auto" && asyncAvailable && hook.configured) {
+} else if (requestedMode === "auto" && asyncAvailable) {
   selectedMode = "async_hook";
   reason = "validated_async_hook_available";
-} else if (["auto", "explicit_dispatch"].includes(requestedMode)) {
+} else if (explicitAvailable) {
   selectedMode = "explicit_dispatch";
-  reason = asyncAvailable ? "async_hook_not_configured" : "async_hook_unavailable_using_explicit_dispatch";
-} else if (requestedMode === "async_hook") {
-  selectedMode = "explicit_dispatch";
-  reason = "async_hook_requested_but_unavailable_using_explicit_dispatch";
+  reason = requestedMode === "async_hook" ? "async_hook_requested_but_unavailable_using_explicit_dispatch" : asyncAvailable ? "explicit_dispatch_requested" : "async_hook_unavailable_using_explicit_dispatch";
 }
 
 process.stdout.write(`${JSON.stringify({
   schema_version: 1,
   detected_at: new Date().toISOString(),
-  host: "codex",
-  codex: { binary: codexBinary, version: installedVersion, async_subagent_stop: { minimum_version: hook.minimum, available: asyncAvailable, configured: hook.configured, configuration_reason: hook.reason } },
+  host,
+  host_runtime: { binary: hostBinary, version: hostVersion, available: Boolean(hostVersion) },
+  verifier_runtime: { binary: option("--node-bin") ?? "node", version: nodeVersion, available: Boolean(nodeVersion) },
+  lifecycle_async: lifecycle,
   verification: { requested_mode: requestedMode, selected_mode: selectedMode, reason },
 }, null, 2)}\n`);

@@ -118,11 +118,13 @@ fastest safe route for the actual host:
 | Missing, older, unconfigured, or untrusted async hook | `explicit_dispatch` | The orchestrator launches the same runner after the developer stops. |
 | No usable verifier | `unavailable` | Record infrastructure failure; do not enter review. |
 
-The check includes version, configuration presence, and placeholder/trust
-readiness. It never upgrades a capability from a version number alone. Re-run it
-before a new assignment or after resuming when runtime configuration changed, and
-append the new snapshot to the audit trail. The selected mode remains fixed for
-the active attempt.
+The check includes host/Node availability, version, configuration presence, and
+placeholder/trust readiness. It never upgrades a capability from a version
+number alone. The adapter currently recognizes Codex async lifecycle hooks and
+OpenCode explicit dispatch; it never pretends OpenCode has a lifecycle hook that
+has not been verified. Re-run it before a new assignment or after resuming when
+runtime configuration changed, and append the new snapshot to the audit trail.
+The selected mode remains fixed for the active attempt.
 
 Supported gate executors are `control-plane`, `mcp`, and `manual-evidence`.
 The core runner executes the first. MCP and manual evidence remain optional;

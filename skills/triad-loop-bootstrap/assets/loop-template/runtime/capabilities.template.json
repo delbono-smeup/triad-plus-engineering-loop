@@ -2,15 +2,22 @@
   "schema_version": 1,
   "detected_at": null,
   "host": "codex",
-  "codex": {
+  "host_runtime": {
     "binary": "codex",
     "version": null,
-    "async_subagent_stop": {
-      "minimum_version": "0.148.0",
-      "available": false,
-      "configured": false,
-      "configuration_reason": "not_detected"
-    }
+    "available": false
+  },
+  "verifier_runtime": {
+    "binary": "node",
+    "version": null,
+    "available": false
+  },
+  "lifecycle_async": {
+    "kind": "SubagentStop",
+    "minimum_version": "0.148.0",
+    "available": false,
+    "configured": false,
+    "reason": "not_detected"
   },
   "verification": {
     "requested_mode": "auto",

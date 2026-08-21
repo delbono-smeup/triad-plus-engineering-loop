@@ -69,8 +69,8 @@ async function invoke(root, agentId) {
   return { result, evidence };
 }
 
-function detect(version, hookConfig) {
-  const result = spawnSync("node", [capabilityDetector, "--version-output", `codex-cli ${version}`, "--hook-config", hookConfig], { encoding: "utf8" });
+function detect(host, version, hookConfig) {
+  const result = spawnSync("node", [capabilityDetector, "--host", host, "--version-output", `${host} ${version}`, "--hook-config", hookConfig], { encoding: "utf8" });
   assert.equal(result.status, 0, result.stderr);
   return JSON.parse(result.stdout);
 }
@@ -79,8 +79,9 @@ const temporaryRoot = await mkdtemp(path.join(os.tmpdir(), "triad-runtime-test-"
 try {
   const hookConfig = path.join(temporaryRoot, "hooks.json");
   await writeJson(hookConfig, { minimum_codex_cli_version: "0.148.0", hooks: { SubagentStop: [{}] } });
-  assert.equal(detect("0.142.0", hookConfig).verification.selected_mode, "explicit_dispatch");
-  assert.equal(detect("0.148.0", hookConfig).verification.selected_mode, "async_hook");
+  assert.equal(detect("codex", "0.142.0", hookConfig).verification.selected_mode, "explicit_dispatch");
+  assert.equal(detect("codex", "0.148.0", hookConfig).verification.selected_mode, "async_hook");
+  assert.equal(detect("opencode", "1.18.0", hookConfig).verification.selected_mode, "explicit_dispatch");
 
   const passRoot = path.join(temporaryRoot, "pass");
   const passing = await prepare(passRoot, 1, "true");

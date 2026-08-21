@@ -1,7 +1,7 @@
 # Triad Engineering Loop for OpenCode
 
 This adapter makes the repository's existing five standard Agent Skills
-operational in OpenCode. It installs three specialized agents and the `/triad`
+operational in OpenCode. It installs four specialized agents and the `/triad`
 command; it does not duplicate the method or alter `opencode.json`.
 
 ## Install into one project-control repository
@@ -26,11 +26,16 @@ skills/triad-loop-orchestrator/
 skills/triad-loop-developer/
 skills/triad-loop-evaluator/
 skills/triad-loop-reviewer/
+.triad-runtime/
+  triad-verify.mjs
+  triad-runtime-capabilities.mjs
+  schemas/
 ```
 
 It checks every destination before copying and stops if any would be
-overwritten. No global settings, credentials, product source, or worktrees are
-copied.
+overwritten. A project installation also copies the Node control-plane runtime
+to `.triad-runtime/`; no global settings, credentials, product source, or
+worktrees are copied.
 
 ## Optional global installation
 
@@ -42,7 +47,9 @@ To make Triad available in all OpenCode projects for the current user:
 
 This writes only the Triad agents, command, and skills below
 `~/.config/opencode/`. A project-local installation is preferable when teams
-need the configuration versioned with the project-control repository.
+need the configuration versioned with the project-control repository. Global
+installation intentionally does not copy a control-plane runtime because it must
+remain in a declared project workspace.
 
 ## Configure models deliberately
 
@@ -82,6 +89,12 @@ reviewer have read-only file permissions but can run verification commands. The 
 access to declared external worktrees so a multi-repository project can operate
 from its control repository. Their prompts still restrict work to paths,
 branches, and worktrees declared in the project manifest.
+
+OpenCode uses the capability-selected `explicit_dispatch` verification route:
+the orchestrator invokes `.triad-runtime/triad-verify.mjs` after the Developer
+stops and then validates its evidence. It records this decision by running
+`.triad-runtime/triad-runtime-capabilities.mjs --host opencode`; no undocumented
+OpenCode lifecycle hook is assumed.
 
 ## Verify installation
 
