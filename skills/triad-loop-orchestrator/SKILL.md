@@ -7,6 +7,9 @@ description: Coordinate a Triad+ Engineering Loop from declared feature cards th
 
 Own the process, not routine implementation or review. Read `project.yaml`, the
 PRD baseline, `.loop/decision-policy.md`, the queue, and current state first.
+When `.triad-plus/team.json` exists in the control workspace, also read it and
+use its language, owner address, display names, and model contract for
+communication. Its display names never change technical role authority.
 
 ## Verify and select work
 

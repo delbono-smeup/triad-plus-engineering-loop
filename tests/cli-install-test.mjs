@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -41,6 +41,48 @@ try {
   });
   assert.equal(nonInteractiveWizard.status, 2, nonInteractiveWizard.stderr);
   assert.match(nonInteractiveWizard.stderr, /interactive wizard needs a terminal/);
+
+  const teamConfigSource = join(fixtureRoot, 'team.json');
+  await writeFile(teamConfigSource, `${JSON.stringify({
+    schema_version: 1,
+    interaction: {
+      language: 'Italian',
+      owner_name: 'Martina',
+      communication_style: 'direct'
+    },
+    roles: {
+      orchestrator: { displayName: 'Ada', model: 'gpt-5.6-terra', reasoning_effort: 'medium' },
+      developer: { displayName: 'Lin', model: 'gpt-5.6-luna', reasoning_effort: 'max' },
+      evaluator: { displayName: 'Iris', model: 'gpt-5.6-terra', reasoning_effort: 'medium' },
+      reviewer: { displayName: 'Noah', model: 'gpt-5.6-terra', reasoning_effort: 'medium' }
+    }
+  }, null, 2)}\n`);
+  const configuredControl = join(fixtureRoot, 'configured-control');
+  const configuredCodexHome = join(fixtureRoot, 'configured-codex-home');
+  const configured = spawnSync(process.execPath, [
+    'bin/triad-plus.js', 'init', '--host', 'codex', '--control', configuredControl,
+    '--global', '--team-config', teamConfigSource
+  ], {
+    cwd: repositoryRoot,
+    env: { ...process.env, CODEX_HOME: configuredCodexHome },
+    encoding: 'utf8'
+  });
+  assert.equal(configured.status, 0, configured.stderr);
+  assert.match(await readFile(join(configuredControl, '.triad-plus', 'team.json'), 'utf8'), /"Italian"/);
+  assert.match(await readFile(join(configuredCodexHome, 'agents', 'triad_developer.toml'), 'utf8'), /gpt-5\.6-luna/);
+  for (const host of ['opencode', 'claude-code']) {
+    const control = join(fixtureRoot, `${host}-configured-control`);
+    const result = spawnSync(process.execPath, [
+      'bin/triad-plus.js', 'init', '--host', host, '--control', control,
+      '--team-config', teamConfigSource
+    ], { cwd: repositoryRoot, encoding: 'utf8' });
+    assert.equal(result.status, 0, result.stderr);
+    const hostDirectory = host === 'opencode' ? '.opencode' : '.claude';
+    assert.match(
+      await readFile(join(control, hostDirectory, 'agents', 'triad-developer.md'), 'utf8'),
+      /model: "gpt-5\.6-luna"/
+    );
+  }
   process.stdout.write('Triad+ CLI install test passed.\n');
 } finally {
   await rm(fixtureRoot, { recursive: true, force: true });

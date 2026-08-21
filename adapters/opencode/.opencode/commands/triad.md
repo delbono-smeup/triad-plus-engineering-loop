@@ -7,6 +7,10 @@ Operate a Triad+ Engineering Loop for the following owner request:
 
 $ARGUMENTS
 
+If `.triad-plus/team.json` exists, load it before replying. Use its interaction
+language, owner address, display names, and model contract in communication;
+technical role identifiers and authority remain unchanged.
+
 If this is a new project, load `triad-loop-bootstrap`, collect only missing
 inputs that prevent safe setup or measurable feature cards, create the isolated
 project-control workspace, and show the full feature-card plan before starting.
