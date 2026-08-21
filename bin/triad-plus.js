@@ -231,6 +231,7 @@ async function writeCodexProfiles(team) {
     const configuration = team.roles[role.id];
     const instructions = [
       `Act as ${configuration.displayName}, the ${role.label} role in Triad+.`,
+      `Persona: ${configuration.persona || 'professional and role-focused'}.`,
       'Read .triad-plus/team.json in the active project-control workspace before working.',
       'Use the configured interaction language and owner address. Keep the technical role',
       'boundaries defined by Triad+; display names never change authority or permissions.'
@@ -298,6 +299,7 @@ async function collectTeamConfiguration(prompt, host) {
   process.stdout.write('\nName each role and optionally select its host-native model. Leave a model blank only to use the host default.\n');
   for (const role of roleDefinitions) {
     const displayName = (await prompt.question(`${role.label} display name [${role.label}]: `)).trim() || role.label;
+    const persona = (await prompt.question(`${role.label} persona [professional and role-focused]: `)).trim() || 'professional and role-focused';
     const model = (await prompt.question(`${role.label} model ID [host default]: `)).trim();
     let reasoningEffort = null;
     if (model && host === 'codex') {
@@ -305,6 +307,7 @@ async function collectTeamConfiguration(prompt, host) {
     }
     roles[role.id] = {
       displayName,
+      persona,
       model: model || null,
       reasoning_effort: reasoningEffort
     };

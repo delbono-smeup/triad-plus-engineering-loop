@@ -51,10 +51,10 @@ try {
       communication_style: 'direct'
     },
     roles: {
-      orchestrator: { displayName: 'Ada', model: 'gpt-5.6-terra', reasoning_effort: 'medium' },
-      developer: { displayName: 'Lin', model: 'gpt-5.6-luna', reasoning_effort: 'max' },
-      evaluator: { displayName: 'Iris', model: 'gpt-5.6-terra', reasoning_effort: 'medium' },
-      reviewer: { displayName: 'Noah', model: 'gpt-5.6-terra', reasoning_effort: 'medium' }
+      orchestrator: { displayName: 'Ada', persona: 'calm and exact', model: 'gpt-5.6-terra', reasoning_effort: 'medium' },
+      developer: { displayName: 'Lin', persona: 'precise and focused', model: 'gpt-5.6-luna', reasoning_effort: 'max' },
+      evaluator: { displayName: 'Iris', persona: 'adversarial and evidence-led', model: 'gpt-5.6-terra', reasoning_effort: 'medium' },
+      reviewer: { displayName: 'Noah', persona: 'independent and rigorous', model: 'gpt-5.6-terra', reasoning_effort: 'medium' }
     }
   }, null, 2)}\n`);
   const configuredControl = join(fixtureRoot, 'configured-control');
@@ -69,7 +69,9 @@ try {
   });
   assert.equal(configured.status, 0, configured.stderr);
   assert.match(await readFile(join(configuredControl, '.triad-plus', 'team.json'), 'utf8'), /"Italian"/);
-  assert.match(await readFile(join(configuredCodexHome, 'agents', 'triad_developer.toml'), 'utf8'), /gpt-5\.6-luna/);
+  const developerProfile = await readFile(join(configuredCodexHome, 'agents', 'triad_developer.toml'), 'utf8');
+  assert.match(developerProfile, /gpt-5\.6-luna/);
+  assert.match(developerProfile, /precise and focused/);
   for (const host of ['opencode', 'claude-code']) {
     const control = join(fixtureRoot, `${host}-configured-control`);
     const result = spawnSync(process.execPath, [

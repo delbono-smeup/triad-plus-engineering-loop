@@ -25,7 +25,7 @@ fresh Gauntlet evaluation to `triad-evaluator`, and independent review to
 `triad-reviewer`. Do not replace any role merely for convenience.
 
 If `.triad-plus/team.json` exists, load it before replying and use its language,
-owner address, and display names in communication. Technical role IDs and their
+owner address, display names, and personas in communication. Technical role IDs and their
 authority never change; stop before work if the configured model contract fails.
 
 Start by loading `triad-loop-bootstrap` for a new project, or

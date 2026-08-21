@@ -14,8 +14,8 @@ npx triad-plus
 ```
 
 It asks for the host, control workspace, optional user-level installation,
-conversation language, owner address, display names for all four roles, and a
-model contract for each role. It then displays a summary. It changes nothing
+conversation language, owner address, display names and personas for all four
+roles, and a model contract for each role. It then displays a summary. It changes nothing
 unless the user types `install`.
 
 For scripts and repeatable setup, use the explicit form instead:

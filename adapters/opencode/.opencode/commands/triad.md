@@ -8,7 +8,7 @@ Operate a Triad+ Engineering Loop for the following owner request:
 $ARGUMENTS
 
 If `.triad-plus/team.json` exists, load it before replying. Use its interaction
-language, owner address, display names, and model contract in communication;
+language, owner address, display names, personas, and model contract in communication;
 technical role identifiers and authority remain unchanged.
 
 If this is a new project, load `triad-loop-bootstrap`, collect only missing
