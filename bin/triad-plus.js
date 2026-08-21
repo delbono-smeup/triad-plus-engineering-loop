@@ -5,6 +5,7 @@ import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import process from 'node:process';
+import { createInterface } from 'node:readline/promises';
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const skillNames = [
@@ -26,10 +27,12 @@ function usage(exitCode = 0) {
   stream.write(`Triad+ Engineering Loop installer
 
 Usage:
+  npx triad-plus
   npx triad-plus init --host <codex|opencode|claude-code> --control <path> [--global]
   npx triad-plus doctor --host <codex|opencode|claude-code> --control <path>
 
 Commands:
+  (no command)  Open the interactive installation wizard.
   init    Install the selected host adapter, skills, and verification runtime.
           --global also installs the host's user-level command and role assets.
   doctor  Report whether the project installation is complete; it never writes.
@@ -190,6 +193,45 @@ function nextStep(host) {
   return host === 'codex' ? '/prompts:triad' : '/triad';
 }
 
+async function interactiveInit() {
+  if (!process.stdin.isTTY || !process.stdout.isTTY) {
+    throw new Error('The interactive wizard needs a terminal. Use `init --host <host> --control <path>` in a non-interactive shell.');
+  }
+
+  const prompt = createInterface({ input: process.stdin, output: process.stdout });
+  try {
+    process.stdout.write('\nTriad+ Engineering Loop setup\n');
+    process.stdout.write('This installs only into a project-control workspace, never into product repositories.\n\n');
+    process.stdout.write('1) Codex\n2) OpenCode\n3) Claude Code\n');
+
+    let host;
+    while (!host) {
+      const answer = (await prompt.question('Choose the host [1-3]: ')).trim().toLowerCase();
+      host = { '1': 'codex', codex: 'codex', '2': 'opencode', opencode: 'opencode', '3': 'claude-code', claude: 'claude-code', 'claude-code': 'claude-code' }[answer];
+      if (!host) process.stdout.write('Choose 1, 2, or 3.\n');
+    }
+
+    const defaultControl = join(process.cwd(), 'triad-control');
+    const controlAnswer = (await prompt.question(`Project-control workspace [${defaultControl}]: `)).trim();
+    const control = controlAnswer || defaultControl;
+    const globalDefault = host === 'codex' ? 'Y/n' : 'y/N';
+    const globalAnswer = (await prompt.question(`Also install user-level ${nextStep(host)} assets? [${globalDefault}]: `)).trim().toLowerCase();
+    const global = globalAnswer === '' ? host === 'codex' : ['y', 'yes'].includes(globalAnswer);
+
+    process.stdout.write(`\nInstallation summary\n  Host: ${hostLabels[host]}\n  Control workspace: ${resolve(control)}\n  User-level assets: ${global ? 'yes' : 'no'}\n`);
+    const confirm = (await prompt.question('Type install to continue: ')).trim().toLowerCase();
+    if (confirm !== 'install') {
+      process.stdout.write('Cancelled. No files were changed.\n');
+      return;
+    }
+
+    await init({ host, control, global });
+    await doctor({ host, control });
+  } finally {
+    prompt.close();
+  }
+}
+
 async function init(options) {
   if (!hostLabels[options.host]) throw new Error('Choose --host codex, opencode, or claude-code.');
   if (!options.control) throw new Error('Provide --control <project-control-path>.');
@@ -237,7 +279,9 @@ try {
     await init(options);
   } else if (options.command === 'doctor') {
     await doctor(options);
-  } else if (!options.command || options.command === '--help' || options.command === '-h') {
+  } else if (!options.command) {
+    await interactiveInit();
+  } else if (options.command === '--help' || options.command === '-h') {
     usage(0);
   } else {
     throw new Error(`Unknown command: ${options.command}`);

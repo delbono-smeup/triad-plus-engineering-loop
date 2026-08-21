@@ -7,7 +7,16 @@ repositories and refuses every overwrite.
 ## Install a project
 
 Choose the host, create or choose a control workspace outside the product
-repositories, and run one command:
+repositories, and either use the interactive wizard:
+
+```bash
+npx triad-plus
+```
+
+It asks for the host, control workspace, optional user-level installation, and
+then displays a summary. It changes nothing unless the user types `install`.
+
+For scripts and repeatable setup, use the explicit form instead:
 
 ```bash
 npx triad-plus init --host codex --control /path/to/project-control --global

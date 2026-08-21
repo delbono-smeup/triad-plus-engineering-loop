@@ -35,6 +35,12 @@ try {
   });
   assert.equal(second.status, 2, second.stderr);
   assert.match(second.stderr, /would be overwritten/);
+  const nonInteractiveWizard = spawnSync(process.execPath, ['bin/triad-plus.js'], {
+    cwd: repositoryRoot,
+    encoding: 'utf8'
+  });
+  assert.equal(nonInteractiveWizard.status, 2, nonInteractiveWizard.stderr);
+  assert.match(nonInteractiveWizard.stderr, /interactive wizard needs a terminal/);
   process.stdout.write('Triad+ CLI install test passed.\n');
 } finally {
   await rm(fixtureRoot, { recursive: true, force: true });
