@@ -160,6 +160,12 @@ artifact, observation instructions, and passing verification summary. It returns
 `candidate_wins`, `bar_wins`, or `indeterminate`; a loss contains one largest
 gap and one bounded repair, never a long improvement backlog.
 
+At bootstrap, Triad detects the available verification runtime. In `auto` mode
+it uses an installed, trusted async lifecycle hook when supported; otherwise the
+orchestrator explicitly invokes the identical runner after developer completion.
+Both routes produce the same evidence and neither allows a missing hook to count
+as a successful gate.
+
 The orchestrator detects plateau from repeated observable gaps or no measurable
 progress, and applies elapsed-time, budget, and safety limits. A required bar
 blocks on a non-winning stop unless the owner waives it. An aspirational bar may

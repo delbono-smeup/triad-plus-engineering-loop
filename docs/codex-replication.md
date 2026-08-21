@@ -110,6 +110,12 @@ dispatches the runner; the orchestrator consumes and validates the resulting
 file. On an older CLI or a missing hook, record a structured failure and use the
 documented explicit runner dispatch rather than treating absence as passing.
 
+Set `project.control_plane.dispatch_mode: auto` for normal use. Bootstrap runs
+`runtime/triad-runtime-capabilities.mjs`, snapshots the actual CLI version and
+hook readiness, then records either `async_hook` or `explicit_dispatch`. The
+orchestrator uses the recorded route; it does not ask the developer to remember
+which runtime is installed.
+
 For multi-repository work, set `project.integration.enabled: true` and declare
 only the `local-worktrees` strategy. Add a final integration card that depends
 on the component cards and specifies the local link/setup commands and

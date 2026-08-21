@@ -7,6 +7,7 @@ import { spawnSync } from "node:child_process";
 
 const repositoryRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
 const runner = path.join(repositoryRoot, "runtime", "triad-verify.mjs");
+const capabilityDetector = path.join(repositoryRoot, "runtime", "triad-runtime-capabilities.mjs");
 const digest = async (file) => createHash("sha256").update(await readFile(file)).digest("hex");
 
 function command(command, args, cwd) {
@@ -68,8 +69,19 @@ async function invoke(root, agentId) {
   return { result, evidence };
 }
 
+function detect(version, hookConfig) {
+  const result = spawnSync("node", [capabilityDetector, "--version-output", `codex-cli ${version}`, "--hook-config", hookConfig], { encoding: "utf8" });
+  assert.equal(result.status, 0, result.stderr);
+  return JSON.parse(result.stdout);
+}
+
 const temporaryRoot = await mkdtemp(path.join(os.tmpdir(), "triad-runtime-test-"));
 try {
+  const hookConfig = path.join(temporaryRoot, "hooks.json");
+  await writeJson(hookConfig, { minimum_codex_cli_version: "0.148.0", hooks: { SubagentStop: [{}] } });
+  assert.equal(detect("0.142.0", hookConfig).verification.selected_mode, "explicit_dispatch");
+  assert.equal(detect("0.148.0", hookConfig).verification.selected_mode, "async_hook");
+
   const passRoot = path.join(temporaryRoot, "pass");
   const passing = await prepare(passRoot, 1, "true");
   const passRun = await invoke(passRoot, passing.assignment.agent_id);
@@ -92,7 +104,7 @@ try {
   assert.equal(staleRun.evidence.status, "invalidated");
   assert.equal(staleRun.evidence.failure.code, "candidate_changed_after_verification");
 
-  console.log("Triad runtime forward test passed: pass, gate failure, and changed-candidate invalidation.");
+  console.log("Triad runtime forward test passed: capability routing, pass, gate failure, and changed-candidate invalidation.");
 } finally {
   await rm(temporaryRoot, { recursive: true, force: true });
 }

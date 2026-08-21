@@ -43,3 +43,19 @@ The JSON payload needs an `agent_id` matching an active assignment under
 `.loop/runtime/assignments/`. The runner resolves all semantic data from that
 assignment and emits only structured evidence. The orchestrator still validates
 the evidence against the active candidate before changing state.
+
+## Let Triad choose the route
+
+Do not select this route by memory. Keep
+`project.control_plane.dispatch_mode: auto` and run:
+
+```bash
+node /absolute/path/to/triad-engineering-loop/runtime/triad-runtime-capabilities.mjs \
+  --hook-config /absolute/path/to/installed-triad-hooks.json
+```
+
+Store the JSON output at `.loop/runtime/capabilities.json`. A CLI below 0.148,
+an uninstalled hook, or a configuration with placeholders selects
+`explicit_dispatch`; a supported, configured hook selects `async_hook`. The
+orchestrator follows that snapshot and re-detects only before a new assignment or
+on resume after runtime configuration changes.

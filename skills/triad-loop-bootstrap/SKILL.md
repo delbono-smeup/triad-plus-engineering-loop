@@ -53,13 +53,21 @@ needs no quality bar. A `gauntlet` card must name a concrete observable quality
 bar, snapshot its mutable references where possible, record source/timestamp/
 SHA-256, and declare `required` or `aspirational` enforcement.
 
+Before enabling the loop, detect the host control-plane capability and write
+`.loop/runtime/capabilities.json` from `capabilities.template.json`. For Codex,
+run `runtime/triad-runtime-capabilities.mjs` against the installed CLI and the
+actual hook configuration. With `dispatch_mode: auto`, select `async_hook` only
+when the required lifecycle hook is both available and configured; otherwise
+select `explicit_dispatch`. Record the CLI version, detected capability, selected
+mode, reason, and timestamp. Never infer support from a version string alone.
+
 For configured external verification, hash the trusted gate file before every
 developer dispatch and include its hash, PRD hash, card hash, worktree, attempt,
 and runtime agent ID in an append-only assignment record. Do not construct gate
-commands from agent prose. Configure a supported runtime hook only after its
-version/schema and trust boundary are verified; otherwise record
-`verification_hook_missing` and use an explicit runner dispatch, never a
-developer claim.
+commands from agent prose. An unsupported/misconfigured hook is not a reason to
+disable verification: use the recorded explicit-dispatch route. Record
+`verification_hook_missing` only if the selected async route fails to dispatch,
+or `verification_infrastructure_error` if neither declared route can run.
 
 Verify all YAML files, the PRD snapshot hash, repository paths, branch names,
 worktree paths, repository-local instructions, quality-bar snapshots, safety

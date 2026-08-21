@@ -135,6 +135,12 @@ osservazione e sintesi della verification: niente report/ragionamenti/storico
 dello sviluppatore. Restituisce `candidate_wins`, `bar_wins` o `indeterminate`;
 in caso di perdita indica un solo largest gap e una riparazione circoscritta.
 
+Al bootstrap Triad rileva il runtime di verification disponibile. In modalità
+`auto` usa un hook lifecycle asincrono installato e trusted quando il runtime lo
+supporta; altrimenti l’orchestratore invoca esplicitamente lo stesso runner dopo
+la conclusione dello sviluppatore. Le due vie producono la medesima evidence e
+l’assenza dell’hook non può mai diventare un gate superato.
+
 L’orchestratore applica plateau, tempo, budget e safety ceiling con evidence
 osservabile. Un bar `required` blocca se non si vince senza waiver del
 proprietario; uno `aspirational` può arrivare alla review con residual gap

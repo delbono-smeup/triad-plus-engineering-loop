@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "detected_at": null,
+  "host": "codex",
+  "codex": {
+    "binary": "codex",
+    "version": null,
+    "async_subagent_stop": {
+      "minimum_version": "0.148.0",
+      "available": false,
+      "configured": false,
+      "configuration_reason": "not_detected"
+    }
+  },
+  "verification": {
+    "requested_mode": "auto",
+    "selected_mode": "explicit_dispatch",
+    "reason": "not_detected"
+  }
+}

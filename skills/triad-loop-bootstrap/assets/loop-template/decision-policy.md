@@ -36,6 +36,14 @@ evidence only when feature, attempt, PRD/card/gates hashes, and candidate
 fingerprint all match the active assignment. A patch after verification
 invalidates both verification and evaluation evidence.
 
+Bootstrap records a runtime capability snapshot. `dispatch_mode: auto` selects
+`async_hook` only when the host verifies both support and an installed/trusted
+hook; otherwise it selects `explicit_dispatch`, where the orchestrator invokes
+the same verifier after developer completion. The selected route is auditable and
+must be stable for an active attempt. Re-detect only before a new assignment or
+on resume; retain old snapshots. A missing async dispatch is a hook failure, not
+a reason to bypass verification.
+
 For `optimization.mode: gauntlet`, snapshot the declared quality bar and use a
 fresh evaluator with an auditable packet that excludes developer narrative and
 prior evaluation/review history. `bar_wins` must contain exactly one largest

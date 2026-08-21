@@ -17,6 +17,9 @@ project:
     verification: optional
     runtime: .triad-runtime
     watchdog_seconds: 900
+    dispatch_mode: auto # auto | async_hook | explicit_dispatch
+    capability_snapshot: .loop/runtime/capabilities.json
+    verifier_command: node .triad-runtime/triad-verify.mjs
     hook_adapter: codex-0.148-or-newer-when-installed
   branch_policy: isolated-project-branches
   create_missing_local_branches: false

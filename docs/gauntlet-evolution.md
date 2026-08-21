@@ -106,6 +106,24 @@ an old artifact, a duplicate asynchronous result, or a changed quality bar is
 stale and must be ignored. Missing/aborted hooks are structured failures—not
 passing gates.
 
+### Runtime-adaptive dispatch
+
+Bootstrap records a capability snapshot with
+`runtime/triad-runtime-capabilities.mjs`. `dispatch_mode: auto` selects the
+fastest safe route for the actual host:
+
+| Detected capability | Selected route | Verification action |
+| --- | --- | --- |
+| Supported, installed, trusted async lifecycle hook | `async_hook` | Wait for the `SubagentStop`-triggered runner under its watchdog. |
+| Missing, older, unconfigured, or untrusted async hook | `explicit_dispatch` | The orchestrator launches the same runner after the developer stops. |
+| No usable verifier | `unavailable` | Record infrastructure failure; do not enter review. |
+
+The check includes version, configuration presence, and placeholder/trust
+readiness. It never upgrades a capability from a version number alone. Re-run it
+before a new assignment or after resuming when runtime configuration changed, and
+append the new snapshot to the audit trail. The selected mode remains fixed for
+the active attempt.
+
 Supported gate executors are `control-plane`, `mcp`, and `manual-evidence`.
 The core runner executes the first. MCP and manual evidence remain optional;
 they must provide independently verifiable evidence and cannot convert a failed
@@ -158,8 +176,8 @@ optional and synchronous; do not use them for long verification jobs.
 
 Enable the fragment only after verifying the installed CLI schema, project hook
 trust, canonical paths, and assignment protocol. For an unsupported version,
-use the explicit runner dispatch in the adapter README and record the missing
-lifecycle integration. Do not scrape interactive cost UI; use only a verified
+the `auto` detector selects explicit runner dispatch rather than a manual
+workaround or a passing claim. Do not scrape interactive cost UI; use only a verified
 machine-readable counter if one becomes available.
 
 ## Failure taxonomy and handoff

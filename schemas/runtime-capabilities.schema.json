@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://triad.engineering/schemas/runtime-capabilities.schema.json",
+  "title": "Triad runtime capability snapshot",
+  "type": "object",
+  "required": ["schema_version", "detected_at", "host", "codex", "verification"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "host": { "const": "codex" },
+    "codex": { "type": "object", "required": ["binary", "version", "async_subagent_stop"], "properties": { "binary": { "type": "string" }, "version": { "type": ["string", "null"] }, "async_subagent_stop": { "type": "object", "required": ["minimum_version", "available", "configured"], "properties": { "minimum_version": { "type": "string" }, "available": { "type": "boolean" }, "configured": { "type": "boolean" } } } } },
+    "verification": { "type": "object", "required": ["requested_mode", "selected_mode", "reason"], "properties": { "requested_mode": { "enum": ["auto", "async_hook", "explicit_dispatch"] }, "selected_mode": { "enum": ["async_hook", "explicit_dispatch", "unavailable"] }, "reason": { "type": "string" } } }
+  }
+}
