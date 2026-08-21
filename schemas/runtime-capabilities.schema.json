@@ -6,10 +6,10 @@
   "required": ["schema_version", "detected_at", "host", "host_runtime", "verifier_runtime", "lifecycle_async", "verification"],
   "properties": {
     "schema_version": { "const": 1 },
-    "host": { "enum": ["codex", "opencode"] },
+    "host": { "enum": ["codex", "opencode", "claude-code"] },
     "host_runtime": { "type": "object", "required": ["binary", "version", "available"] },
     "verifier_runtime": { "type": "object", "required": ["binary", "version", "available"] },
     "lifecycle_async": { "type": "object", "required": ["kind", "minimum_version", "available", "configured", "reason"] },
-    "verification": { "type": "object", "required": ["requested_mode", "selected_mode", "reason"], "properties": { "requested_mode": { "enum": ["auto", "async_hook", "explicit_dispatch"] }, "selected_mode": { "enum": ["async_hook", "explicit_dispatch", "unavailable"] }, "reason": { "type": "string" } } }
+    "verification": { "type": "object", "required": ["requested_mode", "selected_mode", "reason"], "properties": { "requested_mode": { "enum": ["auto", "async_hook", "hook_dispatch", "explicit_dispatch"] }, "selected_mode": { "enum": ["async_hook", "hook_dispatch", "explicit_dispatch", "unavailable"] }, "reason": { "type": "string" } } }
   }
 }

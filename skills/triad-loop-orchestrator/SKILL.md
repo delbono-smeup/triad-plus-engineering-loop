@@ -26,8 +26,8 @@ before delegation. Bind it to the active card/attempt, worktree, expected PRD,
 card and gate hashes, and expected verification run ID.
 
 After the developer completes, move only to `verifying`. Read the recorded
-`verification.selected_mode`: for `async_hook`, wait for the external runner's
-atomic `verification.json` under the watchdog; for `explicit_dispatch`, invoke
+`verification.selected_mode`: for `async_hook` or `hook_dispatch`, wait for the
+external runner's atomic `verification.json` under the watchdog; for `explicit_dispatch`, invoke
 the declared verifier command yourself with the assignment's agent identity,
 then wait for the same atomic evidence. Re-detect capabilities at resume and
 before a new dispatch when the CLI or hook configuration changed; append a new
@@ -35,7 +35,7 @@ snapshot instead of overwriting the old one. Never accept a developer claim as t
 authoritative result of a `control-plane` gate. Validate run ID, feature,
 attempt, assignment, PRD/card/gate hashes, and candidate fingerprint against the
 active worktree. Reject stale, missing, invalid-context, failed, timed-out, or
-invalidated evidence. A watchdog expiry in `async_hook` records
+invalidated evidence. A watchdog expiry in `async_hook` or `hook_dispatch` records
 `verification_hook_missing` or `verification_timeout`; an explicit dispatch
 failure records `verification_infrastructure_error`. Neither advances the card.
 

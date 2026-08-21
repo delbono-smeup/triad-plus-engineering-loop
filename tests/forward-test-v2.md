@@ -12,7 +12,7 @@ new control-plane properties without a model or a product repository:
 
 | Scenario | Expected result | Automated evidence |
 | --- | --- | --- |
-| Runtime routing | Older/unconfigured Codex and OpenCode select explicit dispatch; supported configured Codex selects async hook. | `runtime-forward-test.mjs`: capability cases. |
+| Runtime routing | Older/unconfigured Codex and OpenCode select explicit dispatch; configured Codex selects async hook; configured Claude Code selects hook dispatch. | `runtime-forward-test.mjs`: capability cases. |
 | Valid developer completion | Atomic evidence is `pass` with a candidate fingerprint. | `runtime-forward-test.mjs`: pass case. |
 | Required gate failure | Evidence is `fail`; it cannot be mistaken for success. | `runtime-forward-test.mjs`: failing-gate case. |
 | Artifact changes while a gate runs | Evidence is `invalidated` with `candidate_changed_after_verification`. | `runtime-forward-test.mjs`: mutating-gate case. |

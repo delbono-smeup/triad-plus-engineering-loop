@@ -1,0 +1,17 @@
+{
+  "purpose": "Triad verification dispatch only; this hook writes evidence and never changes card state.",
+  "hooks": {
+    "SubagentStop": [
+      {
+        "matcher": "^triad-developer$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node <TRIAD_RUNTIME>/triad-verify.mjs --project <TRIAD_CONTROL_ROOT>",
+            "timeout": 900
+          }
+        ]
+      }
+    ]
+  }
+}
