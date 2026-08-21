@@ -1,4 +1,4 @@
-# Triad Engineering Loop for Claude Code
+# Triad+ Engineering Loop for Claude Code
 
 This adapter installs the shared five Triad skills, three isolated Claude Code
 subagents, the `/triad` command, and—on a project installation—the Node control

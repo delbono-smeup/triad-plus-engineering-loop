@@ -1,8 +1,8 @@
-# Triad Engineering Loop: guida operativa
+# Triad+ Engineering Loop: guida operativa
 
 ## Scopo
 
-Triad Engineering Loop trasforma un documento di requisiti di prodotto (PRD) in
+Triad+ Engineering Loop trasforma un documento di requisiti di prodotto (PRD) in
 modifiche software revisionate, verificabili e tracciabili. Pianificazione,
 stato ed evidenze vivono in un workspace di controllo separato dai repository di
 prodotto. Il metodo è un ciclo: una feature è completa solo con criteri,

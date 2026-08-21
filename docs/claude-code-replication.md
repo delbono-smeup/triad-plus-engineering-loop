@@ -1,4 +1,4 @@
-# Triad Engineering Loop: Claude Code Replication Guide
+# Triad+ Engineering Loop: Claude Code Replication Guide
 
 ## Purpose
 

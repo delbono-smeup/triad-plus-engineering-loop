@@ -1,4 +1,4 @@
-# Triad Engineering Loop: Codex Replication Guide
+# Triad+ Engineering Loop: Codex Replication Guide
 
 ## What this package provides
 

@@ -1,9 +1,9 @@
 ---
-description: Start or resume a Triad Engineering Loop from a PRD, target repositories, and measurable delivery goals.
+description: Start or resume a Triad+ Engineering Loop from a PRD, target repositories, and measurable delivery goals.
 agent: triad-orchestrator
 ---
 
-Operate a Triad Engineering Loop for the following owner request:
+Operate a Triad+ Engineering Loop for the following owner request:
 
 $ARGUMENTS
 

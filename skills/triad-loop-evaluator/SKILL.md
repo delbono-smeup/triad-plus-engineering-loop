@@ -1,6 +1,6 @@
 ---
 name: triad-loop-evaluator
-description: Independently evaluate one fresh Triad Engineering Loop candidate against a snapshotted quality bar and return an evidence-based candidate_wins, bar_wins, or indeterminate result with exactly one largest remaining gap when repair is needed. Use only after valid external verification for a Gauntlet-enabled feature card.
+description: Independently evaluate one fresh Triad+ Engineering Loop candidate against a snapshotted quality bar and return an evidence-based candidate_wins, bar_wins, or indeterminate result with exactly one largest remaining gap when repair is needed. Use only after valid external verification for a Gauntlet-enabled feature card.
 ---
 
 # Triad Loop Evaluator

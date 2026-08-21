@@ -1,10 +1,10 @@
-# Triad Engineering Loop
+# Triad+ Engineering Loop
 
 <p align="center">
-  <img src="assets/triad-engineering-loop-icon.svg" width="152" alt="Triad Engineering Loop icon: three connected roles and verified evidence">
+  <img src="assets/triad-plus-engineering-loop-icon.svg" width="152" alt="Triad+ Engineering Loop icon: three connected roles and verified evidence">
 </p>
 
-Triad Engineering Loop is an evidence-driven delivery method for one
+Triad+ Engineering Loop is an evidence-driven delivery method for one
 orchestrator, one developer, one fresh quality evaluator when needed, and one
 independent reviewer. It separates project control records from product source
 code and keeps human intervention limited to real product decisions.
@@ -13,6 +13,8 @@ code and keeps human intervention limited to real product decisions.
 - [Guida operativa italiana](docs/operating-guide.it.md) is the complete Italian localization.
 - [Codex replication guide](docs/codex-replication.md) explains the installable
   Codex adapter and its native `/prompts:triad` command.
+- [npx installation guide](docs/npx-installation.md) explains the guided,
+  host-specific package installer.
 - [OpenCode replication guide](docs/opencode-replication.md) explains the
   installable OpenCode adapter and its `/triad` command.
 - [Claude Code replication guide](docs/claude-code-replication.md) explains the

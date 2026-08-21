@@ -1,6 +1,6 @@
 ---
 name: triad-loop-orchestrator
-description: Coordinate a Triad Engineering Loop from declared feature cards through development, independent review, evidence-based state transitions, commits, normal pushes, multi-repository integration, delivery, and owner-controlled demos. Use when operating an initialized triad project workspace.
+description: Coordinate a Triad+ Engineering Loop from declared feature cards through development, independent review, evidence-based state transitions, commits, normal pushes, multi-repository integration, delivery, and owner-controlled demos. Use when operating an initialized triad project workspace.
 ---
 
 # Triad Loop Orchestrator

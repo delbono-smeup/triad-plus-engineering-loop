@@ -1,6 +1,6 @@
 ---
 name: triad-loop-developer
-description: Implement one bounded Triad Engineering Loop feature card, including tests, required quality gates, measurable evidence, and an exact implementation report. Use when the orchestrator assigns a ready or rework feature card in a declared project worktree.
+description: Implement one bounded Triad+ Engineering Loop feature card, including tests, required quality gates, measurable evidence, and an exact implementation report. Use when the orchestrator assigns a ready or rework feature card in a declared project worktree.
 ---
 
 # Triad Loop Developer

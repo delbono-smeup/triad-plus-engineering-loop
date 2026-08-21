@@ -7,7 +7,7 @@ Usage:
   ./adapters/opencode/install.sh --project <control-repository-path>
   ./adapters/opencode/install.sh --global
 
-Install the Triad Engineering Loop OpenCode adapter without overwriting any
+Install the Triad+ Engineering Loop OpenCode adapter without overwriting any
 existing OpenCode agent, command, or Triad skill. --project installs into
 <control-repository-path>/.opencode. --global installs into
 $HOME/.config/opencode.
@@ -67,7 +67,7 @@ if [[ "$project_install" == true ]]; then
   cp -R "$repository_root/schemas" "$project_root/.triad-runtime/schemas"
 fi
 
-printf 'Triad Engineering Loop installed in %s\n' "$target_root"
+printf 'Triad+ Engineering Loop installed in %s\n' "$target_root"
 if [[ "$project_install" == true ]]; then
   printf 'Control-plane runtime installed in %s/.triad-runtime\n' "$project_root"
 fi

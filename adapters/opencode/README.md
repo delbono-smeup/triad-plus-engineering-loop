@@ -1,4 +1,4 @@
-# Triad Engineering Loop for OpenCode
+# Triad+ Engineering Loop for OpenCode
 
 This adapter makes the repository's existing five standard Agent Skills
 operational in OpenCode. It installs four specialized agents and the `/triad`

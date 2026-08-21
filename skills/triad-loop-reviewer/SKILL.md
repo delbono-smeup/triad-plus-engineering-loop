@@ -1,6 +1,6 @@
 ---
 name: triad-loop-reviewer
-description: Independently review one Triad Engineering Loop implementation attempt against its feature card, diff, required gates, metrics, risks, and recorded developer evidence. Use after a developer reports a feature card ready for independent review.
+description: Independently review one Triad+ Engineering Loop implementation attempt against its feature card, diff, required gates, metrics, risks, and recorded developer evidence. Use after a developer reports a feature card ready for independent review.
 ---
 
 # Triad Loop Reviewer

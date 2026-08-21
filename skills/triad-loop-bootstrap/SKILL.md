@@ -1,6 +1,6 @@
 ---
 name: triad-loop-bootstrap
-description: Create an isolated Triad Engineering Loop project from a PRD, including an immutable PRD baseline, feature plan, project manifest, work queue, and evidence templates. Use when starting a new software initiative outside product repositories, when one initiative targets multiple repositories, or before invoking triad-loop-orchestrator.
+description: Create an isolated Triad+ Engineering Loop project from a PRD, including an immutable PRD baseline, feature plan, project manifest, work queue, and evidence templates. Use when starting a new software initiative outside product repositories, when one initiative targets multiple repositories, or before invoking triad-loop-orchestrator.
 ---
 
 # Triad Loop Bootstrap

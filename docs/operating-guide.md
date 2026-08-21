@@ -1,8 +1,8 @@
-# Triad Engineering Loop: Operating Guide
+# Triad+ Engineering Loop: Operating Guide
 
 ## Purpose
 
-Triad Engineering Loop is a controlled way to turn a product requirements
+Triad+ Engineering Loop is a controlled way to turn a product requirements
 document (PRD) into reviewed, testable, and traceable software changes. It is
 designed for projects that may involve one or more product repositories while
 keeping planning records and agent evidence outside those repositories.

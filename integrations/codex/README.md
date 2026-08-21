@@ -35,7 +35,7 @@ Until the lifecycle hook is supported and verified, dispatch the same runner
 explicitly after developer completion:
 
 ```bash
-node /absolute/path/to/triad-engineering-loop/runtime/triad-verify.mjs \
+node /absolute/path/to/triad-plus-engineering-loop/runtime/triad-verify.mjs \
   --project /absolute/path/to/project-control < hook-payload.json
 ```
 
@@ -50,7 +50,7 @@ Do not select this route by memory. Keep
 `project.control_plane.dispatch_mode: auto` and run:
 
 ```bash
-node /absolute/path/to/triad-engineering-loop/runtime/triad-runtime-capabilities.mjs \
+node /absolute/path/to/triad-plus-engineering-loop/runtime/triad-runtime-capabilities.mjs \
   --hook-config /absolute/path/to/installed-triad-hooks.json
 ```
 

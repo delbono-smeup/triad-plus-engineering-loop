@@ -1,4 +1,4 @@
-# Triad Engineering Loop: Gauntlet Evolution
+# Triad+ Engineering Loop: Gauntlet Evolution
 
 ## Why the Gauntlet exists
 

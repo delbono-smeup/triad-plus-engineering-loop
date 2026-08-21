@@ -1,8 +1,8 @@
-# Triad Engineering Loop: OpenCode Replication Guide
+# Triad+ Engineering Loop: OpenCode Replication Guide
 
 ## Purpose
 
-The Triad Engineering Loop is tool-neutral. This adapter connects its existing
+The Triad+ Engineering Loop is tool-neutral. This adapter connects its existing
 five standard Agent Skills to OpenCode's project-local agent and command
 configuration. It provides one primary orchestrator, three hidden subagents, and
 the `/triad` entry command without placing any personal configuration, model

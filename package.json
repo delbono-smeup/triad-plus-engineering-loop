@@ -1,0 +1,40 @@
+{
+  "name": "triad-plus",
+  "version": "0.1.0",
+  "description": "Install and configure the Triad+ Engineering Loop adapters.",
+  "type": "module",
+  "bin": {
+    "triad-plus": "bin/triad-plus.js"
+  },
+  "files": [
+    "bin/",
+    "adapters/",
+    "integrations/",
+    "runtime/",
+    "schemas/",
+    "skills/",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node tests/runtime-forward-test.mjs && node tests/cli-install-test.mjs",
+    "pack:check": "npm pack --dry-run"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/delbono-smeup/triad-plus-engineering-loop.git"
+  },
+  "bugs": {
+    "url": "https://github.com/delbono-smeup/triad-plus-engineering-loop/issues"
+  },
+  "homepage": "https://github.com/delbono-smeup/triad-plus-engineering-loop#readme",
+  "keywords": [
+    "agent-skills",
+    "codex",
+    "claude-code",
+    "opencode",
+    "orchestration"
+  ]
+}

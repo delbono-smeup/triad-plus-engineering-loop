@@ -66,7 +66,7 @@ if [[ "$project_install" == true ]]; then
   cp -R "$repository_root/schemas" "$project_root/.triad-runtime/schemas"
 fi
 
-printf 'Triad Engineering Loop installed in %s\n' "$target_root"
+printf 'Triad+ Engineering Loop installed in %s\n' "$target_root"
 if [[ "$project_install" == true ]]; then
   printf 'Control-plane runtime installed in %s/.triad-runtime\n' "$project_root"
   printf 'Review .claude/triad-hooks.json and merge it into trusted Claude settings only if hook dispatch is desired.\n'

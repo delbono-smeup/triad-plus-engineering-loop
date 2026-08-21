@@ -1,4 +1,4 @@
-# Triad Codex adapter
+# Triad+ Codex adapter
 
 Codex custom prompts live in the user prompt directory, so its native command
 is `/prompts:triad` rather than the un-namespaced `/triad` used by OpenCode and

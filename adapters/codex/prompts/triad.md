@@ -1,8 +1,8 @@
 ---
-description: Start or resume a Triad Engineering Loop from a PRD source, target repositories, and measurable goals.
+description: Start or resume a Triad+ Engineering Loop from a PRD source, target repositories, and measurable goals.
 ---
 
-Operate a Triad Engineering Loop for this owner request:
+Operate a Triad+ Engineering Loop for this owner request:
 
 $ARGUMENTS
 
