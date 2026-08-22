@@ -48,11 +48,14 @@ const requestedHost = option("--host") ?? "codex";
 const requestedMode = option("--requested-mode") ?? "auto";
 const versionOutput = option("--version-output");
 const host = requestedHost === "auto"
-  ? commandVersion(option("--codex-bin") ?? "codex") ? "codex" : "opencode"
+  ? commandVersion(option("--codex-bin") ?? "codex") ? "codex"
+    : commandVersion(option("--antigravity-bin") ?? "agy") ? "antigravity"
+      : "opencode"
   : requestedHost;
-if (!['codex', 'opencode', 'claude-code'].includes(host)) throw new Error(`unsupported host: ${host}`);
+if (!['codex', 'opencode', 'claude-code', 'antigravity'].includes(host)) throw new Error(`unsupported host: ${host}`);
 
-const hostBinary = option(host === "codex" ? "--codex-bin" : host === "opencode" ? "--opencode-bin" : "--claude-bin") ?? (host === "claude-code" ? "claude" : host);
+const hostBinary = option(host === "codex" ? "--codex-bin" : host === "opencode" ? "--opencode-bin" : host === "claude-code" ? "--claude-bin" : "--antigravity-bin")
+  ?? (host === "claude-code" ? "claude" : host === "antigravity" ? "agy" : host);
 const hostVersion = commandVersion(hostBinary, versionOutput);
 const nodeVersion = commandVersion(option("--node-bin") ?? "node");
 let lifecycle;
@@ -80,7 +83,9 @@ if (host === "codex") {
     minimum_version: null,
     available: false,
     configured: false,
-    reason: "no_verified_opencode_async_lifecycle_adapter",
+    reason: host === "antigravity"
+      ? "no_verified_antigravity_async_lifecycle_adapter"
+      : "no_verified_opencode_async_lifecycle_adapter",
   };
 }
 

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Triad+ Workflow"
+  short_description: "Start or resume a Triad+ engineering loop."
+  default_prompt: "Start Triad+ for this project."

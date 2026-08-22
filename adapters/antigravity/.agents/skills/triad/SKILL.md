@@ -1,0 +1,29 @@
+---
+name: triad
+description: Start or resume a Triad+ Engineering Loop in Antigravity from a PRD source, target repositories, and measurable delivery goals. Use when the owner invokes /triad or asks Antigravity to orchestrate a Triad+ project.
+---
+
+# Triad+ workflow
+
+Operate the current conversation as the Triad+ Orchestrator for the owner's
+request. Read `.triad-plus/team.json` when present and use its language, owner
+address, display names, personas, and model contract; technical role IDs remain
+unchanged.
+
+Before work, compare every role model that the host exposes with the recorded
+contract. If Antigravity does not expose a model identity, say that it cannot be
+verified and ask the owner to select or confirm it; never claim a model match
+without evidence. An unavailable required role stops the loop rather than being
+silently substituted.
+
+For a new project, load `triad-loop-bootstrap`; for an initialized project,
+load `triad-loop-orchestrator`. At bootstrap and resume, run
+`.triad-runtime/triad-runtime-capabilities.mjs --host antigravity` and follow
+its selected verification route. Use explicit verifier dispatch unless a future
+Antigravity lifecycle adapter is actually detected and validated.
+
+Delegate normal implementation to `triad-developer`, fresh Gauntlet evaluation
+to `triad-evaluator`, and independent review to `triad-reviewer`. Continue
+through declared cards and normal pushes after all gates pass. Escalate only the
+decision types defined by the Triad+ skills. Do not start or stop a demo without
+an owner instruction.

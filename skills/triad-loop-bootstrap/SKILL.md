@@ -55,11 +55,13 @@ SHA-256, and declare `required` or `aspirational` enforcement.
 
 Before enabling the loop, detect the host control-plane capability and write
 `.loop/runtime/capabilities.json` from `capabilities.template.json`. Run
-`runtime/triad-runtime-capabilities.mjs --host <codex|opencode|claude-code>` against the
+`runtime/triad-runtime-capabilities.mjs --host <codex|opencode|claude-code|antigravity>` against the
 active host and its actual hook configuration. With `dispatch_mode: auto`, select
 `async_hook` only when the host lifecycle hook is both available and configured;
 otherwise select `explicit_dispatch`. OpenCode currently selects explicit
-dispatch because it has no verified lifecycle adapter in this package; Claude
+dispatch because it has no verified lifecycle adapter in this package; Antigravity
+also selects explicit dispatch until this package provides a verified, versioned
+lifecycle adapter; Claude
 Code selects `hook_dispatch` only after its configured `SubagentStop` hook is
 detected, otherwise explicit dispatch.
 Record host/Node versions, detected capability, selected mode, reason, and

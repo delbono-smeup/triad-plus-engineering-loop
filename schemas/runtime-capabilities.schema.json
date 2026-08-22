@@ -6,7 +6,7 @@
   "required": ["schema_version", "detected_at", "host", "host_runtime", "verifier_runtime", "lifecycle_async", "verification"],
   "properties": {
     "schema_version": { "const": 1 },
-    "host": { "enum": ["codex", "opencode", "claude-code"] },
+    "host": { "enum": ["codex", "opencode", "claude-code", "antigravity"] },
     "host_runtime": { "type": "object", "required": ["binary", "version", "available"] },
     "verifier_runtime": { "type": "object", "required": ["binary", "version", "available"] },
     "lifecycle_async": { "type": "object", "required": ["kind", "minimum_version", "available", "configured", "reason"] },

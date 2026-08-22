@@ -31,10 +31,11 @@ npx triad-plus init --host codex --control /path/to/project-control \
   --global --team-config /path/to/team.json
 ```
 
-Supported hosts are `codex`, `opencode`, and `claude-code`.
+Supported hosts are `codex`, `opencode`, `claude-code`, and `antigravity`.
 
 `--global` is required once for Codex if the user wants its native
-`/prompts:triad` entry point. It is optional for OpenCode and Claude Code,
+`/prompts:triad` entry point. It is optional for OpenCode, Claude Code, and
+Antigravity,
 whose project-local `/triad` command works without it. The command prints the
 next step and keeps the host-specific role/model selection under the owner's
 control.
@@ -60,6 +61,9 @@ the host supports it directly:
 - Claude Code writes it into the three delegated subagent definitions;
 - Codex writes the four user-level profiles when the user selects global
   installation.
+
+Antigravity keeps the selected contracts in `team.json` and uses its native
+model controls; Triad+ does not write an unsupported per-agent model field.
 
 Codex and Claude Code use the model of the active main session for the
 Orchestrator. Triad+ records its required model in `team.json` and the entry
@@ -88,6 +92,7 @@ Open the control workspace in the selected host, then use:
 | Codex | `/prompts:triad /absolute/path/to/prd.md` |
 | OpenCode | `/triad /absolute/path/to/prd.md` |
 | Claude Code | `/triad /absolute/path/to/prd.md` |
+| Antigravity | `/triad /absolute/path/to/prd.md` |
 
 The Orchestrator extracts what it can from the PRD, asks for only the missing
 project facts, and shows the proposed feature-card plan before delivery work

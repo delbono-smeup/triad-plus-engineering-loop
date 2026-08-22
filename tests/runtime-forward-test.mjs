@@ -82,6 +82,7 @@ try {
   assert.equal(detect("codex", "0.142.0", hookConfig).verification.selected_mode, "explicit_dispatch");
   assert.equal(detect("codex", "0.148.0", hookConfig).verification.selected_mode, "async_hook");
   assert.equal(detect("opencode", "1.18.0", hookConfig).verification.selected_mode, "explicit_dispatch");
+  assert.equal(detect("antigravity", "1.0.0", hookConfig).verification.selected_mode, "explicit_dispatch");
   assert.equal(detect("claude-code", "2.1.233", hookConfig).verification.selected_mode, "hook_dispatch");
 
   const passRoot = path.join(temporaryRoot, "pass");

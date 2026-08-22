@@ -19,7 +19,8 @@ const skillNames = [
 const hostLabels = {
   codex: 'Codex',
   opencode: 'OpenCode',
-  'claude-code': 'Claude Code'
+  'claude-code': 'Claude Code',
+  antigravity: 'Antigravity'
 };
 
 const roleDefinitions = [
@@ -35,8 +36,8 @@ function usage(exitCode = 0) {
 
 Usage:
   npx triad-plus
-  npx triad-plus init --host <codex|opencode|claude-code> --control <path> [--global]
-  npx triad-plus doctor --host <codex|opencode|claude-code> --control <path>
+  npx triad-plus init --host <codex|opencode|claude-code|antigravity> --control <path> [--global]
+  npx triad-plus doctor --host <codex|opencode|claude-code|antigravity> --control <path>
 
 Commands:
   (no command)  Open the interactive installation wizard.
@@ -118,6 +119,15 @@ async function requireDirectory(path) {
 
 function projectPaths(host, controlRoot) {
   const runtime = [join(controlRoot, '.triad-runtime')];
+  if (host === 'antigravity') {
+    const hostRoot = join(controlRoot, '.agents');
+    return [
+      ...roleDefinitions.map((role) => join(hostRoot, 'agents', `triad-${role.id}`, 'agent.md')),
+      ...skillNames.map((name) => join(hostRoot, 'skills', name)),
+      join(hostRoot, 'skills', 'triad'),
+      ...runtime
+    ];
+  }
   const skills = skillNames.map((name) => {
     const base = host === 'codex' ? join(controlRoot, '.agents', 'skills') : join(controlRoot, `.${host === 'claude-code' ? 'claude' : 'opencode'}`, 'skills');
     return join(base, name);
@@ -148,6 +158,15 @@ function globalPaths(host) {
     ];
   }
 
+  if (host === 'antigravity') {
+    const hostRoot = join(homedir(), '.gemini', 'config');
+    return [
+      ...roleDefinitions.map((role) => join(hostRoot, 'agents', `triad-${role.id}`, 'agent.md')),
+      ...skillNames.map((name) => join(hostRoot, 'skills', name)),
+      join(hostRoot, 'skills', 'triad')
+    ];
+  }
+
   const hostRoot = host === 'claude-code'
     ? join(homedir(), '.claude')
     : join(homedir(), '.config', 'opencode');
@@ -174,6 +193,15 @@ async function copySkills(destination) {
   for (const name of skillNames) {
     await cp(join(packageRoot, 'skills', name), join(destination, name), { recursive: true });
   }
+}
+
+async function copyAntigravityWorkflow(destination) {
+  await mkdir(destination, { recursive: true });
+  await cp(
+    join(packageRoot, 'adapters', 'antigravity', '.agents', 'skills', 'triad'),
+    join(destination, 'triad'),
+    { recursive: true }
+  );
 }
 
 async function copyRuntime(controlRoot) {
@@ -209,7 +237,7 @@ async function applyMarkdownModel(path, model) {
 }
 
 async function applyHostModelConfiguration(host, controlRoot, team) {
-  if (host === 'codex') return;
+  if (host === 'codex' || host === 'antigravity') return;
   const hostRoot = join(controlRoot, host === 'claude-code' ? '.claude' : '.opencode');
   const installedRoles = host === 'claude-code'
     ? ['developer', 'evaluator', 'reviewer']
@@ -251,6 +279,13 @@ async function writeCodexProfiles(team) {
 async function installProject(host, controlRoot, team) {
   if (host === 'codex') {
     await copySkills(join(controlRoot, '.agents', 'skills'));
+  } else if (host === 'antigravity') {
+    const hostRoot = join(controlRoot, '.agents');
+    const sourceRoot = join(packageRoot, 'adapters', 'antigravity', '.agents');
+    await mkdir(hostRoot, { recursive: true });
+    await cp(join(sourceRoot, 'agents'), join(hostRoot, 'agents'), { recursive: true });
+    await copySkills(join(hostRoot, 'skills'));
+    await copyAntigravityWorkflow(join(hostRoot, 'skills'));
   } else {
     const hostRoot = join(controlRoot, host === 'claude-code' ? '.claude' : '.opencode');
     const sourceRoot = join(packageRoot, 'adapters', host, host === 'claude-code' ? '.claude' : '.opencode');
@@ -273,6 +308,16 @@ async function installGlobal(host, team) {
     await cp(join(packageRoot, 'adapters', 'codex', 'prompts', 'triad.md'), join(codexHome, 'prompts', 'triad.md'));
     await copySkills(join(codexHome, 'skills'));
     if (team) await writeCodexProfiles(team);
+    return;
+  }
+
+  if (host === 'antigravity') {
+    const hostRoot = join(homedir(), '.gemini', 'config');
+    const sourceRoot = join(packageRoot, 'adapters', 'antigravity', '.agents');
+    await mkdir(hostRoot, { recursive: true });
+    await cp(join(sourceRoot, 'agents'), join(hostRoot, 'agents'), { recursive: true });
+    await copySkills(join(hostRoot, 'skills'));
+    await copyAntigravityWorkflow(join(hostRoot, 'skills'));
     return;
   }
 
@@ -333,13 +378,13 @@ async function interactiveInit() {
   try {
     process.stdout.write('\nTriad+ Engineering Loop setup\n');
     process.stdout.write('This installs only into a project-control workspace, never into product repositories.\n\n');
-    process.stdout.write('1) Codex\n2) OpenCode\n3) Claude Code\n');
+    process.stdout.write('1) Codex\n2) OpenCode\n3) Claude Code\n4) Antigravity\n');
 
     let host;
     while (!host) {
-      const answer = (await prompt.question('Choose the host [1-3]: ')).trim().toLowerCase();
-      host = { '1': 'codex', codex: 'codex', '2': 'opencode', opencode: 'opencode', '3': 'claude-code', claude: 'claude-code', 'claude-code': 'claude-code' }[answer];
-      if (!host) process.stdout.write('Choose 1, 2, or 3.\n');
+      const answer = (await prompt.question('Choose the host [1-4]: ')).trim().toLowerCase();
+      host = { '1': 'codex', codex: 'codex', '2': 'opencode', opencode: 'opencode', '3': 'claude-code', claude: 'claude-code', 'claude-code': 'claude-code', '4': 'antigravity', antigravity: 'antigravity' }[answer];
+      if (!host) process.stdout.write('Choose 1, 2, 3, or 4.\n');
     }
 
     const defaultControl = join(process.cwd(), 'triad-control');
@@ -369,7 +414,7 @@ async function interactiveInit() {
 }
 
 async function init(options) {
-  if (!hostLabels[options.host]) throw new Error('Choose --host codex, opencode, or claude-code.');
+  if (!hostLabels[options.host]) throw new Error('Choose --host codex, opencode, claude-code, or antigravity.');
   if (!options.control) throw new Error('Provide --control <project-control-path>.');
 
   const team = await loadTeamConfig(options);
@@ -408,7 +453,7 @@ async function init(options) {
 }
 
 async function doctor(options) {
-  if (!hostLabels[options.host]) throw new Error('Choose --host codex, opencode, or claude-code.');
+  if (!hostLabels[options.host]) throw new Error('Choose --host codex, opencode, claude-code, or antigravity.');
   if (!options.control) throw new Error('Provide --control <project-control-path>.');
   const controlRoot = resolve(options.control);
   const absent = [];

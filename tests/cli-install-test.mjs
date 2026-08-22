@@ -10,7 +10,7 @@ const fixtureRoot = await mkdtemp(join(tmpdir(), 'triad-plus-cli-'));
 const codexHome = join(fixtureRoot, 'codex-home');
 
 try {
-  for (const host of ['codex', 'opencode', 'claude-code']) {
+  for (const host of ['codex', 'opencode', 'claude-code', 'antigravity']) {
     const controlRoot = join(fixtureRoot, host, 'control');
     const cliArgs = ['bin/triad-plus.js', 'init', '--host', host, '--control', controlRoot];
     if (host === 'codex') cliArgs.push('--global');
@@ -85,6 +85,32 @@ try {
       /model: "gpt-5\.6-luna"/
     );
   }
+  const antigravityControl = join(fixtureRoot, 'antigravity-configured-control');
+  const antigravity = spawnSync(process.execPath, [
+    'bin/triad-plus.js', 'init', '--host', 'antigravity', '--control', antigravityControl,
+    '--team-config', teamConfigSource
+  ], { cwd: repositoryRoot, encoding: 'utf8' });
+  assert.equal(antigravity.status, 0, antigravity.stderr);
+  assert.match(
+    await readFile(join(antigravityControl, '.agents', 'agents', 'triad-developer', 'agent.md'), 'utf8'),
+    /Load `triad-loop-developer`/
+  );
+  assert.match(
+    await readFile(join(antigravityControl, '.agents', 'skills', 'triad', 'SKILL.md'), 'utf8'),
+    /Triad\+ workflow/
+  );
+  const antigravityHome = join(fixtureRoot, 'antigravity-home');
+  const antigravityGlobalControl = join(fixtureRoot, 'antigravity-global-control');
+  const globalAntigravity = spawnSync(process.execPath, [
+    'bin/triad-plus.js', 'init', '--host', 'antigravity', '--control', antigravityGlobalControl, '--global'
+  ], {
+    cwd: repositoryRoot,
+    env: { ...process.env, HOME: antigravityHome },
+    encoding: 'utf8'
+  });
+  assert.equal(globalAntigravity.status, 0, globalAntigravity.stderr);
+  await readFile(join(antigravityHome, '.gemini', 'config', 'agents', 'triad-reviewer', 'agent.md'), 'utf8');
+  await readFile(join(antigravityHome, '.gemini', 'config', 'skills', 'triad', 'SKILL.md'), 'utf8');
   process.stdout.write('Triad+ CLI install test passed.\n');
 } finally {
   await rm(fixtureRoot, { recursive: true, force: true });
