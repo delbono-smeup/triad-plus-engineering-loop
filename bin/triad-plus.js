@@ -188,8 +188,12 @@ async function collisions(paths) {
 }
 
 function commandVersion(binary) {
-  const result = spawnSync(binary, ['--version'], { encoding: 'utf8' });
-  return result.status === 0 ? String(result.stdout).trim().split('\n')[0] : null;
+  const candidates = Array.isArray(binary) ? binary : [binary];
+  for (const candidate of candidates) {
+    const result = spawnSync(candidate, ['--version'], { encoding: 'utf8' });
+    if (result.status === 0) return String(result.stdout).trim().split('\n')[0];
+  }
+  return null;
 }
 
 async function collectTeamConfiguration(prompt, adapter) {
@@ -255,7 +259,7 @@ async function doctor(options) {
     const installContext = context(controlRoot);
     const absent = [];
     for (const target of adapter.projectPaths(controlRoot, installContext)) if (!(await exists(target))) absent.push(target);
-    const binary = commandVersion(adapter.binary);
+    const binary = commandVersion(adapter.binaryCandidates ?? adapter.binary);
     const node = commandVersion('node');
     const manifestPath = join(controlRoot, '.triad-runtime', 'adapter.json');
     let manifest = false;

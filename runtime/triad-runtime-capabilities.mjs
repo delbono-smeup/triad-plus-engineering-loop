@@ -26,9 +26,17 @@ function atLeast(actual, minimum) {
   return true;
 }
 
+function expandHome(candidate) {
+  return candidate.startsWith("~/") ? path.join(process.env.HOME ?? "", candidate.slice(2)) : candidate;
+}
+
 function commandVersion(binary, overriddenOutput) {
-  const result = overriddenOutput ? { status: 0, stdout: overriddenOutput } : spawnSync(binary, ["--version"], { encoding: "utf8" });
-  return result.status === 0 ? versionParts(result.stdout)?.join(".") ?? null : null;
+  const candidates = Array.isArray(binary) ? binary : [binary];
+  for (const candidate of candidates) {
+    const result = overriddenOutput ? { status: 0, stdout: overriddenOutput } : spawnSync(expandHome(candidate), ["--version"], { encoding: "utf8" });
+    if (result.status === 0) return { binary: expandHome(candidate), version: versionParts(result.stdout)?.join(".") ?? null };
+  }
+  return { binary: expandHome(candidates[0]), version: null };
 }
 
 function validHookRule(rule, lifecycle) {
@@ -84,10 +92,12 @@ if (adapter?.schema_version !== 1 || typeof adapter.id !== "string" || typeof ad
   throw new Error("adapter metadata must contain schema_version 1, id, and binary");
 }
 const lifecycle = adapter.lifecycle ?? null;
-const hostBinary = option("--host-bin") ?? adapter.binary;
-const hostVersion = commandVersion(hostBinary, versionOutput);
+const hostRuntime = commandVersion(option("--host-bin") ?? adapter.binary_candidates ?? adapter.binary, versionOutput);
+const hostBinary = hostRuntime.binary;
+const hostVersion = hostRuntime.version;
 const nodeBinary = option("--node-bin") ?? "node";
-const nodeVersion = commandVersion(nodeBinary);
+const nodeRuntime = commandVersion(nodeBinary);
+const nodeVersion = nodeRuntime.version;
 const hook = await hookConfiguration(option("--hook-config"), lifecycle);
 const lifecycleAvailable = Boolean(lifecycle && hostVersion && (!hook.minimum || atLeast(hostVersion, hook.minimum)));
 const hookAvailable = lifecycleAvailable && hook.configured;

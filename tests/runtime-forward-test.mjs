@@ -79,7 +79,7 @@ try {
   for (const adapter of ["opencode", "antigravity", "hermes"]) assert.equal(detect(adapter, "1.0.0", codexHook).verification.selected_mode, "explicit_dispatch");
 
   const passRoot = path.join(temporaryRoot, "pass");
-  const passing = await prepare(passRoot, 1, "true");
+  const passing = await prepare(passRoot, 1, "test \"$(printf TRIAD_PASS)\" = \"TRIAD_PASS\"");
   const passRun = await invoke(passRoot, passing.assignment.agent_id);
   assert.equal(passRun.result.status, 0, JSON.stringify(passRun.evidence));
   assert.equal(passRun.evidence.status, "pass");

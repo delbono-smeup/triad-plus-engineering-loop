@@ -2,5 +2,6 @@
   "schema_version": 1,
   "id": "hermes",
   "binary": "hermes",
+  "binary_candidates": ["hermes", "~/.local/bin/hermes"],
   "lifecycle": null
 }

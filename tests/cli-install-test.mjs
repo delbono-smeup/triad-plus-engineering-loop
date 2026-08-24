@@ -118,6 +118,20 @@ try {
   ], { cwd: repositoryRoot, encoding: 'utf8' });
   assert.equal(hermes.status, 0, hermes.stderr);
   await readFile(join(hermesControl, '.triad-runtime', 'adapter.json'), 'utf8');
+  const evaluatorEnabledSource = join(fixtureRoot, 'team-evaluator-enabled.json');
+  const evaluatorEnabled = JSON.parse(await readFile(teamConfigSource, 'utf8'));
+  evaluatorEnabled.roles.evaluator.enabled = true;
+  await writeFile(evaluatorEnabledSource, `${JSON.stringify(evaluatorEnabled, null, 2)}\n`);
+  const evaluatorEnabledControl = join(fixtureRoot, 'evaluator-enabled-control');
+  const enabledInstall = spawnSync(process.execPath, [
+    'bin/triad-plus.js', 'init', '--host', 'hermes', '--control', evaluatorEnabledControl, '--team-config', evaluatorEnabledSource
+  ], { cwd: repositoryRoot, encoding: 'utf8' });
+  assert.equal(enabledInstall.status, 0, enabledInstall.stderr);
+  const enabledDoctor = spawnSync(process.execPath, [
+    'bin/triad-plus.js', 'doctor', '--host', 'hermes', '--control', evaluatorEnabledControl
+  ], { cwd: repositoryRoot, encoding: 'utf8' });
+  assert.equal(enabledDoctor.status, 0, enabledDoctor.stderr);
+  assert.match(enabledDoctor.stdout, /Evaluator\+\s+configured/);
   process.stdout.write('Triad+ CLI install test passed.\n');
 } finally {
   await rm(fixtureRoot, { recursive: true, force: true });

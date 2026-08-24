@@ -1,4 +1,5 @@
 import { homedir } from 'node:os';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 export const sharedSkillNames = [
@@ -20,6 +21,16 @@ const regularRoles = roleDefinitions.filter((role) => role.core);
 
 function hostHome(...parts) {
   return join(homedir(), ...parts);
+}
+
+function hermesProfileHome() {
+  if (process.env.HERMES_HOME) return process.env.HERMES_HOME;
+  const root = hostHome('.hermes');
+  try {
+    const profile = readFileSync(join(root, 'active_profile'), 'utf8').trim();
+    if (profile) return join(root, 'profiles', profile);
+  } catch {}
+  return root;
 }
 
 function projectRuntimeAssets(id) {
@@ -180,6 +191,7 @@ const definitions = [
     id: 'hermes',
     label: 'Hermes Agent',
     binary: 'hermes',
+    binaryCandidates: ['hermes', join(homedir(), '.local', 'bin', 'hermes')],
     entry: '/triad',
     lifecycle: null,
     modelBinding: 'team-record',
@@ -188,14 +200,14 @@ const definitions = [
       ...projectRuntimeAssets('hermes')
     ],
     globalAssets: [
-      { source: 'adapters/hermes/skills/triad', destination: () => hostHome('.hermes', 'skills', 'triad') },
-      sharedSkills(() => hostHome('.hermes', 'skills'))
+      { source: 'adapters/hermes/skills/triad', destination: () => join(hermesProfileHome(), 'skills', 'triad') },
+      sharedSkills(() => join(hermesProfileHome(), 'skills'))
     ],
     projectPaths(controlRoot) {
       return [join(controlRoot, '.triad-runtime')];
     },
     globalPaths() {
-      const root = hostHome('.hermes', 'skills');
+      const root = join(hermesProfileHome(), 'skills');
       return [join(root, 'triad'), ...sharedSkillNames.map((name) => join(root, name))];
     }
   }

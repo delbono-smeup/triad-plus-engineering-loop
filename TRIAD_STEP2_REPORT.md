@@ -91,19 +91,21 @@ runtime model, and supported effort/options are preserved. New interactive setup
 adds `roles.evaluator.enabled`; absence is interpreted as optional Evaluator+
 not configured, without rewriting legacy data.
 
-### Nazarick preservation confirmation
+### Private deployment preservation confirmation
 
-No Nazarick configuration file was modified. Before/after SHA-256 checks were
-identical for:
+No private deployment configuration file was modified. Before/after SHA-256
+checks were identical for configured role profiles and the team file. Personal
+names, local paths, model assignments, and full hashes are intentionally omitted
+from this public repository.
 
-| Role | Display name | Model / effort | Configuration evidence |
-| --- | --- | --- | --- |
-| Orchestrator | Sebas | `gpt-5.6-terra` / `medium` | `.codex/agents/triad_orchestrator.toml` — `ba35f7…fa615` |
-| Developer | Solution | `gpt-5.6-luna` / `max` | `.codex/agents/triad_developer.toml` — `e4c701…b7b0` |
-| Reviewer | Yuri | `gpt-5.6-terra` / `medium` | `.codex/agents/triad_reviewer.toml` — `90791d…c2ca9` |
-| Evaluator+ | Lupusregina | `gpt-5.6-terra` / `medium` | `.codex/agents/triad_evaluator.toml` — `27ad3f…25870` |
+| Role | Preservation evidence |
+| --- | --- |
+| Orchestrator | Unchanged private role profile. |
+| Developer | Unchanged private role profile. |
+| Reviewer | Unchanged private role profile. |
+| Evaluator+ | Unchanged private role profile. |
 
-The existing project team file was also unchanged: `agent-jsonform/.triad-plus/team.json` — `4560d0…dde6a`.
+The existing private project team file was also unchanged.
 
 ## 9. UX, packaging, and documentation
 
@@ -127,12 +129,12 @@ removed from public materials.
 | `npm run pack:check` | Passed: dry-run package includes adapter assets, runtime, schemas, skills, docs, icon, README, and LICENSE. |
 | `node bin/triad-plus.js doctor --control /tmp/triad-doctor-empty` | Passed: readable five-runtime diagnostic matrix; expected uninstalled state in an empty workspace. |
 | `rg` audit for removed concepts | Passed outside immutable `TRIAD_CURRENT_STATE.md`: no Gauntlet/plateau/largest-gap/quality-rework terms remain. |
-| Nazarick configuration hashes | Passed: five tracked external configuration files unchanged. |
+| Private deployment configuration hashes | Passed: external role and team configuration files unchanged. |
 
 ## 11. Remaining limitations
 
-- Hermes live invocation could not be exercised because its binary is absent on
-  Nazarick; the adapter is installation- and capability-tested only.
+- Hermes live invocation could not be exercised in the Step 2 environment; the
+  adapter was installation- and capability-tested only.
 - Hook fragments remain templates requiring trusted host configuration with real
   absolute paths. The capability detector intentionally rejects placeholders.
 - Triad+ does not attempt to infer a host’s actual active model where that host

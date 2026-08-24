@@ -602,7 +602,7 @@ Potentially stale/ambiguous configuration:
 - `package.json.files` excludes `docs/`, `tests/`, and `assets/`. An npm tarball
   contains `README.md`, but its documentation links and icon target files that
   are not included in the package.
-- `tests/forward-test-v2.md` contains a Nazarick-specific historical CLI version
+- `tests/forward-test-v2.md` contains a deployment-specific historical CLI version
   and calls itself “Gauntlet V2”; it is not executed by `npm test`.
 - The English operating guide places `features/`, `reviews/`, and `handoffs/`
   under `.loop/`, whereas runtime/test/template references use `features/` at
@@ -650,7 +650,7 @@ impact. They are findings, not a design proposal.
 | **P2** | The custom gate YAML parser silently ignores unsupported YAML and has no validation of gate structure beyond later fields. | `runtime/lib/gates.mjs:15-37`. |
 | **P3** | Codex hook fragment is apparently dormant: no installer or CLI copies it; it is reachable only through manual documentation. | `integrations/codex/hooks.json`; `rg` references; Codex installer. |
 | **P3** | Documentation claims model-mismatch reporting, trusted-hook checks, state writing, and observed forward behavior more strongly than code can enforce. | `docs/npx-installation.md:68-83`; host guides; skills vs runtime. |
-| **P3** | `tests/forward-test-v2.md` is an experimental/manual test plan with a Nazarick-specific note and is not part of `npm test`. | `tests/forward-test-v2.md`; `package.json:21-23`. |
+| **P3** | `tests/forward-test-v2.md` is an experimental/manual test plan with a deployment-specific note and is not part of `npm test`. | `tests/forward-test-v2.md`; `package.json:21-23`. |
 
 ## 14. Actual versus documented behavior
 

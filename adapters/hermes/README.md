@@ -8,7 +8,8 @@ npx triad-plus init --host hermes --control /path/to/project-control --global
 ```
 
 The project installation supplies only the project-local verification runtime;
-the user-level installation supplies the Hermes skills under `~/.hermes/skills/`.
+the user-level installation supplies skills to the active Hermes profile (or the
+default `~/.hermes/skills/` when no profile is active).
 Open Hermes from the project-control workspace and run:
 
 ```text

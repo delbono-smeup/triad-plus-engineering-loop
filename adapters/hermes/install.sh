@@ -21,7 +21,12 @@ repository_root="$(cd -- "$adapter_root/../.." && pwd)"
 skill_names=(triad-loop-bootstrap triad-loop-orchestrator triad-loop-developer triad-loop-evaluator triad-loop-reviewer)
 
 if [[ "$global_install" == true ]]; then
-  target_root="$HOME/.hermes/skills"
+  hermes_root="${HERMES_HOME:-$HOME/.hermes}"
+  if [[ -z "${HERMES_HOME:-}" && -f "$hermes_root/active_profile" ]]; then
+    active_profile="$(tr -d '[:space:]' < "$hermes_root/active_profile")"
+    [[ -n "$active_profile" ]] && hermes_root="$hermes_root/profiles/$active_profile"
+  fi
+  target_root="$hermes_root/skills"
   [[ ! -e "$target_root/triad" ]] || { printf 'Refusing to overwrite %s/triad\n' "$target_root" >&2; exit 1; }
   for skill in "${skill_names[@]}"; do
     [[ ! -e "$target_root/$skill" ]] || { printf 'Refusing to overwrite %s/%s\n' "$target_root" "$skill" >&2; exit 1; }

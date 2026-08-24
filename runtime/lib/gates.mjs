@@ -12,6 +12,14 @@ function scalar(value) {
   return trimmed.replace(/^['"]|['"]$/g, "");
 }
 
+function unquoteWhole(value) {
+  const trimmed = value.trim();
+  if ((trimmed.startsWith("\"") && trimmed.endsWith("\"")) || (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
+    return trimmed.slice(1, -1);
+  }
+  return trimmed;
+}
+
 // Supports the deliberately small, list-of-maps YAML contract used by quality-gates.yaml.
 export function parseQualityGates(source) {
   try {
@@ -25,7 +33,7 @@ export function parseQualityGates(source) {
     const match = line.match(/^\s*(?:-\s+)?([a-z_]+):\s*(.*?)\s*$/i);
     if (!match) continue;
     const [, key, value] = match;
-    const parsedValue = key === "command" || key === "description" ? value.trim().replace(/^['"]|['"]$/g, "") : scalar(value);
+    const parsedValue = key === "command" || key === "description" ? unquoteWhole(value) : scalar(value);
     if (line.trimStart().startsWith("- ")) {
       if (current) gates.push(current);
       current = { [key]: parsedValue };
