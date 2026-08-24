@@ -1,7 +1,8 @@
 {
   "name": "triad-plus",
   "version": "0.1.0",
-  "description": "Install and configure the Triad+ Engineering Loop adapters.",
+  "description": "A lightweight, evidence-backed engineering loop for coding agents.",
+  "license": "MIT",
   "type": "module",
   "bin": {
     "triad-plus": "bin/triad-plus.js"
@@ -16,7 +17,11 @@
     "docs/",
     "assets/",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    "CODE_OF_CONDUCT.md"
   ],
   "engines": {
     "node": ">=20"
@@ -39,6 +44,8 @@
     "claude-code",
     "opencode",
     "antigravity",
-    "orchestration"
+    "engineering-loop",
+    "code-review",
+    "verification"
   ]
 }
