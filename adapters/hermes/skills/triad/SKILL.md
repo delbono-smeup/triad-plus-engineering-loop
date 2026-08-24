@@ -1,6 +1,6 @@
 ---
 name: triad
-description: Start or resume a Triad run in Hermes Agent from a PRD source, declared repositories, and measurable goals. Use when the owner invokes /triad or asks Hermes to coordinate a Triad project; use --evaluator only after an approved Triad run for an independent post-run Evaluator+ report.
+description: Start or resume a Triad run in Hermes Agent from a PRD source, declared repositories, and measurable goals. Evaluator+ runs automatically after approval when enabled in team configuration.
 ---
 
 # Triad in Hermes
@@ -27,10 +27,12 @@ After the Developer finishes, explicitly run
 Triad lifecycle hook in this adapter. A verifier pass is environment-derived
 evidence; a Developer statement is not.
 
-When invoked with `--evaluator`, do not reopen a Triad run. Load
-`triad-loop-evaluator` in a fresh Hermes one-shot session with only the approved
-goal, acceptance target, final artifact, and verification evidence. Store its
+After final Triad approval, read `roles.evaluator.enabled` from `team.json`.
+When true, automatically load `triad-loop-evaluator` in a fresh Hermes one-shot
+session with only the approved goal, acceptance target, final artifact, and
+verification evidence; false or omitted finishes without evaluation. `--evaluator`
+and `--no-evaluator` are per-run overrides when supplied. Store its
 post-run report at the absolute `<control-workspace>/artifacts/evaluator-plus/`
 path supplied by the Orchestrator; never infer it relative to a product worktree.
 `FAIL` or `INDETERMINATE` is information for a new
-owner-requested run, never an automatic repair.
+owner-requested run, never an automatic repair and never reopens Triad.

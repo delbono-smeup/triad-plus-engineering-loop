@@ -33,7 +33,8 @@ dopo i goal dichiarati. Avvio e stop della demo restano del proprietario.
 
 ## Evaluator+
 
-Evaluator+ è opzionale e fuori dal loop produttivo. Dopo `approved`, osserva solo
+Evaluator+ è opzionale e fuori dal loop produttivo. Se abilitato in `team.json`,
+l’Orchestrator lo avvia automaticamente dopo `approved`; osserva solo
 goal, target di accettazione, candidato finale ed evidence del verifier. Produce
 `PASS`, `FAIL` oppure `INDETERMINATE`. Un `FAIL` non modifica la run chiusa e non
 avvia rework. Vedi [Evaluator+](evaluator-plus.md).

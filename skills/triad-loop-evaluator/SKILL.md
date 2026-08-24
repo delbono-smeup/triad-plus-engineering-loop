@@ -1,6 +1,6 @@
 ---
 name: triad-loop-evaluator
-description: Produce a fresh, blind, post-run Evaluator+ report for an already approved Triad result. Use only when explicitly requested after Triad approval, with a goal, acceptance target, final artifact, and environment-derived verification evidence.
+description: Produce a fresh, blind, post-run Evaluator+ report for an already approved Triad result. Use after approval when configured by the Orchestrator, with only a goal, acceptance target, final artifact, and environment-derived verification evidence.
 ---
 
 # Evaluator+

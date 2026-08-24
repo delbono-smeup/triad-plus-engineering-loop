@@ -34,7 +34,8 @@ autonomously once declared goals pass. Demo start and stop remain owner-controll
 
 ## Evaluator+
 
-Evaluator+ is optional and outside the production loop. After `approved`, it
+Evaluator+ is optional and outside the production loop. When enabled in
+`team.json`, the Orchestrator dispatches it automatically after `approved`. It
 inspects only the goal, acceptance target, final candidate, and verifier evidence.
 Its report is `PASS`, `FAIL`, or `INDETERMINATE`. A failure does not modify the
 closed run or start repair. See [Evaluator+](evaluator-plus.md).

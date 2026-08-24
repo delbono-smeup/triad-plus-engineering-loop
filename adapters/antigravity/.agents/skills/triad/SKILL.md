@@ -23,8 +23,10 @@ its selected verification route. Use explicit verifier dispatch unless a future
 Antigravity lifecycle adapter is actually detected and validated.
 
 Delegate normal implementation to `triad-developer` and independent review to
-`triad-reviewer`. Invoke `triad-evaluator` only after Triad approval when the
-owner requests Evaluator+; its independent report never reopens Triad. Continue
+`triad-reviewer`. After Triad approval, automatically invoke fresh
+`triad-evaluator` when `roles.evaluator.enabled` is true in `team.json`; false or
+omitted means no evaluation. Its independent report never reopens Triad or starts
+repair; `--evaluator` and `--no-evaluator` are per-run overrides when supplied. Continue
 through declared cards and normal pushes after all gates pass. Escalate only the
 decision types defined by the Triad+ skills. Do not start or stop a demo without
 an owner instruction.

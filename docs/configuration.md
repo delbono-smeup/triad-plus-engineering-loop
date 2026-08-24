@@ -20,6 +20,10 @@ personas. A schema-version-1 configuration has four role records:
 optional and enabled only when `roles.evaluator.enabled` is `true`. Omitting that
 field is backward-compatible and means Evaluator+ is not configured.
 
+When enabled, Evaluator+ is automatically dispatched by the Orchestrator after
+Triad reaches Reviewer approval. It receives a fresh post-run packet and cannot
+change the closed Triad result. Set `enabled` to `false` to disable this default.
+
 The runtime adapter is selected per installed control workspace (`--host`). The
 team file records role-level models and effort, but an adapter writes those into
 host-native profiles only where the host supports that facility. A blank model

@@ -9,7 +9,8 @@ npx triad-plus doctor --host codex --control "$PWD/triad-control"
 ```
 
 The interactive setup asks for language, owner address, neutral role names,
-personas, models, and whether optional Evaluator+ is enabled. It writes only
+personas, models, and whether optional Evaluator+ is enabled. When enabled,
+Evaluator+ is automatically dispatched after Triad approval. It writes only
 after you type `install`.
 
 For non-interactive setup, pass a reviewed team file:

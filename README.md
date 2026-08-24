@@ -4,37 +4,110 @@
   <img src="assets/triad-plus-engineering-loop-icon.svg" alt="Triad+ logo" width="220">
 </p>
 
-Triad+ is a lightweight engineering loop for coding agents with three explicit roles.
+## Stop letting the same AI write the code and approve its own work.
+
+Triad+ gives coding agents a lightweight engineering loop with separate
+implementation, review, and orchestration.
 
 > **Developer proposes. Reviewer challenges. Orchestrator governs.**
 
-It is not a workflow engine or autonomous development platform. The coding-agent host stays in control; Triad+ provides role contracts, independent review, and verification evidence.
+## Why Triad+?
+
+| | What changes |
+| --- | --- |
+| **Independent review** | A Reviewer examines the candidate and verifier evidence instead of asking the Developer to grade its own work. |
+| **Different models per role** | Choose a runtime, model, persona, and supported effort for each role. |
+| **Evidence-backed verification** | A claim that tests passed is not proof: `triad-verify` records environment-derived gate evidence. |
+| **Works across coding agents** | Use Codex, Claude Code, OpenCode, Antigravity, or Hermes Agent through peer adapters. |
+
+Triad+ is for the moment after a coding agent says “done”: it gives that claim a
+separate reviewer, deterministic checks, and an orchestrator that decides what
+happens next.
+
+## How it works
 
 ```text
-                Orchestrator
-                /           \
-          Developer  ←→  Reviewer
+                   Orchestrator
+                   /           \
+            Developer  ←→  Reviewer
+                   ↓
+             triad-verify evidence
 
-Triad approved → optional fresh Evaluator+
+Reviewer approved
+       ↓
+Evaluator+ (only when configured; fresh and post-run)
 ```
 
-## Why Triad?
+The normal path is `Developer → verification → Reviewer → approved | rework |
+blocked`. The Orchestrator governs the loop. When configured, Evaluator+ runs
+automatically after approval with a fresh packet; a `FAIL` is information for a
+future user-initiated run, never an automatic repair.
 
-A single agent can implement, self-check, and declare success in one conversation. Triad separates those responsibilities: the Developer changes the candidate, the Reviewer looks for defects, and the Orchestrator decides rework, approval, or escalation. `triad-verify` supplies environment-derived gate evidence, distinct from an agent claim.
+## Try Triad+ in 5 minutes with OpenCode
 
-## Supported coding agents
+OpenCode is the canonical tutorial because it is open source and makes the
+separate Triad roles easy to inspect.
 
-| Runtime | Orchestrator | Developer | Reviewer | Evaluator+ | Verification dispatch |
-| --- | --- | --- | --- | --- | --- |
-| Codex | Yes | Yes | Yes | Yes | Explicit fallback; async hook when validated |
-| Claude Code | Yes | Yes | Yes | Yes | Explicit fallback; hook when validated |
-| OpenCode | Yes | Yes | Yes | Yes | Explicit dispatch |
-| Antigravity | Yes | Yes | Yes | Yes | Explicit dispatch |
-| Hermes Agent | Yes | Yes | Yes | Yes | Explicit dispatch |
+1. Install OpenCode and configure a provider/model, following the
+   [OpenCode documentation](https://opencode.ai/docs).
+2. Create a small product folder and deterministic test command:
 
-Hooks are optional optimizations; they write evidence and never make a Triad state decision. See [runtime details](docs/runtimes.md).
+   ```bash
+   mkdir triad-celsius && cd triad-celsius
+   npm init -y
+   npm pkg set type=module
+   npm pkg set scripts.test='node --test'
+   ```
+3. Create a separate control workspace and install the OpenCode adapter:
 
-## Quick start
+   ```bash
+   npx triad-plus init --host opencode --control "$PWD/triad-control"
+   npx triad-plus doctor --host opencode --control "$PWD/triad-control"
+   ```
+
+   The setup asks for the Orchestrator, Developer, Reviewer, and optional
+   Evaluator+ names, personas, and models. Choose `yes` for Evaluator+ if you
+   want it automatically after approval.
+4. Save this tiny PRD as `celsius-prd.md` beside the product project:
+
+   ```md
+   # Goal
+   Create a `celsiusToFahrenheit` utility.
+
+   ## Acceptance criteria
+   - Export `celsiusToFahrenheit(value)`.
+   - `celsiusToFahrenheit(0)` returns `32`.
+   - `celsiusToFahrenheit(100)` returns `212`.
+   - Add automated tests.
+
+   ## Verification
+   npm test
+   ```
+5. Open `triad-control` **interactively** in the OpenCode TUI and run:
+
+   ```text
+   /triad /absolute/path/to/celsius-prd.md
+   ```
+
+Expected experience:
+
+```text
+Orchestrator
+      ↓
+Developer implements
+      ↓
+triad-verify produces evidence
+      ↓
+Reviewer inspects
+      ├─ approved → optional automatic Evaluator+
+      └─ rework → Developer
+```
+
+The Orchestrator first shows the feature cards, then delegates the bounded work.
+If a tutorial step is unclear, see the [OpenCode guide](docs/runtimes.md#opencode)
+and [troubleshooting](docs/troubleshooting.md).
+
+## Quick start for every runtime
 
 Requirements: Node.js 20+ and one supported coding-agent host.
 
@@ -43,7 +116,8 @@ npx triad-plus init --host codex --control /absolute/path/to/triad-control --glo
 npx triad-plus doctor --host codex --control /absolute/path/to/triad-control
 ```
 
-`init` creates a separate control workspace and refuses overwrites. Open it in the selected host, then start Triad with an absolute PRD path:
+Open the control workspace in the selected host and start Triad with an absolute
+PRD path:
 
 | Host | Entry point |
 | --- | --- |
@@ -53,32 +127,46 @@ npx triad-plus doctor --host codex --control /absolute/path/to/triad-control
 | Antigravity | `/triad /absolute/path/to/prd.md` |
 | Hermes Agent | `/triad /absolute/path/to/prd.md` |
 
-The Orchestrator presents feature cards before implementation. Follow [Getting started](docs/getting-started.md) for the complete copy-paste walkthrough.
+## Evaluator+
 
-## Configure agents
+Evaluator+ is not a fourth member of Triad and is never a repair controller.
+Configure it once in `team.json` (`roles.evaluator.enabled: true`) or in the
+installer. The Orchestrator automatically dispatches it after Triad approval.
+It sees only the goal, quality target, final candidate, and verifier evidence.
 
-The wizard or reviewed `team.json` configures display name/persona, model, and supported effort/options for each role. Use neutral names. The selected adapter/runtime is project-level; per-role model binding is applied only where the host supports it. [Configuration](docs/configuration.md) explains the exact contract.
+## Supported coding agents
 
-## Optional Evaluator+
+| Runtime | Orchestrator | Developer | Reviewer | Evaluator+ | Verification dispatch |
+| --- | --- | --- | --- | --- | --- |
+| Codex | Yes | Yes | Yes | Yes | Explicit fallback; validated async hook when available |
+| Claude Code | Yes | Yes | Yes | Yes | Explicit fallback; validated hook when available |
+| OpenCode | Yes | Yes | Yes | Yes | Explicit dispatch |
+| Antigravity | Yes | Yes | Yes | Yes | Explicit dispatch |
+| Hermes Agent | Yes | Yes | Yes | Yes | Explicit dispatch |
 
-Evaluator+ is not a fourth member of Triad. After Reviewer approval, invoke the native command with `--evaluator` where supported:
+## Configuration and verification
 
-```text
-/triad --evaluator
-```
+The installer writes `.triad-plus/team.json`, which separates stable role IDs
+from user-facing names, personas, models, and supported effort/options. Roles
+can use different models and, where the adapter supports it, different hosts.
+Read [configuration](docs/configuration.md) and [runtime details](docs/runtimes.md).
 
-It evaluates the completed result freshly and independently. A `FAIL` does not reopen Triad or start repair. See [Evaluator+](docs/evaluator-plus.md).
+`triad-verify` validates assignment/candidate binding, runs declared
+control-plane gates, detects mutation, and writes evidence. It supports the
+loop; it never replaces the Orchestrator. See [verification](docs/verification.md).
 
-## Architecture and limits
+## Scope and limitations
 
-Triad+ consists of role skills, adapters, and a verifier. Core has no runtime-specific behavior; adapters own installation, entry-point, lifecycle, and model-binding differences. The verifier validates binding, runs declared control-plane gates, detects mutation, and writes atomic evidence. It does not govern the conversation or replace the Orchestrator.
-
-Triad+ does not provide a daemon, scheduler, dashboard, shared memory, automatic model routing, multi-reviewer voting, or evaluator-driven repair. Read [architecture](docs/architecture.md), [verification](docs/verification.md), and [troubleshooting](docs/troubleshooting.md).
+Triad+ is deliberately not a workflow engine, daemon, scheduler, dashboard,
+shared-memory system, automatic model router, multi-reviewer system, or
+evaluator-driven repair loop. See [architecture](docs/architecture.md).
 
 ## Contributing
 
-Start with [CONTRIBUTING.md](CONTRIBUTING.md), run `npm test`, and keep runtime-specific behavior inside an adapter.
+Start with [CONTRIBUTING.md](CONTRIBUTING.md). Keep runtime-specific behavior in
+an adapter and preserve the small Core.
 
 ## License
 
-[MIT](LICENSE).
+[Apache-2.0](LICENSE). Triad+ is permissively licensed for personal and
+commercial use.

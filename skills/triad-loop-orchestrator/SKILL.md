@@ -49,6 +49,11 @@ pull request, publish, release, or start/stop a demo without owner direction.
 Write a final handoff with cards, commits, pushes, verifier evidence, reviewer
 decisions, risks, exceptions, and practical-test instructions.
 
-Evaluator+ is outside this run. Invoke it only after Triad is approved and only
-when the owner/configuration requests a separate post-run evaluation. Its result
-cannot reopen, rework, or change this run automatically.
+Evaluator+ is outside the Triad production run. After final Triad approval,
+read `roles.evaluator.enabled` from `.triad-plus/team.json`: when it is `true`,
+automatically dispatch one fresh `triad-loop-evaluator` with only the approved
+goal, quality target, final candidate, and current verifier evidence. When it is
+false or omitted, finish without evaluation. Record the report separately;
+`PASS`, `FAIL`, and `INDETERMINATE` cannot reopen, rework, assign Developer work,
+or change the already closed Triad run. A per-run `--evaluator` or
+`--no-evaluator` request may override the configuration when the host exposes it.

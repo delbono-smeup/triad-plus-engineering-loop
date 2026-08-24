@@ -1,8 +1,8 @@
 {
   "name": "triad-plus",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A lightweight, evidence-backed engineering loop for coding agents.",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "type": "module",
   "bin": {
     "triad-plus": "bin/triad-plus.js"

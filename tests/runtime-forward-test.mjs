@@ -134,6 +134,23 @@ try {
 
   const coreSources = [await readFile(path.join(repositoryRoot, "bin", "triad-plus.js"), "utf8"), await readFile(capabilityDetector, "utf8")].join("\n");
   assert.doesNotMatch(coreSources, /(?:if|switch|===)[\s\S]{0,80}hermes/i);
+  const orchestratorContracts = await Promise.all([
+    "skills/triad-loop-orchestrator/SKILL.md",
+    "adapters/codex/prompts/triad.md",
+    "adapters/claude-code/.claude/commands/triad.md",
+    "adapters/opencode/.opencode/commands/triad.md",
+    "adapters/opencode/.opencode/agents/triad-orchestrator.md",
+    "adapters/antigravity/.agents/agents/triad-orchestrator/agent.md",
+    "adapters/antigravity/.agents/skills/triad/SKILL.md",
+    "adapters/hermes/skills/triad/SKILL.md"
+  ].map((file) => readFile(path.join(repositoryRoot, file), "utf8")));
+  for (const contract of orchestratorContracts) {
+    assert.match(contract, /evaluator\.enabled/i, "configured Evaluator+ must be recognized");
+    assert.match(contract, /automatic(?:ally)?/i, "configured Evaluator+ must be automatic");
+    assert.match(contract, /(?:never reopens|never reopen|cannot reopen)/i, "Evaluator+ must not reopen Triad");
+  }
+  const evaluatorContract = await readFile(path.join(repositoryRoot, "skills", "triad-loop-evaluator", "SKILL.md"), "utf8");
+  assert.match(evaluatorContract, /Do not\s+edit source, change the Triad queue\/state, commit, push/i);
   console.log("Triad runtime tests passed: adapter capabilities, evidence binding, failure handling, hard timeout, and generic Core.");
 } finally {
   await rm(temporaryRoot, { recursive: true, force: true });

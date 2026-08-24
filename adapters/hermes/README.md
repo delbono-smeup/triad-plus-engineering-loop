@@ -21,11 +21,7 @@ adapter uses those host primitives for separately invoked Developer and Reviewer
 roles when the configured model/provider is available. It uses explicit
 verification dispatch; no Hermes lifecycle hook is assumed.
 
-Evaluator+ is opt-in and post-run only:
-
-```text
-/triad --evaluator
-```
-
-It receives the approved goal, acceptance target, final artifact, and verifier
-evidence, then writes an independent report without reopening Triad.
+Evaluator+ is opt-in and post-run only. Set `roles.evaluator.enabled` to `true`
+in `team.json` and the Orchestrator dispatches it automatically after Triad
+approval. It receives the approved goal, acceptance target, final artifact, and
+verifier evidence, then writes an independent report without reopening Triad.

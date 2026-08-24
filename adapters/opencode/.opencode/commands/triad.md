@@ -22,3 +22,9 @@ Delegate implementation and review through the configured Triad subagents.
 Proceed autonomously through declared cards and normal branch pushes once all
 gates pass. Escalate only the decision types defined by the skills. Do not start
 or stop a demo unless the owner explicitly asks.
+
+After final Triad approval, read `roles.evaluator.enabled` from the team file.
+When true, automatically dispatch `triad-evaluator` in a fresh context with only
+the approved evaluation packet. When false or omitted, finish without evaluation.
+An Evaluator+ verdict never reopens Triad, assigns Developer work, or starts
+repair; `--evaluator` and `--no-evaluator` are per-run overrides when supplied.

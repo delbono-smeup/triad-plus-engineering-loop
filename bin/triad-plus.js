@@ -242,7 +242,7 @@ async function init(options) {
   if (adapter.globalEntry) {
     process.stdout.write(`Install user-level assets with --global to expose ${adapter.entry}.\n`);
   }
-  process.stdout.write(`Open the control workspace and use ${adapter.entry} <PRD path>. Evaluator+ is optional and post-run only.\n`);
+  process.stdout.write(`Open the control workspace and use ${adapter.entry} <PRD path>. Configured Evaluator+ runs automatically post-approval.\n`);
 }
 
 async function doctor(options) {

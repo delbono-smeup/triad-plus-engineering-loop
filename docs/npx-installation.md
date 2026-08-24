@@ -37,8 +37,6 @@ when `roles.evaluator.enabled` is `true`.
 
 Open the control workspace and invoke the host-native command with an absolute
 PRD path. The Orchestrator presents feature cards before implementation, then
-delegates normal development and review. Use the optional evaluator form exposed
-by the host only after Triad is approved: invoke the native Triad command with
-`--evaluator` (for example `/triad --evaluator`) and the Orchestrator will either
-run the configured Evaluator+ or state that it is disabled. Users never create
+delegates normal development and review. When `roles.evaluator.enabled` is true,
+the Orchestrator invokes Evaluator+ automatically after Triad is approved. Users never create
 evaluation packets, report paths, or evidence directories manually.

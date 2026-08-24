@@ -1,7 +1,8 @@
 # Evaluator+
 
-Evaluator+ is optional and outside the Triad production loop. Invoke it only
-after the Reviewer has approved a feature or delivery.
+Evaluator+ is optional and outside the Triad production loop. Configure
+`roles.evaluator.enabled: true` and the Orchestrator automatically invokes it
+only after the Reviewer has approved a feature or delivery.
 
 It receives the goal, acceptance target, final artifact, and verifier evidence.
 It should not receive developer reasoning, prior reviewer conversation, or

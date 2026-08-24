@@ -42,3 +42,9 @@ binding. Do not add `if <runtime>` behavior to Core installer or verifier code.
 Explain the user-facing outcome, provide test output, and call out runtime
 limitations. Maintainers may ask for a clean package smoke when install assets
 change.
+
+## Operational artifacts
+
+Keep working reports, smoke transcripts, handoffs, and release checklists in
+`.triad-internal/` (which Git ignores) or outside the repository. The tracked
+tree is reserved for product code and user/contributor documentation.

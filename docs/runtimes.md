@@ -22,3 +22,10 @@ adapter instructions. It is supported, not experimental.
 See the concise host guides for [Codex](codex-replication.md),
 [Claude Code](claude-code-replication.md), [OpenCode](opencode-replication.md),
 and [Antigravity](antigravity-replication.md).
+
+## OpenCode
+
+Use the interactive OpenCode TUI for complete multi-step Triad runs. OpenCode
+1.18.0 validated the full Orchestrator → Developer → verifier → Reviewer →
+configured Evaluator+ lifecycle in the TUI. `opencode run` is useful for
+one-shot work but does not retain that multi-step parent/subagent lifecycle.

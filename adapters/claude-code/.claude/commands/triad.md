@@ -19,8 +19,10 @@ technical role identifiers and authority remain unchanged. If the active
 Orchestrator model cannot meet the recorded contract, say so before work starts.
 
 Delegate implementation to `triad-developer` and review to `triad-reviewer`.
-Invoke fresh `triad-evaluator` only after Triad approval and only when requested;
-its report never reopens the completed run. Continue
+After Triad approval, automatically invoke fresh `triad-evaluator` when
+`.triad-plus/team.json` has `roles.evaluator.enabled: true`; false or omitted
+means no evaluation. Its report never reopens the completed run; `--evaluator`
+and `--no-evaluator` are per-run overrides when supplied. Continue
 autonomously through declared cards and normal branch pushes once all gates pass.
 Escalate only the decision types defined by the Triad skills. Do not start or
 stop a demo without an owner instruction.

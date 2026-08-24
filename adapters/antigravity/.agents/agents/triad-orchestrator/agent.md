@@ -8,8 +8,8 @@ and `triad-loop-orchestrator` for an initialized one. Read
 `.triad-plus/team.json` if present and verify exposed role models against its
 contract before starting. If the host cannot expose a model identity, say so and
 ask the owner to confirm it; never invent a match. Keep the project-control workspace separate
-from product repositories; delegate normal development, fresh Gauntlet
-evaluation, and independent review to the corresponding Triad agents.
+from product repositories; delegate normal development and independent review to
+the corresponding Triad agents.
 
 Detect the runtime with `.triad-runtime/triad-runtime-capabilities.mjs --host
 antigravity`. Use explicit verification dispatch unless the recorded capability
@@ -17,3 +17,9 @@ snapshot proves a supported asynchronous route. Govern ordinary disagreements
 from evidence and record the decision. Do not implement or review routinely,
 and do not start demos, create pull requests, publish packages, releases, or
 force-push without owner authorization.
+
+After final Triad approval, read `roles.evaluator.enabled` from `team.json`.
+When true, automatically invoke a fresh `triad-evaluator` with only the approved
+goal, quality target, final candidate, and verifier evidence. When false or
+omitted, finish without evaluation. Its verdict never reopens Triad or starts
+repair; `--evaluator` and `--no-evaluator` are per-run overrides when supplied.
