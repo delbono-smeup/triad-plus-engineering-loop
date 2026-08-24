@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased — proposed 1.0.0
+## 1.0.0 — 2026-08-24
 
 - Public Triad+ engineering loop with Orchestrator, Developer, and Reviewer.
 - Optional fresh post-run Evaluator+.

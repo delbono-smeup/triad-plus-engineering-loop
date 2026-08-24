@@ -2,13 +2,13 @@
 
 ## Owner decisions
 
-- [ ] Final owner review
-- [ ] Version approved
-- [ ] Repository visibility approved
-- [ ] Remote/repository target approved
-- [ ] Tag approved
-- [ ] npm publication approved
-- [ ] GitHub Release approved
+- [x] Final owner review
+- [x] Version approved: 1.0.0
+- [x] Repository visibility approved
+- [x] Remote/repository target approved
+- [x] Tag v1.0.0 approved
+- [x] npm publication approved
+- [x] GitHub Release approved
 - [ ] Announcement approved
 
 ## Before publication
