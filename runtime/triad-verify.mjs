@@ -4,7 +4,7 @@ import { access, readFile, realpath } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { writeAtomicJson } from "./lib/evidence.mjs";
-import { calculateCandidateFingerprint } from "./lib/fingerprint.mjs";
+import { calculateCandidateFingerprint, worktreeBranch } from "./lib/fingerprint.mjs";
 import { executeGates, loadTrustedGates } from "./lib/gates.mjs";
 
 const argv = process.argv.slice(2);
@@ -40,8 +40,8 @@ async function resolveAssignment(projectRoot, trigger, explicitAssignment) {
   const assignmentPath = explicitAssignment
     ? path.resolve(explicitAssignment)
     : path.join(projectRoot, ".loop", "runtime", "assignments", `${trigger.agent_id}.json`);
-  const assignment = JSON.parse(await readFile(assignmentPath, "utf8"));
-  return { assignmentPath, assignment };
+  const source = await readFile(assignmentPath, "utf8");
+  return { assignmentPath, assignment: JSON.parse(source), assignmentHash: sha256(source) };
 }
 
 async function buildInvalidEvidence({ runId, trigger, assignment, reason, outputPath }) {
@@ -50,6 +50,8 @@ async function buildInvalidEvidence({ runId, trigger, assignment, reason, output
     run_id: runId,
     feature_id: assignment?.feature_id ?? "unknown",
     attempt: assignment?.attempt ?? null,
+    assignment_id: assignment?.assignment_id ?? null,
+    assignment_sha256: null,
     trigger,
     baseline: {
       prd_sha256: assignment?.expected_prd_sha256 ?? null,
@@ -70,19 +72,24 @@ async function buildInvalidEvidence({ runId, trigger, assignment, reason, output
 async function main() {
   const payload = await readStdin();
   const trigger = triggerFrom(payload);
-  const runId = payload.run_id ?? option("--run-id") ?? randomUUID();
+  const requestedRunId = payload.run_id ?? option("--run-id") ?? null;
+  let runId = requestedRunId ?? randomUUID();
   const projectArgument = option("--project") ?? payload.project_root ?? process.cwd();
   const projectRoot = await realpath(projectArgument);
   let assignment;
   let assignmentPath;
   let outputPath;
   try {
-    ({ assignmentPath, assignment } = await resolveAssignment(projectRoot, trigger, option("--assignment")));
+    let assignmentHash;
+    ({ assignmentPath, assignment, assignmentHash } = await resolveAssignment(projectRoot, trigger, option("--assignment")));
+    if (assignment.verification_run_id && requestedRunId && assignment.verification_run_id !== requestedRunId) throw new Error("verification run ID does not match assignment");
+    runId = assignment.verification_run_id ?? runId;
     const evidenceDirectory = assignment.evidence_directory
       ? path.resolve(projectRoot, assignment.evidence_directory)
       : path.join(projectRoot, ".loop", "evidence", assignment.feature_id, `attempt-${String(assignment.attempt).padStart(3, "0")}`);
     outputPath = path.join(evidenceDirectory, "verification.json");
     if (assignment.status !== "active") throw new Error("assignment is not active");
+    if (!assignment.assignment_id) throw new Error("assignment ID is required");
     if (assignment.agent_id !== trigger.agent_id || assignment.agent_type !== "triad_developer") throw new Error("developer assignment does not match trigger");
     if ((await realpath(path.resolve(assignment.project_root ?? projectRoot))) !== projectRoot) throw new Error("assignment project root mismatch");
     const worktree = await realpath(path.resolve(projectRoot, assignment.worktree));
@@ -94,6 +101,8 @@ async function main() {
     if ((await sha256File(prdPath)) !== assignment.expected_prd_sha256) throw new Error("PRD baseline hash mismatch");
     if ((await sha256File(cardPath)) !== assignment.expected_card_sha256) throw new Error("feature card hash mismatch");
     const before = await calculateCandidateFingerprint(worktree);
+    const branch = await worktreeBranch(worktree);
+    if (assignment.expected_branch && assignment.expected_branch !== branch) throw new Error("worktree branch does not match assignment");
     const gatesPath = path.resolve(projectRoot, assignment.gates_path ?? ".loop/quality-gates.yaml");
     const trusted = await loadTrustedGates(gatesPath, assignment.expected_gates_sha256);
     if (!trusted.valid) throw new Error("quality gates are missing or changed from their declared hash");
@@ -107,6 +116,8 @@ async function main() {
       run_id: runId,
       feature_id: assignment.feature_id,
       attempt: assignment.attempt,
+      assignment_id: assignment.assignment_id,
+      assignment_sha256: assignmentHash,
       trigger,
       assignment_ref: path.relative(projectRoot, assignmentPath),
       baseline: {
@@ -115,6 +126,7 @@ async function main() {
         gates_sha256: trusted.actualHash,
         git_head: before.git_head,
         candidate_fingerprint: before.value,
+        branch,
       },
       gates,
       required_gates_passed: requiredGatesPassed,

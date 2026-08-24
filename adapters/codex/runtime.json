@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "id": "codex",
+  "binary": "codex",
+  "lifecycle": {
+    "kind": "SubagentStop",
+    "agent_type": "triad_developer",
+    "requires_async": true,
+    "minimum_version": "0.148.0"
+  }
+}

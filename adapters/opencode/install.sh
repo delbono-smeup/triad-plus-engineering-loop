@@ -65,6 +65,7 @@ done
 if [[ "$project_install" == true ]]; then
   cp -R "$repository_root/runtime" "$project_root/.triad-runtime"
   cp -R "$repository_root/schemas" "$project_root/.triad-runtime/schemas"
+  cp "$adapter_root/runtime.json" "$project_root/.triad-runtime/adapter.json"
 fi
 
 printf 'Triad+ Engineering Loop installed in %s\n' "$target_root"

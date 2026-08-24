@@ -1,5 +1,6 @@
 {
   "schema_version": 1,
+  "assignment_id": "REPLACE_ME_UUID",
   "status": "active",
   "agent_id": "REPLACE_ME_RUNTIME_AGENT_ID",
   "agent_type": "triad_developer",
@@ -7,6 +8,7 @@
   "attempt": 1,
   "project_root": "REPLACE_ME_ABSOLUTE_CONTROL_WORKSPACE",
   "worktree": "REPLACE_ME_DECLARED_WORKTREE_OR_ABSOLUTE_PATH",
+  "expected_branch": "REPLACE_ME_PROJECT_BRANCH",
   "allow_external_worktree": false,
   "prd_path": "artifacts/prd.md",
   "card_path": "features/REPLACE_ME_FEATURE_ID.md",

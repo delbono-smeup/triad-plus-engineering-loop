@@ -10,7 +10,7 @@ const fixtureRoot = await mkdtemp(join(tmpdir(), 'triad-plus-cli-'));
 const codexHome = join(fixtureRoot, 'codex-home');
 
 try {
-  for (const host of ['codex', 'opencode', 'claude-code', 'antigravity']) {
+  for (const host of ['codex', 'opencode', 'claude-code', 'antigravity', 'hermes']) {
     const controlRoot = join(fixtureRoot, host, 'control');
     const cliArgs = ['bin/triad-plus.js', 'init', '--host', host, '--control', controlRoot];
     if (host === 'codex') cliArgs.push('--global');
@@ -53,7 +53,7 @@ try {
     roles: {
       orchestrator: { displayName: 'Ada', persona: 'calm and exact', model: 'gpt-5.6-terra', reasoning_effort: 'medium' },
       developer: { displayName: 'Lin', persona: 'precise and focused', model: 'gpt-5.6-luna', reasoning_effort: 'max' },
-      evaluator: { displayName: 'Iris', persona: 'adversarial and evidence-led', model: 'gpt-5.6-terra', reasoning_effort: 'medium' },
+      evaluator: { displayName: 'Iris', persona: 'adversarial and evidence-led', model: 'gpt-5.6-terra', reasoning_effort: 'medium', enabled: false },
       reviewer: { displayName: 'Noah', persona: 'independent and rigorous', model: 'gpt-5.6-terra', reasoning_effort: 'medium' }
     }
   }, null, 2)}\n`);
@@ -69,6 +69,7 @@ try {
   });
   assert.equal(configured.status, 0, configured.stderr);
   assert.match(await readFile(join(configuredControl, '.triad-plus', 'team.json'), 'utf8'), /"Italian"/);
+  assert.match(await readFile(join(configuredControl, '.triad-plus', 'team.json'), 'utf8'), /"enabled": false/);
   const developerProfile = await readFile(join(configuredCodexHome, 'agents', 'triad_developer.toml'), 'utf8');
   assert.match(developerProfile, /gpt-5\.6-luna/);
   assert.match(developerProfile, /precise and focused/);
@@ -111,6 +112,12 @@ try {
   assert.equal(globalAntigravity.status, 0, globalAntigravity.stderr);
   await readFile(join(antigravityHome, '.gemini', 'config', 'agents', 'triad-reviewer', 'agent.md'), 'utf8');
   await readFile(join(antigravityHome, '.gemini', 'config', 'skills', 'triad', 'SKILL.md'), 'utf8');
+  const hermesControl = join(fixtureRoot, 'hermes-configured-control');
+  const hermes = spawnSync(process.execPath, [
+    'bin/triad-plus.js', 'init', '--host', 'hermes', '--control', hermesControl, '--team-config', teamConfigSource
+  ], { cwd: repositoryRoot, encoding: 'utf8' });
+  assert.equal(hermes.status, 0, hermes.stderr);
+  await readFile(join(hermesControl, '.triad-runtime', 'adapter.json'), 'utf8');
   process.stdout.write('Triad+ CLI install test passed.\n');
 } finally {
   await rm(fixtureRoot, { recursive: true, force: true });

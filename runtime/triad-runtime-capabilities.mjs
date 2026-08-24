@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 import { readFile } from "node:fs/promises";
 import { spawnSync } from "node:child_process";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const argv = process.argv.slice(2);
 const option = (name) => {
@@ -29,91 +31,91 @@ function commandVersion(binary, overriddenOutput) {
   return result.status === 0 ? versionParts(result.stdout)?.join(".") ?? null : null;
 }
 
-async function hookConfiguration(pathname, host) {
-  const minimum = host === "codex" ? "0.148.0" : null;
-  if (!pathname) return { configured: false, reason: "hook_configuration_not_declared", minimum };
+function validHookRule(rule, lifecycle) {
+  if (!rule || typeof rule !== "object") return false;
+  let matcher;
+  try {
+    matcher = new RegExp(rule.matcher ?? "");
+  } catch {
+    return false;
+  }
+  if (!matcher.test(lifecycle.agent_type)) return false;
+  const hooks = Array.isArray(rule.hooks) ? rule.hooks : [];
+  return hooks.some((hook) => {
+    const command = String(hook?.command ?? "");
+    return hook?.type === "command" &&
+      !command.includes("<TRIAD_") &&
+      command.includes("triad-verify.mjs") &&
+      command.includes("--project") &&
+      (!lifecycle.requires_async || hook.async === true);
+  });
+}
+
+async function loadAdapter() {
+  const adapterPath = option("--adapter");
+  if (adapterPath) return JSON.parse(await readFile(path.resolve(adapterPath), "utf8"));
+  const adapters = JSON.parse(await readFile(new URL("./legacy-adapters.json", import.meta.url), "utf8"));
+  const id = option("--host") ?? "codex";
+  const adapter = adapters[id];
+  if (!adapter) throw new Error(`unsupported adapter: ${id}`);
+  return adapter;
+}
+
+async function hookConfiguration(pathname, lifecycle) {
+  if (!lifecycle) return { configured: false, reason: "adapter_has_no_lifecycle_hook", minimum: null };
+  if (!pathname) return { configured: false, reason: "hook_configuration_not_declared", minimum: lifecycle.minimum_version ?? null };
   try {
     const source = await readFile(pathname, "utf8");
     const parsed = JSON.parse(source);
-    if (source.includes("<TRIAD_") || !parsed.hooks?.SubagentStop) {
-      return { configured: false, reason: "hook_configuration_contains_placeholders_or_no_subagentstop", minimum: host === "codex" ? parsed.minimum_codex_cli_version ?? minimum : minimum };
+    const rules = parsed?.hooks?.[lifecycle.kind];
+    if (!Array.isArray(rules) || !rules.some((rule) => validHookRule(rule, lifecycle))) {
+      return { configured: false, reason: "hook_configuration_has_no_usable_triad_rule", minimum: parsed.minimum_version ?? parsed.minimum_codex_cli_version ?? lifecycle.minimum_version ?? null };
     }
-    return { configured: true, reason: null, minimum: host === "codex" ? parsed.minimum_codex_cli_version ?? minimum : minimum };
+    return { configured: true, reason: null, minimum: parsed.minimum_version ?? parsed.minimum_codex_cli_version ?? lifecycle.minimum_version ?? null };
   } catch (error) {
-    return { configured: false, reason: `hook_configuration_unreadable:${error.code ?? "error"}`, minimum };
+    return { configured: false, reason: `hook_configuration_unreadable:${error.code ?? "error"}`, minimum: lifecycle.minimum_version ?? null };
   }
 }
 
-const requestedHost = option("--host") ?? "codex";
 const requestedMode = option("--requested-mode") ?? "auto";
 const versionOutput = option("--version-output");
-const host = requestedHost === "auto"
-  ? commandVersion(option("--codex-bin") ?? "codex") ? "codex"
-    : commandVersion(option("--antigravity-bin") ?? "agy") ? "antigravity"
-      : "opencode"
-  : requestedHost;
-if (!['codex', 'opencode', 'claude-code', 'antigravity'].includes(host)) throw new Error(`unsupported host: ${host}`);
-
-const hostBinary = option(host === "codex" ? "--codex-bin" : host === "opencode" ? "--opencode-bin" : host === "claude-code" ? "--claude-bin" : "--antigravity-bin")
-  ?? (host === "claude-code" ? "claude" : host === "antigravity" ? "agy" : host);
-const hostVersion = commandVersion(hostBinary, versionOutput);
-const nodeVersion = commandVersion(option("--node-bin") ?? "node");
-let lifecycle;
-if (host === "codex") {
-  const hook = await hookConfiguration(option("--hook-config"), host);
-  lifecycle = {
-    kind: "SubagentStop",
-    minimum_version: hook.minimum,
-    available: Boolean(hostVersion && atLeast(hostVersion, hook.minimum)),
-    configured: hook.configured,
-    reason: hook.reason,
-  };
-} else if (host === "claude-code") {
-  const hook = await hookConfiguration(option("--hook-config"), host);
-  lifecycle = {
-    kind: "SubagentStop",
-    minimum_version: hook.minimum,
-    available: Boolean(hostVersion),
-    configured: hook.configured,
-    reason: hook.reason,
-  };
-} else {
-  lifecycle = {
-    kind: null,
-    minimum_version: null,
-    available: false,
-    configured: false,
-    reason: host === "antigravity"
-      ? "no_verified_antigravity_async_lifecycle_adapter"
-      : "no_verified_opencode_async_lifecycle_adapter",
-  };
+const adapter = await loadAdapter();
+if (adapter?.schema_version !== 1 || typeof adapter.id !== "string" || typeof adapter.binary !== "string") {
+  throw new Error("adapter metadata must contain schema_version 1, id, and binary");
 }
-
+const lifecycle = adapter.lifecycle ?? null;
+const hostBinary = option("--host-bin") ?? adapter.binary;
+const hostVersion = commandVersion(hostBinary, versionOutput);
+const nodeBinary = option("--node-bin") ?? "node";
+const nodeVersion = commandVersion(nodeBinary);
+const hook = await hookConfiguration(option("--hook-config"), lifecycle);
+const lifecycleAvailable = Boolean(lifecycle && hostVersion && (!hook.minimum || atLeast(hostVersion, hook.minimum)));
+const hookAvailable = lifecycleAvailable && hook.configured;
 const explicitAvailable = Boolean(hostVersion && nodeVersion);
-const asyncAvailable = host === "codex" && lifecycle.available && lifecycle.configured;
-const hookAvailable = host === "claude-code" && lifecycle.available && lifecycle.configured;
 let selectedMode = "unavailable";
 let reason = "verification_runtime_unavailable";
-if ((requestedMode === "async_hook" || requestedMode === "hook_dispatch") && asyncAvailable) {
-  selectedMode = "async_hook";
-  reason = "validated_async_hook_available";
-} else if (requestedMode === "auto" && asyncAvailable) {
-  selectedMode = "async_hook";
-  reason = "validated_async_hook_available";
-} else if ((requestedMode === "hook_dispatch" || requestedMode === "auto") && hookAvailable) {
-  selectedMode = "hook_dispatch";
-  reason = "validated_hook_dispatch_available";
+if (hookAvailable && (requestedMode === "auto" || requestedMode === "async_hook" || requestedMode === "hook_dispatch")) {
+  selectedMode = lifecycle.requires_async ? "async_hook" : "hook_dispatch";
+  reason = lifecycle.requires_async ? "validated_async_hook_available" : "validated_hook_dispatch_available";
 } else if (explicitAvailable) {
   selectedMode = "explicit_dispatch";
-  reason = ["async_hook", "hook_dispatch"].includes(requestedMode) ? "requested_hook_unavailable_using_explicit_dispatch" : asyncAvailable || hookAvailable ? "explicit_dispatch_requested" : "async_hook_unavailable_using_explicit_dispatch";
+  reason = ["async_hook", "hook_dispatch"].includes(requestedMode)
+    ? "requested_hook_unavailable_using_explicit_dispatch"
+    : "explicit_dispatch_available";
 }
 
 process.stdout.write(`${JSON.stringify({
   schema_version: 1,
   detected_at: new Date().toISOString(),
-  host,
+  host: adapter.id,
   host_runtime: { binary: hostBinary, version: hostVersion, available: Boolean(hostVersion) },
-  verifier_runtime: { binary: option("--node-bin") ?? "node", version: nodeVersion, available: Boolean(nodeVersion) },
-  lifecycle_async: lifecycle,
-  verification: { requested_mode: requestedMode, selected_mode: selectedMode, reason },
+  verifier_runtime: { binary: nodeBinary, version: nodeVersion, available: Boolean(nodeVersion) },
+  lifecycle_async: {
+    kind: lifecycle?.kind ?? null,
+    minimum_version: hook.minimum,
+    available: lifecycleAvailable,
+    configured: hook.configured,
+    reason: hook.reason
+  },
+  verification: { requested_mode: requestedMode, selected_mode: selectedMode, reason }
 }, null, 2)}\n`);

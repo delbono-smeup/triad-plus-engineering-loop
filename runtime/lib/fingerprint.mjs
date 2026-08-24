@@ -20,6 +20,11 @@ async function gitLines(worktree, args) {
   return parseLines(result.stdout);
 }
 
+export async function worktreeBranch(worktree) {
+  const root = await realpath(worktree);
+  return (await gitLines(root, ["branch", "--show-current"]))[0] ?? "DETACHED";
+}
+
 export async function calculateCandidateFingerprint(worktree) {
   const root = await realpath(worktree);
   const head = (await gitLines(root, ["rev-parse", "HEAD"]))[0] ?? "NO_HEAD";

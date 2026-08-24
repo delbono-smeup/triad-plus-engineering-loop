@@ -14,20 +14,18 @@
 - Deferred items or waivers: `<none or owner decision>`
 - Known risks: `<none or list>`
 
-## Gauntlet quality-loop audit
+## Review and verification audit
 
-| Feature | Quality bar / enforcement | Verification runs | Evaluation rounds | Stop | Final candidate fingerprint | Reviewer decision |
-| --- | --- | --- | --- | --- | --- | --- |
-| `<ID>` | `<none or ID / required|aspirational>` | `<count>` | `<count>` | `<not applicable|reason>` | `<SHA-256>` | `<approved|rework|blocked>` |
+| Feature | Verification runs | Final candidate fingerprint | Reviewer decision | Optional Evaluator+ report |
+| --- | --- | --- | --- | --- |
+| `<ID>` | `<count>` | `<SHA-256>` | `<approved|rework|blocked>` | `<none or report reference>` |
 
-- Largest gaps addressed: `<ordered IDs or not applicable>`
-- Residual quality gaps: `<none or exact bounded gap and evidence>`
-- Evidence/review chain: `<verification/evaluation/review references>`
+- Evidence/review chain: `<verification/review/evaluator references>`
 
 ## Local-worktree integration
 
 | Card | Consumer worktree | Provider worktree | Branch/commit map | Setup command | Data/event/callback gate |
-| --- | --- | --- | --- | --- | --- |
+| --- | --- | --- | --- | --- |
 | `<not applicable or ID>` | `<path>` | `<path>` | `<repo: branch @ SHA>` | `<command/result>` | `<command/result>` |
 
 Package publication/release: `not performed by this loop`
@@ -38,7 +36,7 @@ Package publication/release: `not performed by this loop`
 - Normal roles restored: `<yes/no; evidence>`
 
 | Exception ID | Trigger | Scope | Independent review | Return to normal delegation |
-| --- | --- | --- | --- | --- |
+| --- | --- | --- | --- |
 | `<none or ID>` | `<reason>` | `<bounded task>` | `<report/waiver>` | `<when/how>` |
 
 ## Owner-controlled demo
@@ -59,5 +57,4 @@ State: `not_applicable | ready_to_start | active | closed | start_failed`
 | --- | --- | --- | --- | --- |
 | `<ID>` | `<URL or none>` | `<steps>` | `<observable result>` | `to be tested` |
 
-Feedback does not reopen this handoff. Follow-up: `none | feature card <ID> |
-successor project <ID> | owner decision required`.
+Feedback does not reopen this handoff. Follow-up: `none | feature card <ID> | successor project <ID> | owner decision required`.

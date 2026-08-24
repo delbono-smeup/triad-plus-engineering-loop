@@ -8,7 +8,6 @@ policy:
   orchestrator_is_final_operational_arbiter: true
   require_external_verification_when_configured: true
   reject_stale_evidence: true
-  require_fresh_evaluator_for_gauntlet: true
   escalation_on:
     - unclear_acceptance_criterion
     - scope_change
@@ -26,8 +25,4 @@ items:
     required_gates: []
     acceptance_metric_ids: []
     attempts: 0
-    optimization:
-      mode: none
-      quality_bar: null
-      enforcement: null
     owner: null

@@ -63,6 +63,7 @@ if [[ "$project_install" == true ]]; then
   done
   cp -R "$repository_root/runtime" "$project_root/.triad-runtime"
   cp -R "$repository_root/schemas" "$project_root/.triad-runtime/schemas"
+  cp "$adapter_root/runtime.json" "$project_root/.triad-runtime/adapter.json"
   printf 'Triad skills installed in %s/.agents/skills\n' "$project_root"
   printf 'Control-plane runtime installed in %s/.triad-runtime\n' "$project_root"
   printf 'Then run the global install once to expose /prompts:triad in Codex.\n'

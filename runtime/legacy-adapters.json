@@ -1,0 +1,17 @@
+{
+  "codex": {
+    "schema_version": 1,
+    "id": "codex",
+    "binary": "codex",
+    "lifecycle": { "kind": "SubagentStop", "agent_type": "triad_developer", "requires_async": true, "minimum_version": "0.148.0" }
+  },
+  "opencode": { "schema_version": 1, "id": "opencode", "binary": "opencode", "lifecycle": null },
+  "claude-code": {
+    "schema_version": 1,
+    "id": "claude-code",
+    "binary": "claude",
+    "lifecycle": { "kind": "SubagentStop", "agent_type": "triad-developer", "requires_async": false }
+  },
+  "antigravity": { "schema_version": 1, "id": "antigravity", "binary": "agy", "lifecycle": null },
+  "hermes": { "schema_version": 1, "id": "hermes", "binary": "hermes", "lifecycle": null }
+}

@@ -52,7 +52,7 @@ export async function executeGates(gates, worktree, logDirectory) {
     const required = gate.required !== false;
     const executor = gate.executor ?? "control-plane";
     if (executor !== "control-plane") {
-      results.push({ id: gate.id, required, executor, status: "not_executed", reason: `executor_${executor}_requires_external_evidence` });
+      results.push({ id: gate.id ?? "unknown", required, executor, status: "unsupported_executor", reason: `executor_${executor}_is_not_supported_in_v1` });
       continue;
     }
     if (!gate.id || !gate.command || /^REPLACE_ME/.test(gate.command)) {

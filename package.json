@@ -13,7 +13,10 @@
     "runtime/",
     "schemas/",
     "skills/",
-    "README.md"
+    "docs/",
+    "assets/",
+    "README.md",
+    "LICENSE"
   ],
   "engines": {
     "node": ">=20"

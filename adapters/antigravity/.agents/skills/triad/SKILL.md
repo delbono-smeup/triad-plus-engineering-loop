@@ -18,12 +18,13 @@ silently substituted.
 
 For a new project, load `triad-loop-bootstrap`; for an initialized project,
 load `triad-loop-orchestrator`. At bootstrap and resume, run
-`.triad-runtime/triad-runtime-capabilities.mjs --host antigravity` and follow
+`.triad-runtime/triad-runtime-capabilities.mjs --adapter .triad-runtime/adapter.json` and follow
 its selected verification route. Use explicit verifier dispatch unless a future
 Antigravity lifecycle adapter is actually detected and validated.
 
-Delegate normal implementation to `triad-developer`, fresh Gauntlet evaluation
-to `triad-evaluator`, and independent review to `triad-reviewer`. Continue
+Delegate normal implementation to `triad-developer` and independent review to
+`triad-reviewer`. Invoke `triad-evaluator` only after Triad approval when the
+owner requests Evaluator+; its independent report never reopens Triad. Continue
 through declared cards and normal pushes after all gates pass. Escalate only the
 decision types defined by the Triad+ skills. Do not start or stop a demo without
 an owner instruction.

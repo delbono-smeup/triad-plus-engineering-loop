@@ -1,0 +1,4 @@
+interface:
+  display_name: "Triad Workflow"
+  short_description: "Run or evaluate a Triad project."
+  default_prompt: "Start Triad for this project."

@@ -1,486 +1,306 @@
 #!/usr/bin/env node
 
 import { access, cp, mkdir, readFile, stat, writeFile } from 'node:fs/promises';
+import { spawnSync } from 'node:child_process';
 import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import process from 'node:process';
 import { createInterface } from 'node:readline/promises';
+import { getAdapter, listAdapters, roleDefinitions, sharedSkillNames } from '../adapters/registry.mjs';
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const skillNames = [
-  'triad-loop-bootstrap',
-  'triad-loop-orchestrator',
-  'triad-loop-developer',
-  'triad-loop-evaluator',
-  'triad-loop-reviewer'
-];
-
-const hostLabels = {
-  codex: 'Codex',
-  opencode: 'OpenCode',
-  'claude-code': 'Claude Code',
-  antigravity: 'Antigravity'
-};
-
-const roleDefinitions = [
-  { id: 'orchestrator', label: 'Orchestrator', defaultEffort: 'medium' },
-  { id: 'developer', label: 'Developer', defaultEffort: 'max' },
-  { id: 'evaluator', label: 'Evaluator', defaultEffort: 'medium' },
-  { id: 'reviewer', label: 'Reviewer', defaultEffort: 'medium' }
-];
 
 function usage(exitCode = 0) {
   const stream = exitCode === 0 ? process.stdout : process.stderr;
-  stream.write(`Triad+ Engineering Loop installer
+  stream.write(`Triad+ installer
 
 Usage:
   npx triad-plus
-  npx triad-plus init --host <codex|opencode|claude-code|antigravity> --control <path> [--global]
-  npx triad-plus doctor --host <codex|opencode|claude-code|antigravity> --control <path>
+  npx triad-plus init --host <adapter-id> --control <path> [--global] [--team-config <path>] [--allow-product-repo]
+  npx triad-plus doctor --host <adapter-id> --control <path> [--hook-config <path>]
 
-Commands:
-  (no command)  Open the interactive installation wizard.
-  init    Install the selected host adapter, skills, and verification runtime.
-          --global also installs the host's user-level command and role assets.
-  doctor  Report whether the project installation is complete; it never writes.
+Adapters: ${listAdapters().map((adapter) => adapter.id).join(', ')}
 
 The control path is a project-control workspace, not a product repository.
-The installer creates it when absent and refuses every overwrite.
+Installation refuses every asset overwrite. Doctor is read-only.
 `);
   process.exit(exitCode);
 }
 
 function parseArgs(args) {
   const [command, ...rest] = args;
-  const options = { command, global: false };
-
+  const options = { command, global: false, allowProductRepo: false };
   for (let index = 0; index < rest.length; index += 1) {
     const argument = rest[index];
-    if (argument === '--global') {
-      options.global = true;
-    } else if (argument === '--host' || argument === '--control' || argument === '--team-config') {
+    if (argument === '--global') options.global = true;
+    else if (argument === '--allow-product-repo') options.allowProductRepo = true;
+    else if (['--host', '--control', '--team-config', '--hook-config'].includes(argument)) {
       const value = rest[index + 1];
-      if (!value || value.startsWith('--')) {
-        throw new Error(`${argument} requires a value.`);
-      }
+      if (!value || value.startsWith('--')) throw new Error(`${argument} requires a value.`);
       options[argument.slice(2).replace(/-([a-z])/g, (_, letter) => letter.toUpperCase())] = value;
       index += 1;
-    } else if (argument === '--help' || argument === '-h') {
-      usage(0);
-    } else {
-      throw new Error(`Unknown argument: ${argument}`);
-    }
+    } else if (argument === '--help' || argument === '-h') usage(0);
+    else throw new Error(`Unknown argument: ${argument}`);
   }
-
   return options;
 }
 
-async function loadTeamConfig(options) {
-  if (options.team) return options.team;
-  if (!options.teamConfig) return null;
-  let team;
-  try {
-    team = JSON.parse(await readFile(resolve(options.teamConfig), 'utf8'));
-  } catch (error) {
-    throw new Error(`Cannot read --team-config: ${error.message}`);
-  }
-  if (team?.schema_version !== 1 || !team.interaction || !team.roles) {
-    throw new Error('--team-config must contain a Triad+ team.json with schema_version 1.');
-  }
-  for (const role of roleDefinitions) {
-    const configuration = team.roles[role.id];
-    if (!configuration || typeof configuration.displayName !== 'string' ||
-      ![null, undefined].includes(configuration.model) && typeof configuration.model !== 'string') {
-      throw new Error(`--team-config has an invalid ${role.id} role definition.`);
+async function exists(target) {
+  try { await access(target); return true; } catch { return false; }
+}
+
+async function requireDirectory(target) {
+  if (!(await exists(target))) return mkdir(target, { recursive: true });
+  if (!(await stat(target)).isDirectory()) throw new Error(`Control path is not a directory: ${target}`);
+}
+
+function codexHome() {
+  return process.env.CODEX_HOME || join(homedir(), '.codex');
+}
+
+function context(controlRoot) {
+  return { controlRoot, codexHome: codexHome() };
+}
+
+function resolveDestination(destination, root, installContext) {
+  const value = typeof destination === 'function' ? destination(installContext) : join(root, destination);
+  return resolve(value);
+}
+
+function sourcePath(source) {
+  return join(packageRoot, source);
+}
+
+function planForAssets(assets, root, installContext) {
+  const paths = [];
+  for (const asset of assets) {
+    const destination = resolveDestination(asset.destination, root, installContext);
+    if (asset.source === 'shared-skills') {
+      paths.push(...sharedSkillNames.map((name) => join(destination, name)));
+    } else {
+      paths.push(destination);
     }
   }
-  return team;
-}
-
-async function exists(path) {
-  try {
-    await access(path);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-async function requireDirectory(path) {
-  if (!(await exists(path))) {
-    await mkdir(path, { recursive: true });
-    return;
-  }
-  if (!(await stat(path)).isDirectory()) {
-    throw new Error(`Control path is not a directory: ${path}`);
-  }
-}
-
-function projectPaths(host, controlRoot) {
-  const runtime = [join(controlRoot, '.triad-runtime')];
-  if (host === 'antigravity') {
-    const hostRoot = join(controlRoot, '.agents');
-    return [
-      ...roleDefinitions.map((role) => join(hostRoot, 'agents', `triad-${role.id}`, 'agent.md')),
-      ...skillNames.map((name) => join(hostRoot, 'skills', name)),
-      join(hostRoot, 'skills', 'triad'),
-      ...runtime
-    ];
-  }
-  const skills = skillNames.map((name) => {
-    const base = host === 'codex' ? join(controlRoot, '.agents', 'skills') : join(controlRoot, `.${host === 'claude-code' ? 'claude' : 'opencode'}`, 'skills');
-    return join(base, name);
-  });
-
-  if (host === 'codex') return [...skills, ...runtime];
-
-  const hostRoot = join(controlRoot, host === 'claude-code' ? '.claude' : '.opencode');
-  const agents = host === 'claude-code'
-    ? ['triad-developer.md', 'triad-evaluator.md', 'triad-reviewer.md']
-    : ['triad-orchestrator.md', 'triad-developer.md', 'triad-evaluator.md', 'triad-reviewer.md'];
-  const paths = [
-    ...agents.map((name) => join(hostRoot, 'agents', name)),
-    join(hostRoot, 'commands', 'triad.md'),
-    ...skills,
-    ...runtime
-  ];
-  if (host === 'claude-code') paths.push(join(hostRoot, 'triad-hooks.json'));
   return paths;
 }
 
-function globalPaths(host) {
-  if (host === 'codex') {
-    const codexHome = process.env.CODEX_HOME || join(homedir(), '.codex');
-    return [
-      join(codexHome, 'prompts', 'triad.md'),
-      ...skillNames.map((name) => join(codexHome, 'skills', name))
-    ];
+async function copyAsset(asset, root, installContext) {
+  const destination = resolveDestination(asset.destination, root, installContext);
+  if (asset.source === 'shared-skills') {
+    await mkdir(destination, { recursive: true });
+    for (const name of sharedSkillNames) await cp(join(packageRoot, 'skills', name), join(destination, name), { recursive: true });
+    return;
   }
-
-  if (host === 'antigravity') {
-    const hostRoot = join(homedir(), '.gemini', 'config');
-    return [
-      ...roleDefinitions.map((role) => join(hostRoot, 'agents', `triad-${role.id}`, 'agent.md')),
-      ...skillNames.map((name) => join(hostRoot, 'skills', name)),
-      join(hostRoot, 'skills', 'triad')
-    ];
-  }
-
-  const hostRoot = host === 'claude-code'
-    ? join(homedir(), '.claude')
-    : join(homedir(), '.config', 'opencode');
-  const agents = host === 'claude-code'
-    ? ['triad-developer.md', 'triad-evaluator.md', 'triad-reviewer.md']
-    : ['triad-orchestrator.md', 'triad-developer.md', 'triad-evaluator.md', 'triad-reviewer.md'];
-  return [
-    ...agents.map((name) => join(hostRoot, 'agents', name)),
-    join(hostRoot, 'commands', 'triad.md'),
-    ...skillNames.map((name) => join(hostRoot, 'skills', name))
-  ];
+  await mkdir(dirname(destination), { recursive: true });
+  await cp(sourcePath(asset.source), destination, { recursive: !asset.file });
 }
 
-async function collisions(paths) {
-  const result = [];
-  for (const path of paths) {
-    if (await exists(path)) result.push(path);
-  }
-  return result;
-}
-
-async function copySkills(destination) {
-  await mkdir(destination, { recursive: true });
-  for (const name of skillNames) {
-    await cp(join(packageRoot, 'skills', name), join(destination, name), { recursive: true });
-  }
-}
-
-async function copyAntigravityWorkflow(destination) {
-  await mkdir(destination, { recursive: true });
-  await cp(
-    join(packageRoot, 'adapters', 'antigravity', '.agents', 'skills', 'triad'),
-    join(destination, 'triad'),
-    { recursive: true }
-  );
-}
-
-async function copyRuntime(controlRoot) {
-  const runtimeRoot = join(controlRoot, '.triad-runtime');
-  await cp(join(packageRoot, 'runtime'), runtimeRoot, { recursive: true });
-  await cp(join(packageRoot, 'schemas'), join(runtimeRoot, 'schemas'), { recursive: true });
+async function installAssets(assets, root, installContext) {
+  for (const asset of assets) await copyAsset(asset, root, installContext);
 }
 
 function teamConfigPath(controlRoot) {
   return join(controlRoot, '.triad-plus', 'team.json');
 }
 
-async function writeTeamConfig(controlRoot, team) {
-  const destination = teamConfigPath(controlRoot);
-  await mkdir(dirname(destination), { recursive: true });
-  await writeFile(destination, `${JSON.stringify(team, null, 2)}\n`, 'utf8');
-}
-
-function yamlString(value) {
-  return JSON.stringify(value);
-}
-
-async function applyMarkdownModel(path, model) {
-  if (!model) return;
-  const source = await readFile(path, 'utf8');
-  if (!source.startsWith('---\n')) throw new Error(`Agent definition has no YAML frontmatter: ${path}`);
-  const closing = source.indexOf('\n---\n', 4);
-  if (closing === -1) throw new Error(`Agent definition has invalid YAML frontmatter: ${path}`);
-  const frontmatter = source.slice(4, closing);
-  const body = source.slice(closing);
-  const withoutModel = frontmatter.replace(/^model:\s*.*\n?/m, '');
-  await writeFile(path, `---\n${withoutModel}model: ${yamlString(model)}${body}`, 'utf8');
-}
-
-async function applyHostModelConfiguration(host, controlRoot, team) {
-  if (host === 'codex' || host === 'antigravity') return;
-  const hostRoot = join(controlRoot, host === 'claude-code' ? '.claude' : '.opencode');
-  const installedRoles = host === 'claude-code'
-    ? ['developer', 'evaluator', 'reviewer']
-    : roleDefinitions.map((role) => role.id);
-  for (const role of installedRoles) {
-    await applyMarkdownModel(join(hostRoot, 'agents', `triad-${role}.md`), team.roles[role].model);
-  }
-}
-
-function tomlString(value) {
-  return JSON.stringify(value);
-}
-
-async function writeCodexProfiles(team) {
-  const codexHome = process.env.CODEX_HOME || join(homedir(), '.codex');
-  const agentsRoot = join(codexHome, 'agents');
-  await mkdir(agentsRoot, { recursive: true });
+async function loadTeamConfig(options) {
+  if (options.team) return options.team;
+  if (!options.teamConfig) return null;
+  let team;
+  try { team = JSON.parse(await readFile(resolve(options.teamConfig), 'utf8')); }
+  catch (error) { throw new Error(`Cannot read --team-config: ${error.message}`); }
+  if (team?.schema_version !== 1 || !team.interaction || !team.roles) throw new Error('--team-config must contain schema_version 1, interaction, and roles.');
   for (const role of roleDefinitions) {
+    const value = team.roles[role.id];
+    if (!value || typeof value.displayName !== 'string' || ![null, undefined].includes(value.model) && typeof value.model !== 'string') {
+      throw new Error(`--team-config has an invalid ${role.id} role definition.`);
+    }
+  }
+  return team;
+}
+
+async function writeTeamConfig(controlRoot, team) {
+  const target = teamConfigPath(controlRoot);
+  await mkdir(dirname(target), { recursive: true });
+  await writeFile(target, `${JSON.stringify(team, null, 2)}\n`, 'utf8');
+}
+
+async function applyMarkdownModel(target, model) {
+  if (!model) return;
+  const source = await readFile(target, 'utf8');
+  if (!source.startsWith('---\n')) throw new Error(`Agent definition has no YAML frontmatter: ${target}`);
+  const closing = source.indexOf('\n---\n', 4);
+  if (closing === -1) throw new Error(`Agent definition has invalid YAML frontmatter: ${target}`);
+  const frontmatter = source.slice(4, closing).replace(/^model:\s*.*\n?/m, '');
+  await writeFile(target, `---\n${frontmatter}model: ${JSON.stringify(model)}${source.slice(closing)}`, 'utf8');
+}
+
+async function writeRoleProfiles(paths, team) {
+  await mkdir(dirname(paths[0]), { recursive: true });
+  for (const [index, role] of roleDefinitions.entries()) {
     const configuration = team.roles[role.id];
     const instructions = [
       `Act as ${configuration.displayName}, the ${role.label} role in Triad+.`,
       `Persona: ${configuration.persona || 'professional and role-focused'}.`,
       'Read .triad-plus/team.json in the active project-control workspace before working.',
-      'Use the configured interaction language and owner address. Keep the technical role',
-      'boundaries defined by Triad+; display names never change authority or permissions.'
+      'Technical role IDs define authority; display names never change it.'
     ].join('\n');
     const profile = [
-      `name = ${tomlString(`triad_${role.id}`)}`,
-      `description = ${tomlString(`Triad+ ${role.label}: ${configuration.displayName}.`)}`,
-      ...(configuration.model ? [`model = ${tomlString(configuration.model)}`] : []),
-      ...(configuration.reasoning_effort ? [`model_reasoning_effort = ${tomlString(configuration.reasoning_effort)}`] : []),
-      `developer_instructions = ${tomlString(instructions)}`,
+      `name = ${JSON.stringify(`triad_${role.id}`)}`,
+      `description = ${JSON.stringify(`Triad+ ${role.label}: ${configuration.displayName}.`)}`,
+      ...(configuration.model ? [`model = ${JSON.stringify(configuration.model)}`] : []),
+      ...(configuration.reasoning_effort ? [`model_reasoning_effort = ${JSON.stringify(configuration.reasoning_effort)}`] : []),
+      `developer_instructions = ${JSON.stringify(instructions)}`,
       ''
     ].join('\n');
-    await writeFile(join(agentsRoot, `triad_${role.id}.toml`), profile, 'utf8');
+    await writeFile(paths[index], profile, 'utf8');
   }
 }
 
-async function installProject(host, controlRoot, team) {
-  if (host === 'codex') {
-    await copySkills(join(controlRoot, '.agents', 'skills'));
-  } else if (host === 'antigravity') {
-    const hostRoot = join(controlRoot, '.agents');
-    const sourceRoot = join(packageRoot, 'adapters', 'antigravity', '.agents');
-    await mkdir(hostRoot, { recursive: true });
-    await cp(join(sourceRoot, 'agents'), join(hostRoot, 'agents'), { recursive: true });
-    await copySkills(join(hostRoot, 'skills'));
-    await copyAntigravityWorkflow(join(hostRoot, 'skills'));
-  } else {
-    const hostRoot = join(controlRoot, host === 'claude-code' ? '.claude' : '.opencode');
-    const sourceRoot = join(packageRoot, 'adapters', host, host === 'claude-code' ? '.claude' : '.opencode');
-    await cp(join(sourceRoot, 'agents'), join(hostRoot, 'agents'), { recursive: true });
-    await mkdir(join(hostRoot, 'commands'), { recursive: true });
-    await cp(join(sourceRoot, 'commands', 'triad.md'), join(hostRoot, 'commands', 'triad.md'));
-    await copySkills(join(hostRoot, 'skills'));
-    if (host === 'claude-code') {
-      await cp(join(packageRoot, 'integrations', 'claude-code', 'hooks.json'), join(hostRoot, 'triad-hooks.json'));
-    }
-  }
-  await copyRuntime(controlRoot);
-  if (team) await applyHostModelConfiguration(host, controlRoot, team);
-}
-
-async function installGlobal(host, team) {
-  if (host === 'codex') {
-    const codexHome = process.env.CODEX_HOME || join(homedir(), '.codex');
-    await mkdir(join(codexHome, 'prompts'), { recursive: true });
-    await cp(join(packageRoot, 'adapters', 'codex', 'prompts', 'triad.md'), join(codexHome, 'prompts', 'triad.md'));
-    await copySkills(join(codexHome, 'skills'));
-    if (team) await writeCodexProfiles(team);
+async function applyTeamBinding(adapter, controlRoot, team, installContext) {
+  if (!team || adapter.modelBinding === 'team-record') return;
+  if (adapter.modelBinding === 'project-frontmatter') {
+    const paths = adapter.roleModelPaths(controlRoot, installContext);
+    const roles = (adapter.modelRoles ?? roleDefinitions.map((role) => role.id))
+      .map((roleId) => roleDefinitions.find((role) => role.id === roleId));
+    for (const [index, role] of roles.entries()) await applyMarkdownModel(paths[index], team.roles[role.id].model);
     return;
   }
-
-  if (host === 'antigravity') {
-    const hostRoot = join(homedir(), '.gemini', 'config');
-    const sourceRoot = join(packageRoot, 'adapters', 'antigravity', '.agents');
-    await mkdir(hostRoot, { recursive: true });
-    await cp(join(sourceRoot, 'agents'), join(hostRoot, 'agents'), { recursive: true });
-    await copySkills(join(hostRoot, 'skills'));
-    await copyAntigravityWorkflow(join(hostRoot, 'skills'));
+  if (adapter.modelBinding === 'global-profiles') {
+    await writeRoleProfiles(adapter.roleModelPaths(installContext), team);
     return;
   }
-
-  const hostRoot = host === 'claude-code'
-    ? join(homedir(), '.claude')
-    : join(homedir(), '.config', 'opencode');
-  const sourceRoot = join(packageRoot, 'adapters', host, host === 'claude-code' ? '.claude' : '.opencode');
-  await cp(join(sourceRoot, 'agents'), join(hostRoot, 'agents'), { recursive: true });
-  await mkdir(join(hostRoot, 'commands'), { recursive: true });
-  await cp(join(sourceRoot, 'commands', 'triad.md'), join(hostRoot, 'commands', 'triad.md'));
-  await copySkills(join(hostRoot, 'skills'));
+  throw new Error(`Unknown model binding: ${adapter.modelBinding}`);
 }
 
-function nextStep(host) {
-  return host === 'codex' ? '/prompts:triad' : '/triad';
+function productRepositoryAt(controlRoot) {
+  const git = spawnSync('git', ['-C', controlRoot, 'rev-parse', '--show-toplevel'], { encoding: 'utf8' });
+  if (git.status !== 0 || resolve(git.stdout.trim()) !== controlRoot) return false;
+  return ['package.json', 'pyproject.toml', 'Cargo.toml', 'pom.xml', 'go.mod', 'Gemfile']
+    .some((marker) => spawnSync('test', ['-e', join(controlRoot, marker)]).status === 0);
 }
 
-async function collectTeamConfiguration(prompt, host) {
+async function collisions(paths) {
+  const result = [];
+  for (const target of paths) if (await exists(target)) result.push(target);
+  return result;
+}
+
+function commandVersion(binary) {
+  const result = spawnSync(binary, ['--version'], { encoding: 'utf8' });
+  return result.status === 0 ? String(result.stdout).trim().split('\n')[0] : null;
+}
+
+async function collectTeamConfiguration(prompt, adapter) {
   const language = (await prompt.question('Conversation language [English]: ')).trim() || 'English';
   const ownerName = (await prompt.question('How should Triad+ address the project owner [Owner]: ')).trim() || 'Owner';
   const communicationStyle = (await prompt.question('Preferred communication style [professional and concise]: ')).trim() || 'professional and concise';
+  const evaluatorEnabled = ['y', 'yes'].includes((await prompt.question('Configure optional post-run Evaluator+? [y/N]: ')).trim().toLowerCase());
   const roles = {};
-
-  process.stdout.write('\nName each role and optionally select its host-native model. Leave a model blank only to use the host default.\n');
   for (const role of roleDefinitions) {
+    const enabled = role.core || evaluatorEnabled;
     const displayName = (await prompt.question(`${role.label} display name [${role.label}]: `)).trim() || role.label;
     const persona = (await prompt.question(`${role.label} persona [professional and role-focused]: `)).trim() || 'professional and role-focused';
     const model = (await prompt.question(`${role.label} model ID [host default]: `)).trim();
-    let reasoningEffort = null;
-    if (model && host === 'codex') {
-      reasoningEffort = (await prompt.question(`${role.label} reasoning effort [${role.defaultEffort}]: `)).trim() || role.defaultEffort;
-    }
-    roles[role.id] = {
-      displayName,
-      persona,
-      model: model || null,
-      reasoning_effort: reasoningEffort
-    };
+    const reasoningEffort = model && adapter.modelBinding === 'global-profiles'
+      ? (await prompt.question(`${role.label} reasoning effort [${role.defaultEffort}]: `)).trim() || role.defaultEffort
+      : null;
+    roles[role.id] = { displayName, persona, model: model || null, reasoning_effort: reasoningEffort, enabled };
   }
-
-  return {
-    schema_version: 1,
-    interaction: {
-      language,
-      owner_name: ownerName,
-      communication_style: communicationStyle
-    },
-    roles
-  };
-}
-
-async function interactiveInit() {
-  if (!process.stdin.isTTY || !process.stdout.isTTY) {
-    throw new Error('The interactive wizard needs a terminal. Use `init --host <host> --control <path>` in a non-interactive shell.');
-  }
-
-  const prompt = createInterface({ input: process.stdin, output: process.stdout });
-  try {
-    process.stdout.write('\nTriad+ Engineering Loop setup\n');
-    process.stdout.write('This installs only into a project-control workspace, never into product repositories.\n\n');
-    process.stdout.write('1) Codex\n2) OpenCode\n3) Claude Code\n4) Antigravity\n');
-
-    let host;
-    while (!host) {
-      const answer = (await prompt.question('Choose the host [1-4]: ')).trim().toLowerCase();
-      host = { '1': 'codex', codex: 'codex', '2': 'opencode', opencode: 'opencode', '3': 'claude-code', claude: 'claude-code', 'claude-code': 'claude-code', '4': 'antigravity', antigravity: 'antigravity' }[answer];
-      if (!host) process.stdout.write('Choose 1, 2, 3, or 4.\n');
-    }
-
-    const defaultControl = join(process.cwd(), 'triad-control');
-    const controlAnswer = (await prompt.question(`Project-control workspace [${defaultControl}]: `)).trim();
-    const control = controlAnswer || defaultControl;
-    const globalDefault = host === 'codex' ? 'Y/n' : 'y/N';
-    const globalAnswer = (await prompt.question(`Also install user-level ${nextStep(host)} assets? [${globalDefault}]: `)).trim().toLowerCase();
-    const global = globalAnswer === '' ? host === 'codex' : ['y', 'yes'].includes(globalAnswer);
-    const team = await collectTeamConfiguration(prompt, host);
-
-    process.stdout.write(`\nInstallation summary\n  Host: ${hostLabels[host]}\n  Control workspace: ${resolve(control)}\n  User-level assets: ${global ? 'yes' : 'no'}\n  Language: ${team.interaction.language}\n  Owner: ${team.interaction.owner_name}\n`);
-    for (const role of roleDefinitions) {
-      const config = team.roles[role.id];
-      process.stdout.write(`  ${role.label}: ${config.displayName}; ${config.model || 'host default'}${config.reasoning_effort ? ` (${config.reasoning_effort})` : ''}\n`);
-    }
-    const confirm = (await prompt.question('Type install to continue: ')).trim().toLowerCase();
-    if (confirm !== 'install') {
-      process.stdout.write('Cancelled. No files were changed.\n');
-      return;
-    }
-
-    await init({ host, control, global, team });
-    await doctor({ host, control });
-  } finally {
-    prompt.close();
-  }
+  return { schema_version: 1, interaction: { language, owner_name: ownerName, communication_style: communicationStyle }, roles };
 }
 
 async function init(options) {
-  if (!hostLabels[options.host]) throw new Error('Choose --host codex, opencode, claude-code, or antigravity.');
+  const adapter = getAdapter(options.host);
+  if (!adapter) throw new Error(`Choose --host ${listAdapters().map((item) => item.id).join(', ')}.`);
   if (!options.control) throw new Error('Provide --control <project-control-path>.');
-
   const team = await loadTeamConfig(options);
   const controlRoot = resolve(options.control);
   await requireDirectory(controlRoot);
-  const teamPaths = team ? [teamConfigPath(controlRoot)] : [];
-  const codexProfilePaths = team && options.global && options.host === 'codex'
-    ? roleDefinitions.map((role) => join(process.env.CODEX_HOME || join(homedir(), '.codex'), 'agents', `triad_${role.id}.toml`))
-    : [];
+  if (!options.allowProductRepo && productRepositoryAt(controlRoot)) {
+    throw new Error('Control path appears to be a product repository. Use a separate project-control workspace, or pass --allow-product-repo after reviewing the risk.');
+  }
+  const installContext = context(controlRoot);
   const planned = [
-    ...projectPaths(options.host, controlRoot),
-    ...teamPaths,
-    ...(options.global ? globalPaths(options.host) : []),
-    ...codexProfilePaths
+    ...adapter.projectPaths(controlRoot, installContext),
+    ...(team ? [teamConfigPath(controlRoot)] : []),
+    ...(options.global ? adapter.globalPaths(installContext) : []),
+    ...(team && options.global && adapter.modelBinding === 'global-profiles' ? adapter.roleModelPaths(installContext) : [])
   ];
   const existing = await collisions(planned);
-  if (existing.length > 0) {
-    throw new Error(`Installation aborted; existing paths would be overwritten:\n${existing.map((path) => `  ${path}`).join('\n')}`);
-  }
-
-  await installProject(options.host, controlRoot, team);
+  if (existing.length > 0) throw new Error(`Installation aborted; existing paths would be overwritten:\n${existing.map((target) => `  ${target}`).join('\n')}`);
+  await installAssets(adapter.projectAssets, controlRoot, installContext);
   if (team) await writeTeamConfig(controlRoot, team);
-  if (options.global) await installGlobal(options.host, team);
-
-  process.stdout.write(`Triad+ installed for ${hostLabels[options.host]} in ${controlRoot}\n`);
-  if (!options.global && options.host === 'codex') {
-    process.stdout.write('Run again with --global once to install the Codex /prompts:triad entry point.\n');
+  if (team) await applyTeamBinding(adapter, controlRoot, team, installContext);
+  if (options.global) await installAssets(adapter.globalAssets, controlRoot, installContext);
+  process.stdout.write(`Triad+ installed for ${adapter.label} in ${controlRoot}\n`);
+  if (adapter.globalEntry) {
+    process.stdout.write(`Install user-level assets with --global to expose ${adapter.entry}.\n`);
   }
-  if (!options.global && options.host !== 'codex') {
-    process.stdout.write('The project-local /triad command is ready. Use --global only if you also want the assets in your user profile.\n');
-  }
-  if (team && options.host !== 'opencode') {
-    process.stdout.write('The Orchestrator model remains the main host session model; Triad+ records its required model and asks for the configured profile at start.\n');
-  }
-  process.stdout.write(`Open the control workspace, select the recorded Orchestrator model if your host requires it, then run ${nextStep(options.host)} <PRD path>.\n`);
+  process.stdout.write(`Open the control workspace and use ${adapter.entry} <PRD path>. Evaluator+ is optional and post-run only.\n`);
 }
 
 async function doctor(options) {
-  if (!hostLabels[options.host]) throw new Error('Choose --host codex, opencode, claude-code, or antigravity.');
   if (!options.control) throw new Error('Provide --control <project-control-path>.');
   const controlRoot = resolve(options.control);
-  const absent = [];
-  for (const path of projectPaths(options.host, controlRoot)) {
-    if (!(await exists(path))) absent.push(path);
+  const requested = options.host ? [getAdapter(options.host)] : listAdapters();
+  if (requested.some((adapter) => !adapter)) throw new Error(`Choose --host ${listAdapters().map((item) => item.id).join(', ')}.`);
+  let team = null;
+  if (await exists(teamConfigPath(controlRoot))) {
+    try { team = JSON.parse(await readFile(teamConfigPath(controlRoot), 'utf8')); }
+    catch { team = 'invalid'; }
   }
-  if (absent.length > 0) {
-    process.stdout.write(`Triad+ project installation is incomplete:\n${absent.map((path) => `  ${path}`).join('\n')}\n`);
-    process.exitCode = 1;
-    return;
+  for (const adapter of requested) {
+    const installContext = context(controlRoot);
+    const absent = [];
+    for (const target of adapter.projectPaths(controlRoot, installContext)) if (!(await exists(target))) absent.push(target);
+    const binary = commandVersion(adapter.binary);
+    const node = commandVersion('node');
+    const manifestPath = join(controlRoot, '.triad-runtime', 'adapter.json');
+    let manifest = false;
+    try { manifest = (JSON.parse(await readFile(manifestPath, 'utf8'))?.id === adapter.id); } catch {}
+    process.stdout.write(`${adapter.label.padEnd(14)} ${absent.length ? 'not installed' : 'OK'}\n`);
+    process.stdout.write(`  Host runtime ${binary ? `OK (${binary})` : 'not installed or version unavailable'}\n`);
+    process.stdout.write(`  Verifier     ${node && await exists(join(controlRoot, '.triad-runtime', 'triad-verify.mjs')) ? 'OK' : 'incomplete'}\n`);
+    process.stdout.write(`  Adapter      ${manifest ? 'OK' : 'missing or different adapter'}\n`);
+    process.stdout.write(`  Team config  ${team === 'invalid' ? 'invalid' : team ? 'OK' : 'not configured'}\n`);
+    process.stdout.write(`  Evaluator+   ${team?.roles?.evaluator?.enabled === true ? 'configured' : 'not configured'}\n`);
+    if (options.hookConfig && adapter.lifecycle) {
+      process.stdout.write(`  Hook config  declared; run runtime capability detection for detailed status\n`);
+    }
   }
-  process.stdout.write(`Triad+ project installation is complete for ${hostLabels[options.host]}.\n`);
+}
+
+async function interactiveInit() {
+  if (!process.stdin.isTTY || !process.stdout.isTTY) throw new Error('The interactive wizard needs a terminal. Use init in a non-interactive shell.');
+  const prompt = createInterface({ input: process.stdin, output: process.stdout });
+  try {
+    process.stdout.write('\nTriad+ setup\n');
+    listAdapters().forEach((adapter, index) => process.stdout.write(`${index + 1}) ${adapter.label}\n`));
+    let adapter;
+    while (!adapter) {
+      const answer = (await prompt.question(`Choose the host [1-${listAdapters().length}]: `)).trim().toLowerCase();
+      adapter = listAdapters()[Number(answer) - 1] ?? getAdapter(answer);
+      if (!adapter) process.stdout.write('Choose a listed host.\n');
+    }
+    const control = (await prompt.question(`Project-control workspace [${join(process.cwd(), 'triad-control')}]: `)).trim() || join(process.cwd(), 'triad-control');
+    const global = ['y', 'yes'].includes((await prompt.question(`Also install user-level ${adapter.entry} assets? [y/N]: `)).trim().toLowerCase());
+    const team = await collectTeamConfiguration(prompt, adapter);
+    const confirm = (await prompt.question('Type install to continue: ')).trim().toLowerCase();
+    if (confirm !== 'install') return process.stdout.write('Cancelled. No files were changed.\n');
+    await init({ host: adapter.id, control, global, team });
+    await doctor({ host: adapter.id, control });
+  } finally { prompt.close(); }
 }
 
 try {
   const options = parseArgs(process.argv.slice(2));
-  if (options.command === 'init') {
-    await init(options);
-  } else if (options.command === 'doctor') {
-    await doctor(options);
-  } else if (!options.command) {
-    await interactiveInit();
-  } else if (options.command === '--help' || options.command === '-h') {
-    usage(0);
-  } else {
-    throw new Error(`Unknown command: ${options.command}`);
-  }
+  if (options.command === 'init') await init(options);
+  else if (options.command === 'doctor') await doctor(options);
+  else if (!options.command) await interactiveInit();
+  else if (options.command === '--help' || options.command === '-h') usage(0);
+  else throw new Error(`Unknown command: ${options.command}`);
 } catch (error) {
   process.stderr.write(`${error.message}\n`);
   usage(2);

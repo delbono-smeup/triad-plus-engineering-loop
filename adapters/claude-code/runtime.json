@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "id": "claude-code",
+  "binary": "claude",
+  "lifecycle": {
+    "kind": "SubagentStop",
+    "agent_type": "triad-developer",
+    "requires_async": false
+  }
+}

@@ -1,35 +1,54 @@
-# Triad+ Engineering Loop
+# Triad+
 
 <p align="center">
-  <img src="assets/triad-plus-engineering-loop-icon.svg" width="152" alt="Triad+ Engineering Loop icon: three connected roles and verified evidence">
+  <img src="assets/triad-plus-engineering-loop-icon.svg" width="152" alt="Triad+ icon: three connected roles and verified evidence">
 </p>
 
-Triad+ Engineering Loop is an evidence-driven delivery method for one
-orchestrator, one developer, one fresh quality evaluator when needed, and one
-independent reviewer. It separates project control records from product source
-code and keeps human intervention limited to real product decisions.
+Triad+ is a lightweight, evidence-backed engineering method for a coding-agent host.
+It keeps the normal loop deliberately small:
 
-- [Operating guide](docs/operating-guide.md) explains the method for people.
-- [Guida operativa italiana](docs/operating-guide.it.md) is the complete Italian localization.
-- [Codex replication guide](docs/codex-replication.md) explains the installable
-  Codex adapter and its native `/prompts:triad` command.
-- [npx installation guide](docs/npx-installation.md) explains the guided,
-  host-specific package installer.
-- [OpenCode replication guide](docs/opencode-replication.md) explains the
-  installable OpenCode adapter and its `/triad` command.
-- [Claude Code replication guide](docs/claude-code-replication.md) explains the
-  installable Claude Code adapter and its `/triad` command.
-- [Antigravity replication guide](docs/antigravity-replication.md) explains the
-  installable Antigravity adapter and its `/triad` command.
-- [Gauntlet evolution](docs/gauntlet-evolution.md) explains the optional
-  quality-optimization loop and its external verification control plane.
-- `skills/` contains the five standard Agent Skills that implement the method.
-- `adapters/` contains Codex, OpenCode, Claude Code, and Antigravity adapters with
-  collision-safe installers for the same skills.
-- `runtime/`, `schemas/`, and `integrations/codex/` contain the host-agnostic
-  verification runner, formal evidence contracts, and the version-gated Codex
-  lifecycle-hook adapter.
+```text
+Orchestrator
+  ├─ Developer
+  └─ Reviewer
+```
 
-The method does not require a particular organization, repository host, or
-product stack. The examples use Git, a private project-control repository, and
-local worktrees because they provide reproducible evidence and safe isolation.
+The Orchestrator maintains the goal and chooses the next step. The Developer
+changes the artifact. The Reviewer examines the verified result and returns
+`approved`, `rework`, or `blocked`. The host agent, not Triad+, governs that
+conversation and those decisions.
+
+After approval, an optional **Evaluator+** may make a fresh, independent
+post-run assessment. Its `PASS`, `FAIL`, or `INDETERMINATE` report never changes
+the completed Triad decision and never starts repair automatically.
+
+- [Operating guide](docs/operating-guide.md) and [Italian guide](docs/operating-guide.it.md)
+- [Installation and setup](docs/npx-installation.md)
+- [Compatibility matrix](docs/compatibility.md)
+- [Evaluator+ contract](docs/evaluator-plus.md)
+- Adapter notes: [Codex](docs/codex-replication.md), [OpenCode](docs/opencode-replication.md), [Claude Code](docs/claude-code-replication.md), [Antigravity](docs/antigravity-replication.md), [Hermes](adapters/hermes/README.md)
+
+`runtime/triad-verify.mjs` is infrastructure, not an orchestrator. It runs
+declared `control-plane` quality gates deterministically and writes atomic,
+environment-derived evidence bound to the assignment, worktree, branch, and
+candidate fingerprint. Agent statements about tests are claims; verifier output
+is the authoritative observation.
+
+## Quick start
+
+```bash
+npx triad-plus init --host codex --control /path/to/project-control --global
+npx triad-plus doctor --host codex --control /path/to/project-control
+```
+
+Open the control workspace in the chosen host and use its native Triad command:
+`/prompts:triad` in Codex, `/triad` in OpenCode, Claude Code, Antigravity, and
+Hermes.
+
+Triad+ supports Codex, OpenCode, Claude Code, Antigravity, and Hermes through a
+small adapter contract. See the installation guide before placing a control
+workspace inside any product repository.
+
+## License
+
+MIT. See [LICENSE](LICENSE).

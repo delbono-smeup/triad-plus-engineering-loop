@@ -9,19 +9,6 @@
 - Out of scope: `<prohibited changes>`
 - Dependencies: `<approved card IDs or none>`
 
-## Quality optimization
-
-```yaml
-optimization:
-  mode: none # none | gauntlet
-  quality_bar: null # required when mode is gauntlet
-  enforcement: aspirational # required | aspirational when mode is gauntlet
-```
-
-- Quality-bar snapshot/hash: `<not applicable or ID, snapshot, SHA-256>`
-- Candidate artifacts and observation method: `<paths and exact method>`
-- Allowed repair surface: `<smallest surface allowed for one largest-gap repair>`
-
 ## Acceptance criteria
 
 1. `<pass/fail observable criterion>`
