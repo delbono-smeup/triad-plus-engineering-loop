@@ -1,5 +1,9 @@
 # Triad+
 
+<p align="center">
+  <img src="assets/triad-plus-engineering-loop-icon.svg" alt="Triad+ logo" width="220">
+</p>
+
 Triad+ is a lightweight engineering loop for coding agents with three explicit roles.
 
 > **Developer proposes. Reviewer challenges. Orchestrator governs.**
