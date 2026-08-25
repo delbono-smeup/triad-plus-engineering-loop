@@ -16,6 +16,16 @@
   "expected_prd_sha256": "REPLACE_ME_SHA256",
   "expected_card_sha256": "REPLACE_ME_SHA256",
   "expected_gates_sha256": "REPLACE_ME_SHA256",
+  "required_repository_skills": [
+    {
+      "path": ".agents/skills/router/SKILL.md",
+      "sha256": "REPLACE_ME_SHA256"
+    },
+    {
+      "path": ".agents/skills/agent-completion/SKILL.md",
+      "sha256": "REPLACE_ME_SHA256"
+    }
+  ],
   "verification_run_id": "REPLACE_ME_UUID",
   "evidence_directory": ".loop/evidence/REPLACE_ME_FEATURE_ID/attempt-001"
 }

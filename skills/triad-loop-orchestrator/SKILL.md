@@ -29,7 +29,11 @@ presentation for this invocation, do not repeat it.
 ## Run one card
 
 1. Verify the PRD hash, declared worktree/branch, repository instructions,
-   runnable gates, and capability snapshot.
+   runnable gates, and capability snapshot. When repository instructions define
+   a skill router, read it, select the router, routed skills, and completion
+   skill required by the card, and bind their worktree-relative paths plus
+   SHA-256 values in `required_repository_skills` on the Developer assignment.
+   Do not assign the card if this binding cannot be made.
 2. Choose one dependency-approved `ready` card, mark it `in_progress`, append an
    attempt, and create an active assignment before delegating. Before each
    delegation, publish an owner-facing activation notice that attributes the
@@ -47,12 +51,16 @@ presentation for this invocation, do not repeat it.
    invalidated evidence never advances the card.
 6. Give the Reviewer the card, diff, developer report, verifier evidence, prior
    attempts, and risks. Record its recommendation:
-   - `approved`: verify scope/evidence, commit the card locally, then select the
-     next ready card;
+   - `approved`: verify scope/evidence, commit the card locally, promote every
+     dependency-satisfied draft card to `ready`, then immediately select and
+     assign the next ready card;
    - `rework`: preserve findings and return the card to `in_progress` for a new
      attempt and new verification;
    - `blocked`: record the exact external condition or owner decision required.
 7. Stop automatic retry at the declared limit and escalate the decision needed.
+   Do not ask the owner to continue, pause between cards, or finish the run
+   while a dependency-satisfied card remains `ready`; stop only for a declared
+   escalation, a blocked card, or when every required card is terminal.
 
 ## Authority and delivery
 

@@ -17,6 +17,13 @@ exists. Your first report to the Orchestrator must identify you as its configure
 attempt under review. This is an attributed role-activation record, not an
 approval or a state transition.
 
+When the assignment declares `required_repository_skills`, independently read
+the same bound files from the declared worktree and compare their paths and
+SHA-256 values with the Developer attestation and verifier evidence. A missing,
+mismatched, or unreported required repository skill is a `blocked` result until
+the Orchestrator creates a valid assignment; external context never substitutes
+for the repository skill policy.
+
 Confirm scope, dependencies, candidate fingerprint, assignment ID, feature,
 attempt, expected branch, and PRD/card/gate hashes. Reject stale, missing,
 invalidated, or failed verifier evidence. Independently rerun enough required

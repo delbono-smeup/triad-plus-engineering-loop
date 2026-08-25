@@ -81,12 +81,27 @@ try {
 
   const passRoot = path.join(temporaryRoot, "pass");
   const passing = await prepare(passRoot, 1, "test \"$(printf TRIAD_PASS)\" = \"TRIAD_PASS\"");
+  const routerPath = path.join(passing.worktree, '.agents', 'skills', 'router', 'SKILL.md');
+  await mkdir(path.dirname(routerPath), { recursive: true });
+  await writeFile(routerPath, '# Repository skill router\n');
+  passing.assignment.required_repository_skills = [{ path: '.agents/skills/router/SKILL.md', sha256: await digest(routerPath) }];
+  await writeJson(passing.assignmentPath, passing.assignment);
   const passRun = await invoke(passRoot, passing.assignment.agent_id);
   assert.equal(passRun.result.status, 0, JSON.stringify(passRun.evidence));
   assert.equal(passRun.evidence.status, "pass");
   assert.equal(passRun.evidence.assignment_id, "assignment-1");
   assert.ok(passRun.evidence.assignment_sha256);
   assert.ok(passRun.evidence.baseline.candidate_fingerprint);
+  assert.equal(passRun.evidence.repository_skills.declared, true);
+  assert.deepEqual(passRun.evidence.repository_skills.skills, passing.assignment.required_repository_skills);
+
+  const repositorySkillMismatchRoot = path.join(temporaryRoot, "repository-skill-mismatch");
+  const repositorySkillMismatch = await prepare(repositorySkillMismatchRoot, 11, "true");
+  repositorySkillMismatch.assignment.required_repository_skills = [{ path: '.agents/skills/router/SKILL.md', sha256: '0'.repeat(64) }];
+  await writeJson(repositorySkillMismatch.assignmentPath, repositorySkillMismatch.assignment);
+  const repositorySkillMismatchRun = await invoke(repositorySkillMismatchRoot, repositorySkillMismatch.assignment.agent_id);
+  assert.equal(repositorySkillMismatchRun.result.status, 3);
+  assert.match(repositorySkillMismatchRun.evidence.failure.reason, /repository skill/);
 
   const failRoot = path.join(temporaryRoot, "fail");
   const failing = await prepare(failRoot, 2, "false");
@@ -152,6 +167,8 @@ try {
     assert.ok(contract.includes(userFacingIdentityInvariant), "every adapter must adopt the permanent user-facing Orchestrator identity");
     assert.match(contract, /first owner-facing message/i, "every adapter must require an initial Orchestrator introduction");
   }
+  assert.match(orchestratorContracts[0], /Do not ask the owner to continue, pause between cards/i);
+  assert.match(orchestratorContracts[0], /required_repository_skills/i);
   const roleContracts = await Promise.all([
     'skills/triad-loop-developer/SKILL.md',
     'skills/triad-loop-reviewer/SKILL.md',

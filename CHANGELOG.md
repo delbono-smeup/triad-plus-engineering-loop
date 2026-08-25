@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Continue automatically from an approved card to each dependency-satisfied
+  successor without requesting an owner acknowledgement.
+- Bind repository skill files and hashes to developer assignments and verify the
+  binding as environment-derived evidence.
 - Make the configured Orchestrator presentation the first owner-facing message
   and avoid repeating it after the role skill is loaded.
 - Let Codex capability detection consume a project hook configuration when one

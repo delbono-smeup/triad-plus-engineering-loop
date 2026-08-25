@@ -17,6 +17,12 @@ exists. Your first report must identify you as its configured
 being assessed. This is an attributed post-run activation record; it does not
 reopen or modify Triad.
 
+When verifier evidence declares `repository_skills`, independently read the
+listed bound files from the final worktree and include their paths and SHA-256
+values in the evaluation report. A missing or mismatched binding makes the
+evaluation `INDETERMINATE`; it never starts repair or changes the closed Triad
+result.
+
 Return a report conforming to `schemas/evaluator-plus-result.schema.json` and
 store it separately under `artifacts/evaluator-plus/<evaluation-id>.json`:
 

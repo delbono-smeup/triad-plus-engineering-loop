@@ -24,6 +24,12 @@
 - Allowed dependencies: `<names or none>`
 - Test fixtures/examples: `<paths>`
 
+## Repository skill binding
+
+- Repository policy/router: `<path to the repository router SKILL.md or not applicable>`
+- Required skills: `<router, routed skills, and completion skill>`
+- Assignment evidence: `<relative SKILL.md paths and SHA-256 values>`
+
 ## Integration, practical test, and risk
 
 - Local-worktree setup: `<not applicable or command>`

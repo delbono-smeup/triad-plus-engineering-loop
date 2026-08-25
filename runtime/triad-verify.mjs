@@ -27,6 +27,26 @@ async function sha256File(value) {
   return sha256(await readFile(value));
 }
 
+async function validateRepositorySkills(required, worktree) {
+  if (required === undefined) return { declared: false, skills: [] };
+  if (!Array.isArray(required) || required.length === 0) throw new Error("repository skill binding must declare at least one skill");
+  const root = await realpath(worktree);
+  const skills = [];
+  for (const item of required) {
+    if (!item || typeof item.path !== "string" || typeof item.sha256 !== "string") {
+      throw new Error("repository skill binding entries require path and sha256");
+    }
+    const candidate = path.resolve(root, item.path);
+    if (!candidate.startsWith(`${root}${path.sep}`)) throw new Error("repository skill path escapes worktree");
+    try { await access(candidate); }
+    catch { throw new Error(`repository skill missing: ${item.path}`); }
+    const actual = await sha256File(candidate);
+    if (actual !== item.sha256) throw new Error(`repository skill hash mismatch: ${item.path}`);
+    skills.push({ path: item.path, sha256: actual });
+  }
+  return { declared: true, skills };
+}
+
 function triggerFrom(payload) {
   return {
     event: payload.event ?? payload.hook_event_name ?? "manual",
@@ -100,6 +120,7 @@ async function main() {
     await access(cardPath);
     if ((await sha256File(prdPath)) !== assignment.expected_prd_sha256) throw new Error("PRD baseline hash mismatch");
     if ((await sha256File(cardPath)) !== assignment.expected_card_sha256) throw new Error("feature card hash mismatch");
+    const repositorySkills = await validateRepositorySkills(assignment.required_repository_skills, worktree);
     const before = await calculateCandidateFingerprint(worktree);
     const branch = await worktreeBranch(worktree);
     if (assignment.expected_branch && assignment.expected_branch !== branch) throw new Error("worktree branch does not match assignment");
@@ -128,6 +149,7 @@ async function main() {
         candidate_fingerprint: before.value,
         branch,
       },
+      repository_skills: repositorySkills,
       gates,
       required_gates_passed: requiredGatesPassed,
       status: candidateChanged ? "invalidated" : requiredGatesPassed ? "pass" : "fail",

@@ -16,6 +16,12 @@ exists. Your first report to the Orchestrator must identify you as its configure
 card. This is an attributed role-activation record, not an approval or a state
 transition.
 
+When the assignment declares `required_repository_skills`, read every bound
+file from the declared worktree before editing. Include their relative paths and
+SHA-256 values in the report as a **repository-skill attestation**. If a bound
+skill is missing or its hash differs, stop and report the mismatch; do not
+replace it with external context or a similarly named skill.
+
 Implement the smallest complete change and focused tests. Run useful local
 checks and measure declared criteria. Report changed files, tests, exact command
 results, metrics, worktree/branch, risks, and blockers to the Orchestrator.

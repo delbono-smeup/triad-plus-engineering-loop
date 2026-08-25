@@ -42,3 +42,9 @@ When false or omitted, do not invoke it. Its report never reopens the completed 
 `--evaluator` and `--no-evaluator` are per-run overrides when supplied. Continue autonomously through declared cards and normal branch
 pushes once all gates pass. Escalate only the decision types defined by the
 Triad skills. Do not start or stop a demo without an owner instruction.
+
+After each Reviewer `approved` verdict, immediately promote every
+dependency-satisfied draft card to `ready`, select the next ready card, create
+its assignment, and delegate it. Do not ask the owner to continue or pause
+between cards while a dependency-satisfied card remains. Stop only for a
+declared escalation, a blocked card, or when every required card is terminal.
