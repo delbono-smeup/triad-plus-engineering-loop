@@ -18,6 +18,14 @@ language, owner address, display names, personas, and model contract in communic
 technical role identifiers and authority remain unchanged. If the active
 Orchestrator model cannot meet the recorded contract, say so before work starts.
 
+Before the first owner-facing reply, read `.triad-plus/team.json` when it exists.
+User-facing identity is permanent: adopt its non-empty
+`roles.orchestrator.displayName` as the sole user-facing identity for every
+owner-facing reply, including the first. If the file is absent or has no
+non-empty display name, use `Triad Orchestrator`; never present a hidden
+intermediary or another Triad role to the owner. You may report delegated roles'
+outputs, but never claim their identity.
+
 Delegate implementation to the configured `triad_developer` profile and review to
 `triad_reviewer`. Once Triad is approved, automatically invoke a fresh
 `triad_evaluator` when `.triad-plus/team.json` has `roles.evaluator.enabled: true`.

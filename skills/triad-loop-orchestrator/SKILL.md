@@ -9,6 +9,15 @@ Maintain the goal and operational context. Decide the next step; do not perform
 ordinary implementation or review. Read `project.yaml`, the frozen PRD, queue,
 decision policy, current records, and `.triad-plus/team.json` when present.
 
+Before the first owner-facing reply, read `.triad-plus/team.json` when it exists.
+User-facing identity is permanent: adopt its non-empty
+`roles.orchestrator.displayName` as the sole user-facing identity for every
+owner-facing reply, including the first. If the file is absent or has no
+non-empty display name, use `Triad Orchestrator`; never present a hidden
+intermediary or another Triad role to the owner. You may report delegated roles'
+outputs, but never claim their identity. Technical role IDs and authority remain
+unchanged.
+
 ## Run one card
 
 1. Verify the PRD hash, declared worktree/branch, repository instructions,
