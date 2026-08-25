@@ -132,29 +132,40 @@ function teamConfigPath(controlRoot) {
 
 const overlayStart = '<!-- triad-plus:managed-instructions:start -->';
 const overlayEnd = '<!-- triad-plus:managed-instructions:end -->';
-const instructionOverlay = `${overlayStart}
+function instructionOverlay(team) {
+  const displayName = typeof team?.roles?.orchestrator?.displayName === 'string' && team.roles.orchestrator.displayName.trim()
+    ? team.roles.orchestrator.displayName.trim()
+    : 'Triad Orchestrator';
+  return `${overlayStart}
 ## Triad+ role-run overlay
 
 When a Triad+ entry point is invoked in this control workspace, read
 \`.triad-plus/team.json\` before the first owner-facing reply. The active
-Orchestrator presents itself only as \`roles.orchestrator.displayName\`. This
-is a role-run presentation rule; it does not change technical authority,
-repository policy, safety instructions, or the host's identity outside Triad+.
+Orchestrator is \`${displayName}\` for this run. Its first owner-facing message
+is a presentation, not a bootstrap report: begin with a first-person sentence
+that explicitly names \`${displayName}\` and says it is the Triad+ Orchestrator,
+then state whether the run is new or resumed and the received input. Do this
+before reporting bootstrap, inspecting artifacts, delegating, or asking a
+question. This is a role-run presentation rule; it does not change technical
+authority, repository policy, safety instructions, or the host's identity
+outside Triad+.
 ${overlayEnd}`;
+}
 
-async function overlayPlan(controlRoot) {
+async function overlayPlan(controlRoot, team) {
   const target = join(controlRoot, 'AGENTS.md');
-  if (!(await exists(target))) return { target, action: 'create', content: `# Project instructions\n\n${instructionOverlay}\n` };
+  const overlay = instructionOverlay(team);
+  if (!(await exists(target))) return { target, action: 'create', content: `# Project instructions\n\n${overlay}\n` };
   const source = await readFile(target, 'utf8');
   const start = source.indexOf(overlayStart);
   const end = source.indexOf(overlayEnd);
-  if (start === -1 && end === -1) return { target, action: 'append', content: `${source.replace(/\s*$/, '')}\n\n${instructionOverlay}\n` };
+  if (start === -1 && end === -1) return { target, action: 'append', content: `${source.replace(/\s*$/, '')}\n\n${overlay}\n` };
   if (start < 0 || end < start) throw new Error(`Cannot safely update managed instruction block: ${target}`);
-  return { target, action: 'update', content: `${source.slice(0, start)}${instructionOverlay}${source.slice(end + overlayEnd.length)}` };
+  return { target, action: 'update', content: `${source.slice(0, start)}${overlay}${source.slice(end + overlayEnd.length)}` };
 }
 
-async function applyOverlay(controlRoot, apply) {
-  const plan = await overlayPlan(controlRoot);
+async function applyOverlay(controlRoot, apply, team) {
+  const plan = await overlayPlan(controlRoot, team);
   process.stdout.write(`  Instructions ${apply ? plan.action : `would ${plan.action}`} ${plan.target}\n`);
   if (apply) await writeFile(plan.target, plan.content, 'utf8');
 }
@@ -291,7 +302,7 @@ async function init(options) {
   if (existing.length > 0) throw new Error(`Installation aborted; existing paths would be overwritten:\n${existing.map((target) => `  ${target}`).join('\n')}`);
   await installAssets(adapter.projectAssets, controlRoot, installContext);
   if (team) await writeTeamConfig(controlRoot, team);
-  if (team) await applyOverlay(controlRoot, true);
+  if (team) await applyOverlay(controlRoot, true, team);
   if (team) await applyTeamBinding(adapter, controlRoot, team, installContext);
   if (options.global) await installAssets(adapter.globalAssets, controlRoot, installContext);
   process.stdout.write(`Triad+ installed for ${adapter.label} in ${controlRoot}\n`);
@@ -320,7 +331,7 @@ async function upgrade(options) {
   const backupRoot = join(controlRoot, '.triad-plus', 'backups', stamp);
   process.stdout.write(`Triad+ upgrade ${options.apply ? 'applying' : 'plan'} for ${adapter.label}\n`);
   await refreshAssets(adapter.projectAssets, controlRoot, installContext, join(backupRoot, 'project'), options.apply);
-  if (team) await applyOverlay(controlRoot, options.apply);
+  if (team) await applyOverlay(controlRoot, options.apply, team);
   else process.stdout.write('  Instructions skipped: .triad-plus/team.json is not configured\n');
   if (options.global) {
     await refreshAssets(adapter.globalAssets, controlRoot, installContext, join(backupRoot, 'global'), options.apply);
@@ -354,7 +365,7 @@ async function doctor(options) {
     process.stdout.write(`  Adapter      ${manifest ? 'OK' : 'missing or different adapter'}\n`);
     process.stdout.write(`  Team config  ${team === 'invalid' ? 'invalid' : team ? 'OK' : 'not configured'}\n`);
     process.stdout.write(`  Evaluator+   ${team?.roles?.evaluator?.enabled === true ? 'configured' : 'not configured'}\n`);
-    const overlay = await overlayPlan(controlRoot).catch(() => null);
+    const overlay = await overlayPlan(controlRoot, team).catch(() => null);
     process.stdout.write(`  Instructions ${overlay ? overlay.action === 'update' ? 'managed' : `needs ${overlay.action}` : 'invalid managed block'}\n`);
     const globalAgents = join(codexHome(), 'AGENTS.md');
     if (await exists(globalAgents)) {

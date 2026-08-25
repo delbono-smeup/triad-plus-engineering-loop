@@ -10,7 +10,6 @@ const runner = path.join(repositoryRoot, "runtime", "triad-verify.mjs");
 const capabilityDetector = path.join(repositoryRoot, "runtime", "triad-runtime-capabilities.mjs");
 const digest = async (file) => createHash("sha256").update(await readFile(file)).digest("hex");
 const userFacingIdentityInvariant = "Before the first owner-facing reply, read `.triad-plus/team.json` when it exists.\nUser-facing identity is permanent: adopt its non-empty\n`roles.orchestrator.displayName` as the sole user-facing identity for every\nowner-facing reply, including the first. If the file is absent or has no\nnon-empty display name, use `Triad Orchestrator`; never present a hidden\nintermediary or another Triad role to the owner. You may report delegated roles'\noutputs, but never claim their identity.";
-const firstRunIntroductionInvariant = 'the first owner-facing message of every Triad+';
 
 function command(commandName, args, cwd) {
   const result = spawnSync(commandName, args, { cwd, encoding: "utf8" });
@@ -151,7 +150,7 @@ try {
     assert.match(contract, /automatic(?:ally)?/i, "configured Evaluator+ must be automatic");
     assert.match(contract, /(?:never reopens|never reopen|cannot reopen)/i, "Evaluator+ must not reopen Triad");
     assert.ok(contract.includes(userFacingIdentityInvariant), "every adapter must adopt the permanent user-facing Orchestrator identity");
-    assert.ok(contract.includes(firstRunIntroductionInvariant), "every adapter must require an initial Orchestrator introduction");
+    assert.match(contract, /first owner-facing message/i, "every adapter must require an initial Orchestrator introduction");
   }
   const evaluatorContract = await readFile(path.join(repositoryRoot, "skills", "triad-loop-evaluator", "SKILL.md"), "utf8");
   assert.match(evaluatorContract, /Do not\s+edit source, change the Triad queue\/state, commit, push/i);

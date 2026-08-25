@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Make the configured Orchestrator presentation the first owner-facing message
+  and avoid repeating it after the role skill is loaded.
+- Let Codex capability detection consume a project hook configuration when one
+  is installed, so verified asynchronous dispatch is selected correctly.
+
 ## 1.2.0 — 2026-08-25
 
 - Add safe dry-run/apply upgrades for existing project-control workspaces.
