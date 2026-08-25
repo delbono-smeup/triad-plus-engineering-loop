@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.2.0 — 2026-08-25
 
 - Add safe dry-run/apply upgrades for existing project-control workspaces.
 - Maintain a narrowly scoped Triad+ role-run instruction overlay and report
