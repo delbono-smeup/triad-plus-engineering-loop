@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.1 — 2026-08-25
+
+- Ensure every supported host adopts the configured Orchestrator display name
+  for owner-facing communication.
+- Keep the public install-test fixture neutral.
+
 ## 1.1.0 — 2026-08-24
 
 - Automatically dispatch configured Evaluator+ after Triad approval, without

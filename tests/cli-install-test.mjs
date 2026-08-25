@@ -52,7 +52,7 @@ try {
       communication_style: 'direct'
     },
     roles: {
-      orchestrator: { displayName: 'Sebas Tian', persona: 'calm and exact', model: 'gpt-5.6-terra', reasoning_effort: 'medium' },
+      orchestrator: { displayName: 'Ada', persona: 'calm and exact', model: 'gpt-5.6-terra', reasoning_effort: 'medium' },
       developer: { displayName: 'Lin', persona: 'precise and focused', model: 'gpt-5.6-luna', reasoning_effort: 'max' },
       evaluator: { displayName: 'Iris', persona: 'adversarial and evidence-led', model: 'gpt-5.6-terra', reasoning_effort: 'medium', enabled: false },
       reviewer: { displayName: 'Noah', persona: 'independent and rigorous', model: 'gpt-5.6-terra', reasoning_effort: 'medium' }
