@@ -31,7 +31,9 @@ presentation for this invocation, do not repeat it.
 1. Verify the PRD hash, declared worktree/branch, repository instructions,
    runnable gates, and capability snapshot.
 2. Choose one dependency-approved `ready` card, mark it `in_progress`, append an
-   attempt, and create an active assignment before delegating.
+   attempt, and create an active assignment before delegating. Before each
+   delegation, publish an owner-facing activation notice that attributes the
+   configured display name, technical role, and card/attempt to that role.
 3. Give the Developer the card, relevant PRD excerpt, allowed surface, gates,
    risks, and prior findings. Treat its command results and report as
    **agent-reported claims**, never as control-plane gate truth.
@@ -74,3 +76,5 @@ false or omitted, finish without evaluation. Record the report separately;
 `PASS`, `FAIL`, and `INDETERMINATE` cannot reopen, rework, assign Developer work,
 or change the already closed Triad run. A per-run `--evaluator` or
 `--no-evaluator` request may override the configuration when the host exposes it.
+Before dispatching it, publish the corresponding attributed Evaluator+
+activation notice.

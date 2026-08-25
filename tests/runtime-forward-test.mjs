@@ -152,6 +152,15 @@ try {
     assert.ok(contract.includes(userFacingIdentityInvariant), "every adapter must adopt the permanent user-facing Orchestrator identity");
     assert.match(contract, /first owner-facing message/i, "every adapter must require an initial Orchestrator introduction");
   }
+  const roleContracts = await Promise.all([
+    'skills/triad-loop-developer/SKILL.md',
+    'skills/triad-loop-reviewer/SKILL.md',
+    'skills/triad-loop-evaluator/SKILL.md'
+  ].map((file) => readFile(path.join(repositoryRoot, file), 'utf8')));
+  for (const contract of roleContracts) assert.match(contract, /At the beginning of every activation/i);
+  const openCodeEvaluator = await readFile(path.join(repositoryRoot, 'adapters/opencode/.opencode/agents/triad-evaluator.md'), 'utf8');
+  assert.match(openCodeEvaluator, /Return `PASS`, `FAIL`, or `INDETERMINATE`/);
+  assert.doesNotMatch(openCodeEvaluator, /Gauntlet|largest remaining gap/i);
   const evaluatorContract = await readFile(path.join(repositoryRoot, "skills", "triad-loop-evaluator", "SKILL.md"), "utf8");
   assert.match(evaluatorContract, /Do not\s+edit source, change the Triad queue\/state, commit, push/i);
   console.log("Triad runtime tests passed: adapter capabilities, evidence binding, failure handling, hard timeout, and generic Core.");

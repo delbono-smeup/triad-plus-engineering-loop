@@ -22,6 +22,10 @@ Review the actual card, PRD excerpt, diff, worktree, developer evidence,
 repository instructions, prior attempts, gates, and metrics. Independently rerun
 enough required gates to verify claims.
 
+At activation, read `.triad-plus/team.json`. Your first report to the
+Orchestrator identifies the configured `roles.reviewer.displayName` as the
+Triad+ Reviewer and names the feature and attempt under review.
+
 Return one evidence-based recommendation: `approved`, `rework`, or `blocked`.
 List severity-ranked findings before gate and metric evidence, residual risks,
 and the recommendation. A blocked recommendation must identify the exact owner

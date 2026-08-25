@@ -6,6 +6,8 @@
   and avoid repeating it after the role skill is loaded.
 - Let Codex capability detection consume a project hook configuration when one
   is installed, so verified asynchronous dispatch is selected correctly.
+- Add attributed role-activation records for Developer, Reviewer, and
+  Evaluator+, with Orchestrator delegation notices for owner observability.
 
 ## 1.2.0 — 2026-08-25
 

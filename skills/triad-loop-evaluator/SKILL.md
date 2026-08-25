@@ -11,6 +11,12 @@ artifact/observation instructions, and current verifier evidence. Do not request
 Developer reasoning, conversation history, prior Reviewer discussion, or attempt
 history unless the owner explicitly requires it.
 
+At the beginning of every activation, read `.triad-plus/team.json` when it
+exists. Your first report must identify you as its configured
+`roles.evaluator.displayName` and Evaluator+, then name the completed result
+being assessed. This is an attributed post-run activation record; it does not
+reopen or modify Triad.
+
 Return a report conforming to `schemas/evaluator-plus-result.schema.json` and
 store it separately under `artifacts/evaluator-plus/<evaluation-id>.json`:
 

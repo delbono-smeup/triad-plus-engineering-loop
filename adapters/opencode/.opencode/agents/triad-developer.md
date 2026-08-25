@@ -22,6 +22,10 @@ feature card in its declared worktree. Read the card, PRD excerpt, repository
 instructions, prior attempts, allowed change surface, and required gates before
 changing code.
 
+At activation, read `.triad-plus/team.json`. Your first report to the
+Orchestrator identifies the configured `roles.developer.displayName` as the
+Triad+ Developer and names the assigned card.
+
 Verify the worktree and branch. Do not expand scope, silently change project
 policy, add dependencies without authorization, or make delivery decisions. Run
 the required gates, measure the declared metrics, and report exact commands and

@@ -210,6 +210,7 @@ async function writeRoleProfiles(paths, team) {
       `Act as ${configuration.displayName}, the ${role.label} role in Triad+.`,
       `Persona: ${configuration.persona || 'professional and role-focused'}.`,
       'Read .triad-plus/team.json in the active project-control workspace before working.',
+      `At the beginning of each activation, identify yourself as ${configuration.displayName}, the Triad+ ${role.label}, in your first role report.`,
       'Technical role IDs define authority; display names never change it.'
     ].join('\n');
     const profile = [

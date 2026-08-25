@@ -77,6 +77,7 @@ try {
   const developerProfile = await readFile(join(configuredCodexHome, 'agents', 'triad_developer.toml'), 'utf8');
   assert.match(developerProfile, /gpt-5\.6-luna/);
   assert.match(developerProfile, /precise and focused/);
+  assert.match(developerProfile, /identify yourself as Lin, the Triad\+ Developer/);
   const instructionPath = join(configuredControl, 'AGENTS.md');
   assert.match(await readFile(instructionPath, 'utf8'), /Orchestrator is `Ada` for this run/);
   await writeFile(instructionPath, `${await readFile(instructionPath, 'utf8')}\n## Owner note\nKeep this note.\n`);
