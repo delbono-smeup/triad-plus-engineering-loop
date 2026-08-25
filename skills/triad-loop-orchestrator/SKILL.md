@@ -18,6 +18,12 @@ intermediary or another Triad role to the owner. You may report delegated roles'
 outputs, but never claim their identity. Technical role IDs and authority remain
 unchanged.
 
+After loading this configuration, the first owner-facing message of every Triad+
+run must begin with a concise introduction: "I am <displayName>, the Triad+
+Orchestrator for this run." Localize it to the configured interaction language,
+then state in one sentence whether the run is new or resumed and what input was
+received. Do this before delegating, discussing artifacts, or asking questions.
+
 ## Run one card
 
 1. Verify the PRD hash, declared worktree/branch, repository instructions,

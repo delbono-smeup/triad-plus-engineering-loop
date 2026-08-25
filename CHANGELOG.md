@@ -5,6 +5,8 @@
 - Add safe dry-run/apply upgrades for existing project-control workspaces.
 - Maintain a narrowly scoped Triad+ role-run instruction overlay and report
   potential host identity-policy conflicts in `doctor`.
+- Require the configured Orchestrator to introduce itself at the beginning of
+  every Triad+ run.
 
 ## 1.1.1 — 2026-08-25
 

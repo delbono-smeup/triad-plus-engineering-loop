@@ -9,6 +9,7 @@ const repositoryRoot = fileURLToPath(new URL('..', import.meta.url));
 const fixtureRoot = await mkdtemp(join(tmpdir(), 'triad-plus-cli-'));
 const codexHome = join(fixtureRoot, 'codex-home');
 const userFacingIdentityInvariant = "Before the first owner-facing reply, read `.triad-plus/team.json` when it exists.\nUser-facing identity is permanent: adopt its non-empty\n`roles.orchestrator.displayName` as the sole user-facing identity for every\nowner-facing reply, including the first. If the file is absent or has no\nnon-empty display name, use `Triad Orchestrator`; never present a hidden\nintermediary or another Triad role to the owner. You may report delegated roles'\noutputs, but never claim their identity.";
+const firstRunIntroductionInvariant = 'the first owner-facing message of every Triad+';
 
 try {
   for (const host of ['codex', 'opencode', 'claude-code', 'antigravity', 'hermes']) {
@@ -72,6 +73,7 @@ try {
   assert.match(await readFile(join(configuredControl, '.triad-plus', 'team.json'), 'utf8'), /"Italian"/);
   assert.match(await readFile(join(configuredControl, '.triad-plus', 'team.json'), 'utf8'), /"enabled": false/);
   assert.ok((await readFile(join(configuredCodexHome, 'prompts', 'triad.md'), 'utf8')).includes(userFacingIdentityInvariant));
+  assert.ok((await readFile(join(configuredCodexHome, 'prompts', 'triad.md'), 'utf8')).includes(firstRunIntroductionInvariant));
   const developerProfile = await readFile(join(configuredCodexHome, 'agents', 'triad_developer.toml'), 'utf8');
   assert.match(developerProfile, /gpt-5\.6-luna/);
   assert.match(developerProfile, /precise and focused/);
@@ -90,6 +92,7 @@ try {
   ], { cwd: repositoryRoot, env: { ...process.env, CODEX_HOME: configuredCodexHome }, encoding: 'utf8' });
   assert.equal(appliedUpgrade.status, 0, appliedUpgrade.stderr);
   assert.ok((await readFile(stalePrompt, 'utf8')).includes(userFacingIdentityInvariant));
+  assert.ok((await readFile(stalePrompt, 'utf8')).includes(firstRunIntroductionInvariant));
   assert.match(await readFile(instructionPath, 'utf8'), /Keep this note/);
   assert.match(await readFile(instructionPath, 'utf8'), /triad-plus:managed-instructions:start/);
   assert.equal(await readFile(join(configuredControl, '.triad-plus', 'team.json'), 'utf8'), await readFile(teamConfigSource, 'utf8'));
