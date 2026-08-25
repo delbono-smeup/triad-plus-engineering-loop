@@ -4,6 +4,8 @@
 
 - Continue automatically from an approved card to each dependency-satisfied
   successor without requesting an owner acknowledgement.
+- Continue automatically from Developer completion through verification and
+  independent review; agent-reported completion is not a human wait condition.
 - Bind repository skill files and hashes to developer assignments and verify the
   binding as environment-derived evidence.
 - Make the configured Orchestrator presentation the first owner-facing message

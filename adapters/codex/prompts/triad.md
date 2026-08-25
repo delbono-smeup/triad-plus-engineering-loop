@@ -48,3 +48,10 @@ dependency-satisfied draft card to `ready`, select the next ready card, create
 its assignment, and delegate it. Do not ask the owner to continue or pause
 between cards while a dependency-satisfied card remains. Stop only for a
 declared escalation, a blocked card, or when every required card is terminal.
+
+The ordinary chain is unattended: Developer completion → verifier → Reviewer →
+rework or approval → next card. A Developer report is never a reason to wait
+for owner input: immediately wait for configured hook evidence or invoke the
+verifier, then dispatch the Reviewer on a pass. Ask the owner only for a
+declared escalation, a blocked verdict, an unrecoverable runtime error, or an
+explicit owner pause.

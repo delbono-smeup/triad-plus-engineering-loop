@@ -169,6 +169,9 @@ try {
   }
   assert.match(orchestratorContracts[0], /Do not ask the owner to continue, pause between cards/i);
   assert.match(orchestratorContracts[0], /required_repository_skills/i);
+  assert.match(orchestratorContracts[0], /Developer report is never a human-input wait condition/i);
+  assert.match(orchestratorContracts[0], /The normal chain is unattended/i);
+  assert.match(orchestratorContracts[1], /A Developer report is never a reason to wait\s+for owner input/i);
   const roleContracts = await Promise.all([
     'skills/triad-loop-developer/SKILL.md',
     'skills/triad-loop-reviewer/SKILL.md',

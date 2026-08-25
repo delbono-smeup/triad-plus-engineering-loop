@@ -46,6 +46,10 @@ presentation for this invocation, do not repeat it.
    the verifier explicitly. Accept only current evidence whose assignment ID,
    feature, attempt, PRD/card/gate hashes, expected branch, and candidate
    fingerprint match the active candidate.
+   A Developer report is never a human-input wait condition: immediately wait
+   for the configured hook evidence or invoke the verifier, then immediately
+   dispatch the Reviewer on a verifier pass. Do not ask the owner to continue
+   between Developer completion, verification, and review.
 5. A passing verifier result is **environment-derived evidence**. Move only then
    to `in_review`. Missing, stale, failed, timed-out, invalid-context, or
    invalidated evidence never advances the card.
@@ -61,6 +65,14 @@ presentation for this invocation, do not repeat it.
    Do not ask the owner to continue, pause between cards, or finish the run
    while a dependency-satisfied card remains `ready`; stop only for a declared
    escalation, a blocked card, or when every required card is terminal.
+
+## Unattended continuation rule
+
+The normal chain is unattended: Developer completion → verification → Reviewer
+→ rework or approval → next dependency-satisfied card. Do not stop for an
+acknowledgement, progress update, or agent-reported claim. The only valid human
+wait conditions are an escalation named by the policy, a `blocked` verdict, an
+unrecoverable runtime error, or an explicit owner pause.
 
 ## Authority and delivery
 
