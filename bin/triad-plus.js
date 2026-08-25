@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { access, cp, mkdir, readFile, stat, writeFile } from 'node:fs/promises';
+import { access, cp, mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -19,22 +19,24 @@ Usage:
   npx triad-plus
   npx triad-plus init --host <adapter-id> --control <path> [--global] [--team-config <path>] [--allow-product-repo]
   npx triad-plus doctor --host <adapter-id> --control <path> [--hook-config <path>]
+  npx triad-plus upgrade --host <adapter-id> --control <path> [--global] [--apply]
 
 Adapters: ${listAdapters().map((adapter) => adapter.id).join(', ')}
 
 The control path is a project-control workspace, not a product repository.
-Installation refuses every asset overwrite. Doctor is read-only.
+Installation refuses every asset overwrite. Upgrade is a dry run unless --apply is supplied.
 `);
   process.exit(exitCode);
 }
 
 function parseArgs(args) {
   const [command, ...rest] = args;
-  const options = { command, global: false, allowProductRepo: false };
+  const options = { command, global: false, allowProductRepo: false, apply: false };
   for (let index = 0; index < rest.length; index += 1) {
     const argument = rest[index];
     if (argument === '--global') options.global = true;
     else if (argument === '--allow-product-repo') options.allowProductRepo = true;
+    else if (argument === '--apply') options.apply = true;
     else if (['--host', '--control', '--team-config', '--hook-config'].includes(argument)) {
       const value = rest[index + 1];
       if (!value || value.startsWith('--')) throw new Error(`${argument} requires a value.`);
@@ -100,8 +102,61 @@ async function installAssets(assets, root, installContext) {
   for (const asset of assets) await copyAsset(asset, root, installContext);
 }
 
+async function replaceManagedPath(source, destination, backup, apply) {
+  const present = await exists(destination);
+  process.stdout.write(`  ${apply ? 'Update' : 'Would update'} ${destination}${present ? ' (backup)' : ''}\n`);
+  if (!apply) return;
+  if (present) {
+    await mkdir(dirname(backup), { recursive: true });
+    await cp(destination, backup, { recursive: true });
+    await rm(destination, { recursive: true, force: true });
+  }
+  await mkdir(dirname(destination), { recursive: true });
+  await cp(source, destination, { recursive: true });
+}
+
+async function refreshAssets(assets, root, installContext, backupRoot, apply) {
+  for (const asset of assets) {
+    const destination = resolveDestination(asset.destination, root, installContext);
+    if (asset.source === 'shared-skills') {
+      for (const name of sharedSkillNames) await replaceManagedPath(join(packageRoot, 'skills', name), join(destination, name), join(backupRoot, name), apply);
+    } else {
+      await replaceManagedPath(sourcePath(asset.source), destination, join(backupRoot, asset.source.replaceAll('/', '__')), apply);
+    }
+  }
+}
+
 function teamConfigPath(controlRoot) {
   return join(controlRoot, '.triad-plus', 'team.json');
+}
+
+const overlayStart = '<!-- triad-plus:managed-instructions:start -->';
+const overlayEnd = '<!-- triad-plus:managed-instructions:end -->';
+const instructionOverlay = `${overlayStart}
+## Triad+ role-run overlay
+
+When a Triad+ entry point is invoked in this control workspace, read
+\`.triad-plus/team.json\` before the first owner-facing reply. The active
+Orchestrator presents itself only as \`roles.orchestrator.displayName\`. This
+is a role-run presentation rule; it does not change technical authority,
+repository policy, safety instructions, or the host's identity outside Triad+.
+${overlayEnd}`;
+
+async function overlayPlan(controlRoot) {
+  const target = join(controlRoot, 'AGENTS.md');
+  if (!(await exists(target))) return { target, action: 'create', content: `# Project instructions\n\n${instructionOverlay}\n` };
+  const source = await readFile(target, 'utf8');
+  const start = source.indexOf(overlayStart);
+  const end = source.indexOf(overlayEnd);
+  if (start === -1 && end === -1) return { target, action: 'append', content: `${source.replace(/\s*$/, '')}\n\n${instructionOverlay}\n` };
+  if (start < 0 || end < start) throw new Error(`Cannot safely update managed instruction block: ${target}`);
+  return { target, action: 'update', content: `${source.slice(0, start)}${instructionOverlay}${source.slice(end + overlayEnd.length)}` };
+}
+
+async function applyOverlay(controlRoot, apply) {
+  const plan = await overlayPlan(controlRoot);
+  process.stdout.write(`  Instructions ${apply ? plan.action : `would ${plan.action}`} ${plan.target}\n`);
+  if (apply) await writeFile(plan.target, plan.content, 'utf8');
 }
 
 async function loadTeamConfig(options) {
@@ -236,6 +291,7 @@ async function init(options) {
   if (existing.length > 0) throw new Error(`Installation aborted; existing paths would be overwritten:\n${existing.map((target) => `  ${target}`).join('\n')}`);
   await installAssets(adapter.projectAssets, controlRoot, installContext);
   if (team) await writeTeamConfig(controlRoot, team);
+  if (team) await applyOverlay(controlRoot, true);
   if (team) await applyTeamBinding(adapter, controlRoot, team, installContext);
   if (options.global) await installAssets(adapter.globalAssets, controlRoot, installContext);
   process.stdout.write(`Triad+ installed for ${adapter.label} in ${controlRoot}\n`);
@@ -243,6 +299,34 @@ async function init(options) {
     process.stdout.write(`Install user-level assets with --global to expose ${adapter.entry}.\n`);
   }
   process.stdout.write(`Open the control workspace and use ${adapter.entry} <PRD path>. Configured Evaluator+ runs automatically post-approval.\n`);
+}
+
+async function currentTeam(controlRoot) {
+  const target = teamConfigPath(controlRoot);
+  if (!(await exists(target))) return null;
+  try { return JSON.parse(await readFile(target, 'utf8')); }
+  catch { throw new Error(`Cannot safely upgrade an invalid team config: ${target}`); }
+}
+
+async function upgrade(options) {
+  const adapter = getAdapter(options.host);
+  if (!adapter) throw new Error(`Choose --host ${listAdapters().map((item) => item.id).join(', ')}.`);
+  if (!options.control) throw new Error('Provide --control <project-control-path>.');
+  const controlRoot = resolve(options.control);
+  await requireDirectory(controlRoot);
+  const team = await currentTeam(controlRoot);
+  const installContext = context(controlRoot);
+  const stamp = new Date().toISOString().replaceAll(':', '-').replaceAll('.', '-');
+  const backupRoot = join(controlRoot, '.triad-plus', 'backups', stamp);
+  process.stdout.write(`Triad+ upgrade ${options.apply ? 'applying' : 'plan'} for ${adapter.label}\n`);
+  await refreshAssets(adapter.projectAssets, controlRoot, installContext, join(backupRoot, 'project'), options.apply);
+  if (team) await applyOverlay(controlRoot, options.apply);
+  else process.stdout.write('  Instructions skipped: .triad-plus/team.json is not configured\n');
+  if (options.global) {
+    await refreshAssets(adapter.globalAssets, controlRoot, installContext, join(backupRoot, 'global'), options.apply);
+    if (team) await applyTeamBinding(adapter, controlRoot, team, installContext);
+  }
+  if (!options.apply) process.stdout.write('Dry run only. Re-run with --apply to update managed assets.\n');
 }
 
 async function doctor(options) {
@@ -270,6 +354,14 @@ async function doctor(options) {
     process.stdout.write(`  Adapter      ${manifest ? 'OK' : 'missing or different adapter'}\n`);
     process.stdout.write(`  Team config  ${team === 'invalid' ? 'invalid' : team ? 'OK' : 'not configured'}\n`);
     process.stdout.write(`  Evaluator+   ${team?.roles?.evaluator?.enabled === true ? 'configured' : 'not configured'}\n`);
+    const overlay = await overlayPlan(controlRoot).catch(() => null);
+    process.stdout.write(`  Instructions ${overlay ? overlay.action === 'update' ? 'managed' : `needs ${overlay.action}` : 'invalid managed block'}\n`);
+    const globalAgents = join(codexHome(), 'AGENTS.md');
+    if (await exists(globalAgents)) {
+      const globalText = await readFile(globalAgents, 'utf8');
+      const fixedIdentity = /(?:identity|name)[\s\S]{0,100}(?:always|only|must)/i.test(globalText);
+      process.stdout.write(`  Identity policy ${fixedIdentity ? 'host rule detected; review for Triad role conflicts' : 'no fixed host rule detected'}\n`);
+    }
     if (options.hookConfig && adapter.lifecycle) {
       process.stdout.write(`  Hook config  declared; run runtime capability detection for detailed status\n`);
     }
@@ -302,6 +394,7 @@ try {
   const options = parseArgs(process.argv.slice(2));
   if (options.command === 'init') await init(options);
   else if (options.command === 'doctor') await doctor(options);
+  else if (options.command === 'upgrade') await upgrade(options);
   else if (!options.command) await interactiveInit();
   else if (options.command === '--help' || options.command === '-h') usage(0);
   else throw new Error(`Unknown command: ${options.command}`);

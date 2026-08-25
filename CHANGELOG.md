@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Add safe dry-run/apply upgrades for existing project-control workspaces.
+- Maintain a narrowly scoped Triad+ role-run instruction overlay and report
+  potential host identity-policy conflicts in `doctor`.
+
 ## 1.1.1 — 2026-08-25
 
 - Ensure every supported host adopts the configured Orchestrator display name

@@ -18,6 +18,23 @@ npx triad-plus init --host codex --control /path/to/project-control --global
 npx triad-plus doctor --host codex --control /path/to/project-control
 ```
 
+## Upgrade an existing control workspace
+
+`upgrade` refreshes only Triad-managed runtime, skill, adapter, and optional
+host-entry assets. It never changes `team.json`, `.loop/`, PRD files, evidence,
+or product repositories. The default is a dry run:
+
+```bash
+npx triad-plus upgrade --host codex --control /path/to/project-control --global
+npx triad-plus upgrade --host codex --control /path/to/project-control --global --apply
+```
+
+Before replacing a managed asset, the applied upgrade saves its prior copy under
+`.triad-plus/backups/`. Triad+ also maintains a clearly marked role-run block in
+the control workspace `AGENTS.md`; existing instructions are preserved. Review
+`doctor` output when host-level instructions impose a fixed identity, because a
+higher-priority host policy can prevent the configured Orchestrator identity.
+
 Supported hosts: `codex`, `opencode`, `claude-code`, `antigravity`, `hermes`.
 Use `--global` to install a host-level entry point where desired. The installer
 refuses overwrites. If the control path is recognizably a product Git repository,

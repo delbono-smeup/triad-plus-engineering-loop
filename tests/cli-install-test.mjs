@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -75,6 +75,29 @@ try {
   const developerProfile = await readFile(join(configuredCodexHome, 'agents', 'triad_developer.toml'), 'utf8');
   assert.match(developerProfile, /gpt-5\.6-luna/);
   assert.match(developerProfile, /precise and focused/);
+  const instructionPath = join(configuredControl, 'AGENTS.md');
+  await writeFile(instructionPath, `${await readFile(instructionPath, 'utf8')}\n## Owner note\nKeep this note.\n`);
+  const stalePrompt = join(configuredCodexHome, 'prompts', 'triad.md');
+  await writeFile(stalePrompt, 'stale prompt\n');
+  const plannedUpgrade = spawnSync(process.execPath, [
+    'bin/triad-plus.js', 'upgrade', '--host', 'codex', '--control', configuredControl, '--global'
+  ], { cwd: repositoryRoot, env: { ...process.env, CODEX_HOME: configuredCodexHome }, encoding: 'utf8' });
+  assert.equal(plannedUpgrade.status, 0, plannedUpgrade.stderr);
+  assert.match(plannedUpgrade.stdout, /Dry run only/);
+  assert.equal(await readFile(stalePrompt, 'utf8'), 'stale prompt\n');
+  const appliedUpgrade = spawnSync(process.execPath, [
+    'bin/triad-plus.js', 'upgrade', '--host', 'codex', '--control', configuredControl, '--global', '--apply'
+  ], { cwd: repositoryRoot, env: { ...process.env, CODEX_HOME: configuredCodexHome }, encoding: 'utf8' });
+  assert.equal(appliedUpgrade.status, 0, appliedUpgrade.stderr);
+  assert.ok((await readFile(stalePrompt, 'utf8')).includes(userFacingIdentityInvariant));
+  assert.match(await readFile(instructionPath, 'utf8'), /Keep this note/);
+  assert.match(await readFile(instructionPath, 'utf8'), /triad-plus:managed-instructions:start/);
+  assert.equal(await readFile(join(configuredControl, '.triad-plus', 'team.json'), 'utf8'), await readFile(teamConfigSource, 'utf8'));
+  assert.ok((await stat(join(configuredControl, '.triad-plus', 'backups'))).isDirectory());
+  const shippedCodexHooks = JSON.parse(await readFile(join(repositoryRoot, 'integrations', 'codex', 'hooks.json'), 'utf8'));
+  assert.equal(typeof shippedCodexHooks.description, 'string');
+  assert.equal('minimum_codex_cli_version' in shippedCodexHooks, false);
+  assert.equal('purpose' in shippedCodexHooks, false);
   for (const host of ['opencode', 'claude-code']) {
     const control = join(fixtureRoot, `${host}-configured-control`);
     const result = spawnSync(process.execPath, [

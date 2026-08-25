@@ -1,6 +1,5 @@
 {
-  "minimum_codex_cli_version": "0.148.0",
-  "purpose": "Triad external verification dispatch only; this hook never changes card state.",
+  "description": "Triad external verification dispatch only; requires Codex CLI 0.148.0 or newer and never changes card state.",
   "hooks": {
     "SubagentStop": [
       {
