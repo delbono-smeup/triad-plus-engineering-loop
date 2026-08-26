@@ -2,6 +2,14 @@ version: 2
 updated_at: null
 project_decision: not_started
 
+delivery:
+  status: not_delivered # not_delivered | delivered | delivery_blocked | delivered_without_demo
+  handoff: null
+  branches: []
+  evaluator_report: null
+  delivered_at: null
+  owner_message: null
+
 feature_plan:
   path: feature-plan.md
   status: declared

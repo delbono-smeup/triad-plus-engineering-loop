@@ -24,8 +24,9 @@ When enabled, Evaluator+ is automatically dispatched by the Orchestrator after
 Triad reaches Reviewer approval. It receives a fresh post-run packet and cannot
 change the closed Triad result. Set `enabled` to `false` to disable this default.
 
-The runtime adapter is selected per installed control workspace (`--host`). The
-team file records role-level models and effort, but an adapter writes those into
-host-native profiles only where the host supports that facility. A blank model
-means the host default. Never put tokens, API keys, or private deployment data in
-this file.
+The runtime adapter is selected once per installed control workspace (`--host`).
+All roles in that run use that adapter; Triad+ does not orchestrate roles across
+different hosts. The team file records role-level models and effort, but an
+adapter writes those into host-native profiles only where the selected host
+supports that facility. A blank model means the host default. Never put tokens,
+API keys, or private deployment data in this file.

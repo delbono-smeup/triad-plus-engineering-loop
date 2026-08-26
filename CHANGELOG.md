@@ -13,20 +13,7 @@
 
 ## Unreleased
 
-- Continue automatically from an approved card to each dependency-satisfied
-  successor without requesting an owner acknowledgement.
-- Continue automatically from Developer completion through verification and
-  independent review; agent-reported completion is not a human wait condition.
-- Bind repository skill files and hashes to developer assignments and verify the
-  binding as environment-derived evidence.
-- Make the configured Orchestrator presentation the first owner-facing message
-  and avoid repeating it after the role skill is loaded.
-- Let Codex capability detection consume a project hook configuration when one
-  is installed, so verified asynchronous dispatch is selected correctly.
-- Add attributed role-activation records for Developer, Reviewer, and
-  Evaluator+, with Orchestrator delegation notices for owner observability.
-- Make formal owner handoff and final control-record update mandatory delivery
-  closure gates, and make configured demo local/remote access explicit.
+_No changes beyond the 1.3.0 review candidate._
 
 ## 1.2.0 — 2026-08-25
 

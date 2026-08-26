@@ -74,6 +74,10 @@ acknowledgement, progress update, or agent-reported claim. The only valid human
 wait conditions are an escalation named by the policy, a `blocked` verdict, an
 unrecoverable runtime error, or an explicit owner pause.
 
+An owner-facing activation or progress update is informational output, never an
+implicit pause. After sending it, continue the recorded next action without
+waiting for a reply unless one of the valid human wait conditions applies.
+
 ## Authority and delivery
 
 Resolve ordinary Developer–Reviewer disagreement from evidence and record the

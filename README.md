@@ -16,7 +16,7 @@ implementation, review, and orchestration.
 | | What changes |
 | --- | --- |
 | **Independent review** | A Reviewer examines the candidate and verifier evidence instead of asking the Developer to grade its own work. |
-| **Different models per role** | Choose a runtime, model, persona, and supported effort for each role. |
+| **Different models per role** | Choose models, personas, and supported effort per role within one selected runtime. |
 | **Evidence-backed verification** | A claim that tests passed is not proof: `triad-verify` records environment-derived gate evidence. |
 | **Works across coding agents** | Use Codex, Claude Code, OpenCode, Antigravity, or Hermes Agent through peer adapters. |
 
@@ -147,9 +147,12 @@ It sees only the goal, quality target, final candidate, and verifier evidence.
 ## Configuration and verification
 
 The installer writes `.triad-plus/team.json`, which separates stable role IDs
-from user-facing names, personas, models, and supported effort/options. Roles
-can use different models and, where the adapter supports it, different hosts.
-Read [configuration](docs/configuration.md) and [runtime details](docs/runtimes.md).
+from user-facing names, personas, models, and supported effort/options. A control
+workspace selects one host adapter for the whole run; its roles can use different
+models where that host supports them. To use another host, create another control
+workspace with that adapter. Triad+ does not dispatch different roles across
+different hosts in one run. Read [configuration](docs/configuration.md) and
+[runtime details](docs/runtimes.md).
 
 `triad-verify` validates assignment/candidate binding, runs declared
 control-plane gates, detects mutation, and writes evidence. It supports the

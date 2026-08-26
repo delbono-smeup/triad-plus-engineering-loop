@@ -320,6 +320,35 @@ async function currentTeam(controlRoot) {
   catch { throw new Error(`Cannot safely upgrade an invalid team config: ${target}`); }
 }
 
+const deliveryStateDefault = `
+delivery:
+  status: not_delivered
+  handoff: null
+  branches: []
+  evaluator_report: null
+  delivered_at: null
+  owner_message: null
+`;
+
+async function upgradeRunStateDelivery(controlRoot, backupRoot, apply) {
+  const target = join(controlRoot, '.loop', 'run-state.yaml');
+  if (!(await exists(target))) {
+    process.stdout.write('  Delivery state skipped: no initialized .loop/run-state.yaml\n');
+    return;
+  }
+  const source = await readFile(target, 'utf8');
+  if (/^delivery:\s*$/m.test(source)) {
+    process.stdout.write(`  Delivery state already present ${target}\n`);
+    return;
+  }
+  process.stdout.write(`  ${apply ? 'Initialize' : 'Would initialize'} delivery state ${target} (backup)\n`);
+  if (!apply) return;
+  const backup = join(backupRoot, 'project', 'run-state.yaml');
+  await mkdir(dirname(backup), { recursive: true });
+  await cp(target, backup);
+  await writeFile(target, `${source.replace(/\s*$/, '')}\n${deliveryStateDefault}`, 'utf8');
+}
+
 async function upgrade(options) {
   const adapter = getAdapter(options.host);
   if (!adapter) throw new Error(`Choose --host ${listAdapters().map((item) => item.id).join(', ')}.`);
@@ -332,6 +361,7 @@ async function upgrade(options) {
   const backupRoot = join(controlRoot, '.triad-plus', 'backups', stamp);
   process.stdout.write(`Triad+ upgrade ${options.apply ? 'applying' : 'plan'} for ${adapter.label}\n`);
   await refreshAssets(adapter.projectAssets, controlRoot, installContext, join(backupRoot, 'project'), options.apply);
+  await upgradeRunStateDelivery(controlRoot, backupRoot, options.apply);
   if (team) await applyOverlay(controlRoot, options.apply, team);
   else process.stdout.write('  Instructions skipped: .triad-plus/team.json is not configured\n');
   if (options.global) {

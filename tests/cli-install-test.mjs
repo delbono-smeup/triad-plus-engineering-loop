@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -81,6 +81,9 @@ try {
   const instructionPath = join(configuredControl, 'AGENTS.md');
   assert.match(await readFile(instructionPath, 'utf8'), /Orchestrator is `Ada` for this run/);
   await writeFile(instructionPath, `${await readFile(instructionPath, 'utf8')}\n## Owner note\nKeep this note.\n`);
+  await mkdir(join(configuredControl, '.loop'), { recursive: true });
+  const legacyRunState = join(configuredControl, '.loop', 'run-state.yaml');
+  await writeFile(legacyRunState, 'version: 2\nupdated_at: null\nproject_decision: not_started\n');
   const stalePrompt = join(configuredCodexHome, 'prompts', 'triad.md');
   await writeFile(stalePrompt, 'stale prompt\n');
   const plannedUpgrade = spawnSync(process.execPath, [
@@ -88,6 +91,8 @@ try {
   ], { cwd: repositoryRoot, env: { ...process.env, CODEX_HOME: configuredCodexHome }, encoding: 'utf8' });
   assert.equal(plannedUpgrade.status, 0, plannedUpgrade.stderr);
   assert.match(plannedUpgrade.stdout, /Dry run only/);
+  assert.match(plannedUpgrade.stdout, /Would initialize delivery state/);
+  assert.doesNotMatch(await readFile(legacyRunState, 'utf8'), /^delivery:/m);
   assert.equal(await readFile(stalePrompt, 'utf8'), 'stale prompt\n');
   const appliedUpgrade = spawnSync(process.execPath, [
     'bin/triad-plus.js', 'upgrade', '--host', 'codex', '--control', configuredControl, '--global', '--apply'
@@ -97,6 +102,7 @@ try {
   assert.match(await readFile(stalePrompt, 'utf8'), /first owner-facing message/i);
   assert.match(await readFile(instructionPath, 'utf8'), /Keep this note/);
   assert.match(await readFile(instructionPath, 'utf8'), /triad-plus:managed-instructions:start/);
+  assert.match(await readFile(legacyRunState, 'utf8'), /^delivery:\n  status: not_delivered/m);
   assert.equal(await readFile(join(configuredControl, '.triad-plus', 'team.json'), 'utf8'), await readFile(teamConfigSource, 'utf8'));
   assert.ok((await stat(join(configuredControl, '.triad-plus', 'backups'))).isDirectory());
   const shippedCodexHooks = JSON.parse(await readFile(join(repositoryRoot, 'integrations', 'codex', 'hooks.json'), 'utf8'));
