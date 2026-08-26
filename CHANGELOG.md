@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.3.0 — 2026-08-26
+
+- Keep the declared card chain unattended from Developer completion through
+  verification, review, and the next dependency-satisfied card.
+- Bind repository skill files and hashes to attempts as verifier evidence, and
+  make role activations observable to the owner.
+- Require a formal owner delivery closure: final push evidence, optional
+  Evaluator+ report, handoff, run-record update, and practical-test guidance.
+- Make local versus remote demo access explicit; `localhost` is never reported
+  as a remote endpoint.
+
 ## Unreleased
 
 - Continue automatically from an approved card to each dependency-satisfied
