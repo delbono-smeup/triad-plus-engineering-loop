@@ -3,6 +3,7 @@
     "schema_version": 1,
     "id": "codex",
     "binary": "codex",
+    "verification": { "default_mode": "explicit_dispatch", "experimental_modes": ["async_hook"] },
     "lifecycle": { "kind": "SubagentStop", "agent_type": "triad_developer", "requires_async": true, "minimum_version": "0.148.0" }
   },
   "opencode": { "schema_version": 1, "id": "opencode", "binary": "opencode", "lifecycle": null },

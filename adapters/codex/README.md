@@ -33,7 +33,9 @@ Before it starts work, configure the four named role profiles described in
 does not edit profile or model configuration, because their availability and
 model routing are host-owner decisions.
 
-At bootstrap and resume, the Orchestrator runs the runtime capability detector.
-It chooses the configured Codex asynchronous hook only when that hook is really
-available; otherwise it performs explicit verification dispatch. On Codex CLI
-0.142, explicit dispatch is the safe expected route.
+At bootstrap and resume, the Orchestrator runs the runtime capability detector
+with the project's `control_plane.dispatch_mode`. Codex `auto` selects explicit
+verification dispatch even when an async hook is available. The async
+`SubagentStop` route remains an experimental opt-in (`async_hook`) and falls
+back to explicit dispatch when unavailable. On Codex CLI 0.142, explicit
+dispatch is the safe expected route.

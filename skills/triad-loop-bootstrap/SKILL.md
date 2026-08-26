@@ -26,7 +26,9 @@ conditions, runnable quality gates, practical-test need, and integration need.
 6. Create `.loop/runtime/assignments/` and record the active adapter metadata in
    `.loop/runtime/capabilities.json` by running
    `.triad-runtime/triad-runtime-capabilities.mjs --adapter
-   .triad-runtime/adapter.json`.
+   .triad-runtime/adapter.json --requested-mode <project.control_plane.dispatch_mode>`.
+   Use `auto` when the project does not declare a mode. For Codex, `auto` is
+   explicit dispatch; `async_hook` is an experimental opt-in only.
 7. Show the full card division before delivery work. Continue unless the owner
    changes it or an escalation condition exists.
 

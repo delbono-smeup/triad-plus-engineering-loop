@@ -28,3 +28,15 @@ it does not itself approve, rework, or transition a run.
 
 Evidence files and logs are diagnostics. Users normally need only the
 Orchestrator's summary and the Reviewer verdict.
+
+## Codex dispatch modes
+
+Codex uses `explicit_dispatch` by default, including when a compatible async
+`SubagentStop` hook is installed. This is the directly auditable path used for
+normal unattended progress. The async hook remains supported as an experimental
+opt-in with `requested_mode=async_hook`; it is selected only when the requested
+hook is valid and available. If that requested hook is unavailable, capability
+detection fails safe to `explicit_dispatch` and records the reason.
+
+Hooks may produce evidence; the Orchestrator governs progress. The hook never
+dispatches a Reviewer, selects a card, reopens a run, or performs repair.

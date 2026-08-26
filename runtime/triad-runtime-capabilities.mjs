@@ -104,12 +104,40 @@ const hookAvailable = lifecycleAvailable && hook.configured;
 const explicitAvailable = Boolean(hostVersion && nodeVersion);
 let selectedMode = "unavailable";
 let reason = "verification_runtime_unavailable";
-if (hookAvailable && (requestedMode === "auto" || requestedMode === "async_hook" || requestedMode === "hook_dispatch")) {
+const defaultMode = adapter.verification?.default_mode ?? null;
+const experimentalModes = new Set(adapter.verification?.experimental_modes ?? []);
+const experimentalHookRequested = requestedMode === "async_hook" && experimentalModes.has("async_hook");
+
+// An adapter may declare a safer automatic mode. This keeps runtime policy in
+// adapter metadata instead of adding host-specific branches to the Core.
+if (requestedMode === "auto" && defaultMode) {
+  if (defaultMode === "explicit_dispatch" && explicitAvailable) {
+    selectedMode = "explicit_dispatch";
+    reason = `${adapter.id}_default_explicit_dispatch`;
+  } else if (defaultMode === "async_hook" && hookAvailable) {
+    selectedMode = "async_hook";
+    reason = `${adapter.id}_default_async_hook`;
+  } else if (defaultMode === "hook_dispatch" && hookAvailable) {
+    selectedMode = "hook_dispatch";
+    reason = `${adapter.id}_default_hook_dispatch`;
+  } else if (explicitAvailable) {
+    selectedMode = "explicit_dispatch";
+    reason = `${adapter.id}_default_${defaultMode}_unavailable_using_explicit_dispatch`;
+  }
+} else if (experimentalHookRequested && hookAvailable) {
+  selectedMode = "async_hook";
+  reason = "experimental_async_hook_requested";
+} else if (experimentalHookRequested && explicitAvailable) {
+  selectedMode = "explicit_dispatch";
+  reason = "requested_async_hook_unavailable_using_explicit_dispatch";
+} else if (hookAvailable && (requestedMode === "auto" || requestedMode === "async_hook" || requestedMode === "hook_dispatch") && (!lifecycle?.requires_async || requestedMode === "async_hook")) {
   selectedMode = lifecycle.requires_async ? "async_hook" : "hook_dispatch";
   reason = lifecycle.requires_async ? "validated_async_hook_available" : "validated_hook_dispatch_available";
 } else if (explicitAvailable) {
   selectedMode = "explicit_dispatch";
-  reason = ["async_hook", "hook_dispatch"].includes(requestedMode)
+  reason = requestedMode === "explicit_dispatch"
+    ? "explicit_dispatch_requested"
+    : ["async_hook", "hook_dispatch"].includes(requestedMode)
     ? "requested_hook_unavailable_using_explicit_dispatch"
     : "explicit_dispatch_available";
 }

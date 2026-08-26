@@ -26,6 +26,11 @@ PRD/card e definizione dei gate. “I test passano” detto dall’agente è una
 l’output del verifier è evidence derivata dall’ambiente. Evidence fallita o
 invalida non può essere trattata come pass.
 
+Per Codex la modalità `auto` usa intenzionalmente il dispatch esplicito. Il
+percorso asincrono `SubagentStop` resta disponibile solo come opt-in
+sperimentale: gli hook producono evidence, mentre l’Orchestrator mantiene
+l’autorità sull’avanzamento del loop.
+
 Il Reviewer riceve card, diff, report Developer, rilievi precedenti ed evidence.
 `rework` torna al Developer con una correzione delimitata; `blocked` richiede
 all’Orchestrator di escalare la decisione. Le push normali possono essere autonome

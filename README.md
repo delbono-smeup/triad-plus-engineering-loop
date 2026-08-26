@@ -138,7 +138,7 @@ It sees only the goal, quality target, final candidate, and verifier evidence.
 
 | Runtime | Orchestrator | Developer | Reviewer | Evaluator+ | Verification dispatch |
 | --- | --- | --- | --- | --- | --- |
-| Codex | Yes | Yes | Yes | Yes | Explicit fallback; validated async hook when available |
+| Codex | Yes | Yes | Yes | Yes | Explicit dispatch by default; experimental async hook opt-in |
 | Claude Code | Yes | Yes | Yes | Yes | Explicit fallback; validated hook when available |
 | OpenCode | Yes | Yes | Yes | Yes | Explicit dispatch |
 | Antigravity | Yes | Yes | Yes | Yes | Explicit dispatch |

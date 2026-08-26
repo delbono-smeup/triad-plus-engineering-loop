@@ -1,9 +1,11 @@
 # Triad Codex hook adapter
 
-This adapter is for Codex CLI 0.148.0 or newer. It dispatches the Node
-verification runner when a subagent whose type is exactly `triad_developer`
-stops. It is deliberately an asynchronous command hook: it writes immutable
-evidence and has no authority to approve, reject, or transition a feature card.
+This adapter is for Codex CLI 0.148.0 or newer. Its normal verification route is
+explicit dispatch by the Orchestrator. It also provides an experimental,
+opt-in asynchronous command hook that can dispatch the Node verification runner
+when a subagent whose type is exactly `triad_developer` stops. The hook writes
+immutable evidence and has no authority to approve, reject, or transition a
+feature card.
 
 ## Install only after verifying the local Codex schema
 
@@ -44,18 +46,24 @@ The JSON payload needs an `agent_id` matching an active assignment under
 assignment and emits only structured evidence. The orchestrator still validates
 the evidence against the active candidate before changing state.
 
-## Let Triad choose the route
+## Default and experimental routes
 
-Do not select this route by memory. Keep
-`project.control_plane.dispatch_mode: auto` and run:
+Keep `project.control_plane.dispatch_mode: auto` for the normal Codex path and
+run:
 
 ```bash
 node /absolute/path/to/triad-plus-engineering-loop/runtime/triad-runtime-capabilities.mjs \
   --hook-config /absolute/path/to/installed-triad-hooks.json
 ```
 
-Store the JSON output at `.loop/runtime/capabilities.json`. A CLI below 0.148,
-an uninstalled hook, or a configuration with placeholders selects
-`explicit_dispatch`; a supported, configured hook selects `async_hook`. The
-orchestrator follows that snapshot and re-detects only before a new assignment or
-on resume after runtime configuration changes.
+Store the JSON output at `.loop/runtime/capabilities.json`. For Codex, `auto`
+always selects `explicit_dispatch`, including when the async hook is detected as
+available. This is the default because the live Codex collaboration path did
+not reliably emit `SubagentStop` during the validation runs.
+
+To deliberately test the experimental route, pass
+`--requested-mode async_hook`. A compatible Codex version and a valid trusted
+hook configuration select `async_hook`; an unavailable or invalid hook falls
+back to `explicit_dispatch` with a diagnostic reason. The Orchestrator follows
+the snapshot and re-detects only before a new assignment or on resume after
+runtime configuration changes.

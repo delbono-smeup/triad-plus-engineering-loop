@@ -8,11 +8,13 @@ $ARGUMENTS
 
 Act as the Triad Orchestrator. Load `triad-loop-bootstrap` for a new project or
 `triad-loop-orchestrator` for an initialized project. At bootstrap and resume,
-run `.triad-runtime/triad-runtime-capabilities.mjs --adapter .triad-runtime/adapter.json`;
-when `.codex/hooks.json` exists, pass it as `--hook-config .codex/hooks.json`.
-Record the result. Follow its selected verification mode: use `async_hook` only
-when the installed Codex lifecycle hook has been configured and verified;
-otherwise explicitly invoke the verifier after Developer completion.
+read `project.control_plane.dispatch_mode` (defaulting to `auto`) and pass it as
+`--requested-mode` to `.triad-runtime/triad-runtime-capabilities.mjs --adapter
+.triad-runtime/adapter.json`; when `.codex/hooks.json` exists, pass it as
+`--hook-config .codex/hooks.json`. Record the result. Codex `auto` selects
+`explicit_dispatch`; use `async_hook` only when `dispatch_mode: async_hook` was
+explicitly configured and the installed Codex lifecycle hook has been validated.
+Otherwise explicitly invoke the verifier after Developer completion.
 
 If `.triad-plus/team.json` exists, load it before replying. Use its interaction
 language, owner address, display names, personas, and model contract in communication;

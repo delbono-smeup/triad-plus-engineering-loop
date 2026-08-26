@@ -62,8 +62,8 @@ async function invoke(root, agentId, extraArgs = []) {
   return { result, evidence };
 }
 
-function detect(adapter, version, hookConfig) {
-  const result = spawnSync("node", [capabilityDetector, "--adapter", path.join(repositoryRoot, "adapters", adapter, "runtime.json"), "--version-output", `${adapter} ${version}`, "--hook-config", hookConfig], { encoding: "utf8" });
+function detect(adapter, version, hookConfig, requestedMode = "auto") {
+  const result = spawnSync("node", [capabilityDetector, "--adapter", path.join(repositoryRoot, "adapters", adapter, "runtime.json"), "--version-output", `${adapter} ${version}`, "--hook-config", hookConfig, "--requested-mode", requestedMode], { encoding: "utf8" });
   assert.equal(result.status, 0, result.stderr);
   return JSON.parse(result.stdout);
 }
@@ -75,7 +75,15 @@ try {
   await writeJson(codexHook, { minimum_version: "0.148.0", hooks: { SubagentStop: [{ matcher: "^triad_developer$", hooks: [{ type: "command", command: "node /tmp/triad-verify.mjs --project /tmp", async: true }] }] } });
   await writeJson(claudeHook, { hooks: { SubagentStop: [{ matcher: "^triad-developer$", hooks: [{ type: "command", command: "node /tmp/triad-verify.mjs --project /tmp" }] }] } });
   assert.equal(detect("codex", "0.142.0", codexHook).verification.selected_mode, "explicit_dispatch");
-  assert.equal(detect("codex", "0.148.0", codexHook).verification.selected_mode, "async_hook");
+  assert.equal(detect("codex", "0.149.1", codexHook).verification.selected_mode, "explicit_dispatch");
+  assert.equal(detect("codex", "0.149.1", codexHook).verification.reason, "codex_default_explicit_dispatch");
+  assert.equal(detect("codex", "0.149.1", codexHook, "explicit_dispatch").verification.selected_mode, "explicit_dispatch");
+  assert.equal(detect("codex", "0.149.1", codexHook, "async_hook").verification.selected_mode, "async_hook");
+  assert.equal(detect("codex", "0.149.1", codexHook, "async_hook").verification.reason, "experimental_async_hook_requested");
+  assert.equal(detect("codex", "0.142.0", codexHook, "async_hook").verification.selected_mode, "explicit_dispatch");
+  assert.equal(detect("codex", "0.142.0", codexHook, "async_hook").verification.reason, "requested_async_hook_unavailable_using_explicit_dispatch");
+  const unconfiguredCodexHook = path.join(temporaryRoot, "missing-codex-hooks.json");
+  assert.equal(detect("codex", "0.149.1", unconfiguredCodexHook, "async_hook").verification.selected_mode, "explicit_dispatch");
   assert.equal(detect("claude-code", "2.1.233", claudeHook).verification.selected_mode, "hook_dispatch");
   for (const adapter of ["opencode", "antigravity", "hermes"]) assert.equal(detect(adapter, "1.0.0", codexHook).verification.selected_mode, "explicit_dispatch");
 

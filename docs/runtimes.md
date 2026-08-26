@@ -5,7 +5,7 @@ host-specific entry points and configuration behavior.
 
 | Runtime | Prerequisite | Entry point | Verification | Hook limitation |
 | --- | --- | --- | --- | --- |
-| Codex | Codex CLI | `/prompts:triad` | Explicit dispatch; async hook when validated | Hook is optional and requires trusted configuration. |
+| Codex | Codex CLI | `/prompts:triad` | Explicit dispatch by default; experimental async hook opt-in | Hook is optional, requires trusted configuration, and is not selected by `auto`. |
 | Claude Code | Claude Code CLI | `/triad` | Explicit dispatch; hook when validated | Hook is optional and requires trusted configuration. |
 | OpenCode | OpenCode | `/triad` | Explicit dispatch | No Triad lifecycle hook. |
 | Antigravity | Antigravity | `/triad` | Explicit dispatch | No Triad lifecycle hook. |

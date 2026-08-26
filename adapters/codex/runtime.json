@@ -2,6 +2,10 @@
   "schema_version": 1,
   "id": "codex",
   "binary": "codex",
+  "verification": {
+    "default_mode": "explicit_dispatch",
+    "experimental_modes": ["async_hook"]
+  },
   "lifecycle": {
     "kind": "SubagentStop",
     "agent_type": "triad_developer",

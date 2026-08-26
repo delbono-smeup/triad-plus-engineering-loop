@@ -2,7 +2,7 @@
 
 | Runtime | Install | Orchestrator | Developer | Reviewer | Evaluator+ | Verification dispatch | Hook support |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Codex | Yes | Yes | Yes | Yes | Yes | Explicit fallback; async hook when validated | Optional async `SubagentStop` |
+| Codex | Yes | Yes | Yes | Yes | Yes | Explicit dispatch by default; experimental async `SubagentStop` opt-in | Optional async `SubagentStop` |
 | Claude Code | Yes | Yes | Yes | Yes | Yes | Explicit fallback; hook when validated | Optional `SubagentStop` |
 | OpenCode | Yes | Yes | Yes | Yes | Yes | Explicit dispatch | No adapter hook |
 | Antigravity | Yes | Yes | Yes | Yes | Yes | Explicit dispatch | No adapter hook |

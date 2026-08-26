@@ -27,6 +27,11 @@ hash. A developer saying tests pass is a claim; verifier output is
 environment-derived evidence. Failed or invalid evidence cannot be treated as a
 pass.
 
+Codex is intentionally an exception to automatic hook selection: its `auto`
+mode uses explicit dispatch. The async `SubagentStop` route remains an
+experimental opt-in; this does not change the rule that hooks produce evidence
+and the Orchestrator governs progress.
+
 The Reviewer sees the card, diff, Developer report, previous findings, and
 verifier evidence. `rework` returns a bounded finding to Developer; `blocked`
 asks the Orchestrator to escalate the stated decision. Normal pushes may happen

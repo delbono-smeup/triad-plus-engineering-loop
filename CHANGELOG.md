@@ -10,6 +10,8 @@
   Evaluator+ report, handoff, run-record update, and practical-test guidance.
 - Make local versus remote demo access explicit; `localhost` is never reported
   as a remote endpoint.
+- Use explicit verification dispatch by default on Codex; retain the async
+  `SubagentStop` hook as an experimental opt-in path.
 
 ## Unreleased
 
