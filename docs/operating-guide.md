@@ -30,7 +30,10 @@ pass.
 The Reviewer sees the card, diff, Developer report, previous findings, and
 verifier evidence. `rework` returns a bounded finding to Developer; `blocked`
 asks the Orchestrator to escalate the stated decision. Normal pushes may happen
-autonomously once declared goals pass. Demo start and stop remain owner-controlled.
+autonomously once declared goals pass. A final owner delivery is a separate
+closure gate: it records the final push, optional evaluation, handoff, final run
+record, and practical test before the project is called delivered. Demo start and
+stop remain owner-controlled.
 
 ## Evaluator+
 
@@ -48,3 +51,8 @@ immutable PRD, cards, assignments, evidence, review reports, optional Evaluator+
 reports, and handoff in a separate project-control workspace. Never place tokens
 or secrets there. Hooks are an optimization, not authority; explicit verification
 is always the fallback. See the [compatibility matrix](compatibility.md).
+
+For a configured demo service, record its command, local URL, remote-access mode,
+and remote URL in the project and handoff. `localhost` is local-only; do not give
+it to a remote tester as a reachable endpoint. Start the service only on the
+owner's request and validate any declared remote URL before presenting it.

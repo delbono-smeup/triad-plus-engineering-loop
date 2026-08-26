@@ -14,6 +14,8 @@
   is installed, so verified asynchronous dispatch is selected correctly.
 - Add attributed role-activation records for Developer, Reviewer, and
   Evaluator+, with Orchestrator delegation notices for owner observability.
+- Make formal owner handoff and final control-record update mandatory delivery
+  closure gates, and make configured demo local/remote access explicit.
 
 ## 1.2.0 — 2026-08-25
 

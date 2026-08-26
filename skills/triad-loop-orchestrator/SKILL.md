@@ -85,8 +85,30 @@ review, and restoration of normal roles.
 After all required cards and project gates pass, commit each approved card if
 needed and normally push declared branches. Never force-push, create/update a
 pull request, publish, release, or start/stop a demo without owner direction.
-Write a final handoff with cards, commits, pushes, verifier evidence, reviewer
-decisions, risks, exceptions, and practical-test instructions.
+
+## Delivery closure gate
+
+`approved` is not an owner delivery. Do not declare a project delivered, closed,
+or ready for owner testing until this gate has completed:
+
+1. Record the final commit and normal-push evidence for every declared branch.
+2. If configured, complete the isolated Evaluator+ dispatch and record its
+   report. Its verdict still cannot reopen Triad.
+3. Write the final handoff from the handoff template with cards, commits,
+   pushes, verifier evidence, reviewer decisions, risks, exceptions, and
+   practical-test instructions.
+4. Update the control-workspace run record with the delivery decision, handoff
+   reference, final branch/commit map, and optional Evaluator+ reference.
+5. Give the owner one final delivery message that links the handoff, names the
+   practical test, and states the demo status.
+
+For every configured demo service, copy its declared command, local URL, remote
+URL, and remote-access mode into the handoff. Never present `localhost` as a
+remote endpoint. If the service is loopback-only or has no configured remote
+URL, explicitly say that remote testing is unavailable. On an owner request to
+start a demo, validate the declared local URL and, when a remote URL is
+configured, validate that endpoint before reporting it. Keep the service running
+until the owner explicitly ends the demo.
 
 Evaluator+ is outside the Triad production run. After final Triad approval,
 read `roles.evaluator.enabled` from `.triad-plus/team.json`: when it is `true`,

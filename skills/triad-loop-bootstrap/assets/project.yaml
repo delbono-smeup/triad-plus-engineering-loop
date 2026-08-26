@@ -37,7 +37,17 @@ project:
       enabled: false
       start_policy: only_on_owner_request
       stop_policy: only_on_owner_completion
+      # Declare a service only when the owner needs a practical demo. A remote
+      # URL is optional and must never be inferred from a localhost URL.
       services: []
+      # Example service shape:
+      # - id: component-demo
+      #   worktree: worktrees/product-repository
+      #   start_command: npm run dev -- --host 0.0.0.0
+      #   stop_command: <owner-completion procedure>
+      #   local_url: http://127.0.0.1:6006
+      #   remote_access: tailscale # none | tailscale | proxy | public
+      #   remote_url: http://host.example:6006
 
 integration:
   enabled: false

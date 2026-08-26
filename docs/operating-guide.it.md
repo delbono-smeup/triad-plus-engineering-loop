@@ -29,7 +29,10 @@ invalida non può essere trattata come pass.
 Il Reviewer riceve card, diff, report Developer, rilievi precedenti ed evidence.
 `rework` torna al Developer con una correzione delimitata; `blocked` richiede
 all’Orchestrator di escalare la decisione. Le push normali possono essere autonome
-dopo i goal dichiarati. Avvio e stop della demo restano del proprietario.
+dopo i goal dichiarati. La consegna formale al proprietario è un gate distinto:
+registra push finale, eventuale valutazione, handoff, stato finale della run e
+prova pratica prima di dichiarare il progetto consegnato. Avvio e stop della demo
+restano del proprietario.
 
 ## Evaluator+
 
@@ -48,3 +51,8 @@ eventuali report Evaluator+ e handoff in un workspace di controllo separato. Non
 inserire token o segreti. Gli hook sono un’ottimizzazione, non autorità: il
 dispatch esplicito della verification resta sempre disponibile. Vedi la
 [matrice di compatibilità](compatibility.md).
+
+Per ogni demo configurata, registra nel progetto e nell’handoff comando, URL
+locale, modalità di accesso remoto e URL remoto. `localhost` è solo locale: non
+va indicato a chi prova da remoto. Avvia il servizio soltanto su richiesta del
+proprietario e verifica l’URL remoto dichiarato prima di comunicarlo.

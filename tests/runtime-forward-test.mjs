@@ -171,7 +171,17 @@ try {
   assert.match(orchestratorContracts[0], /required_repository_skills/i);
   assert.match(orchestratorContracts[0], /Developer report is never a human-input wait condition/i);
   assert.match(orchestratorContracts[0], /The normal chain is unattended/i);
+  assert.match(orchestratorContracts[0], /## Delivery closure gate/);
+  assert.match(orchestratorContracts[0], /`approved` is not an owner delivery/);
+  assert.match(orchestratorContracts[0], /Update the control-workspace run record/);
+  assert.match(orchestratorContracts[0], /Never present `localhost` as a\s+remote endpoint/);
   assert.match(orchestratorContracts[1], /A Developer report is never a reason to wait\s+for owner input/i);
+  const handoffTemplate = await readFile(path.join(repositoryRoot, 'skills', 'triad-loop-bootstrap', 'assets', 'loop-template', 'handoff-report.template.md'), 'utf8');
+  const projectTemplate = await readFile(path.join(repositoryRoot, 'skills', 'triad-loop-bootstrap', 'assets', 'project.yaml'), 'utf8');
+  assert.match(handoffTemplate, /## Delivery closure record/);
+  assert.match(handoffTemplate, /Remote access contract/);
+  assert.match(projectTemplate, /remote_access: tailscale/);
+  assert.match(projectTemplate, /remote_url:/);
   const roleContracts = await Promise.all([
     'skills/triad-loop-developer/SKILL.md',
     'skills/triad-loop-reviewer/SKILL.md',

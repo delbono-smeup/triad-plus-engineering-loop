@@ -50,6 +50,14 @@ State: `not_applicable | ready_to_start | active | closed | start_failed`
 - Start: `<only on owner request>`
 - Stop: `<only on owner completion>`
 - Closure evidence: `<timestamp, process result, port-release check>`
+- Remote access contract: `<none | declared remote URL and access mode>`.
+  `localhost` is local-only and must not be presented as a remote endpoint.
+
+## Delivery closure record
+
+- Run record updated: `<path and final decision>`
+- Final branch/commit map recorded: `<yes/no; reference>`
+- Final delivery message issued: `<yes/no; timestamp or reference>`
 
 ## Practical test and follow-up
 
