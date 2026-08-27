@@ -18,7 +18,7 @@ implementation, review, and orchestration.
 | **Independent review** | A Reviewer examines the candidate and verifier evidence instead of asking the Developer to grade its own work. |
 | **Different models per role** | Choose models, personas, and supported effort per role within one selected runtime. |
 | **Evidence-backed verification** | A claim that tests passed is not proof: `triad-verify` records environment-derived gate evidence. |
-| **Works across coding agents** | Use Codex, Claude Code, OpenCode, Antigravity, or Hermes Agent through peer adapters. GitHub Copilot is available as a candidate adapter. |
+| **Works across coding agents** | Use Codex, Claude Code, OpenCode, Antigravity, Hermes Agent, or GitHub Copilot through peer adapters. |
 
 Triad+ is for the moment after a coding agent says “done”: it gives that claim a
 separate reviewer, deterministic checks, and an orchestrator that decides what
@@ -126,7 +126,7 @@ PRD path:
 | OpenCode | `/triad /absolute/path/to/prd.md` |
 | Antigravity | `/triad /absolute/path/to/prd.md` |
 | Hermes Agent | `/triad /absolute/path/to/prd.md` |
-| GitHub Copilot (candidate) | `/triad /absolute/path/to/prd.md` or select `triad-orchestrator` with `/agent` |
+| GitHub Copilot | `/triad /absolute/path/to/prd.md` or select `triad-orchestrator` with `/agent` |
 
 ## Evaluator+
 
@@ -144,7 +144,7 @@ It sees only the goal, quality target, final candidate, and verifier evidence.
 | OpenCode | Yes | Yes | Yes | Yes | Explicit dispatch |
 | Antigravity | Yes | Yes | Yes | Yes | Explicit dispatch |
 | Hermes Agent | Yes | Yes | Yes | Yes | Explicit dispatch |
-| GitHub Copilot (candidate) | Candidate | Candidate | Candidate | Candidate | Explicit dispatch; desktop-app gate pending |
+| GitHub Copilot | Yes | Yes | Yes | Yes | Explicit dispatch; no lifecycle hook |
 
 ## Configuration and verification
 

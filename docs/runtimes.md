@@ -10,7 +10,7 @@ host-specific entry points and configuration behavior.
 | OpenCode | OpenCode | `/triad` | Explicit dispatch | No Triad lifecycle hook. |
 | Antigravity | Antigravity | `/triad` | Explicit dispatch | No Triad lifecycle hook. |
 | Hermes Agent | Hermes Agent | `/triad` | Explicit dispatch | No Triad lifecycle hook. |
-| GitHub Copilot (candidate) | GitHub Copilot CLI and desktop app | `/triad` when the project skill is exposed, otherwise `/agent` → `triad-orchestrator` | Explicit dispatch | No adapter hook; desktop-app lifecycle gate pending. |
+| GitHub Copilot | GitHub Copilot CLI and desktop app | `/triad` when the project skill is exposed, otherwise `/agent` → `triad-orchestrator` | Explicit dispatch | No adapter hook; desktop app supports the complete validated lifecycle. |
 
 Install with `npx triad-plus init --host <runtime> --control <path>`; use
 `--global` when you want host-level command assets. `doctor` reports the runtime
@@ -24,7 +24,7 @@ See the concise host guides for [Codex](codex-replication.md),
 [Claude Code](claude-code-replication.md), [OpenCode](opencode-replication.md),
 and [Antigravity](antigravity-replication.md).
 
-## GitHub Copilot (candidate)
+## GitHub Copilot
 
 The Copilot adapter uses the documented custom-agent and agent-skill primitives.
 Install it with:
@@ -41,9 +41,10 @@ Project agents are generated under `.github/agents/` and the Triad skill under
 select `triad-orchestrator` through `/agent` and provide the same request.
 Verification is explicit by default and no Copilot lifecycle hook is required.
 
-The adapter remains a candidate until a desktop-app smoke demonstrates distinct
-Orchestrator, Developer, and Reviewer contexts through a complete unattended
-Triad run. The CLI and asset path are validated independently.
+The desktop app has been validated with distinct Orchestrator, Developer, and
+Reviewer contexts through a complete unattended Triad run. The adapter uses
+explicit verification and has no lifecycle hook; the CLI and asset paths are
+validated independently as well.
 
 ## OpenCode
 

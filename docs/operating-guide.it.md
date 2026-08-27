@@ -31,11 +31,10 @@ percorso asincrono `SubagentStop` resta disponibile solo come opt-in
 sperimentale: gli hook producono evidence, mentre l’Orchestrator mantiene
 l’autorità sull’avanzamento del loop.
 
-L’adapter GitHub Copilot è attualmente candidato. Usa custom agent di progetto
-e la skill `triad`, con dispatch esplicito della verification e senza hook di
-lifecycle. Lo smoke della desktop app è un gate distinto dai controlli CLI di
-asset e doctor: non considerarlo pienamente supportato finché quel gate non
-passa.
+L’adapter GitHub Copilot usa custom agent di progetto e la skill `triad`, con
+dispatch esplicito della verification e senza hook di lifecycle. Lo smoke della
+desktop app ha validato contesti distinti per i ruoli e la continuazione
+unattended, oltre ai controlli CLI di asset e doctor.
 
 Il Reviewer riceve card, diff, report Developer, rilievi precedenti ed evidence.
 `rework` torna al Developer con una correzione delimitata; `blocked` richiede

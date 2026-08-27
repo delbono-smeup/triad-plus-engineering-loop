@@ -15,10 +15,9 @@
 
 ## Unreleased
 
-- Add the candidate GitHub Copilot adapter with project/global custom agents,
-  the `triad` skill, explicit verification by default, and doctor diagnostics.
-- Document the Copilot desktop-app validation gate; full support remains
-  pending a live distinct-context smoke.
+- Promote the GitHub Copilot adapter after a live desktop smoke validated
+  distinct role contexts, explicit verification, unattended continuation, and
+  delivery closure.
 
 ## 1.2.0 — 2026-08-25
 
