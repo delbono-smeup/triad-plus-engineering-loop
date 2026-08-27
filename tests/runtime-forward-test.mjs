@@ -85,7 +85,7 @@ try {
   const unconfiguredCodexHook = path.join(temporaryRoot, "missing-codex-hooks.json");
   assert.equal(detect("codex", "0.149.1", unconfiguredCodexHook, "async_hook").verification.selected_mode, "explicit_dispatch");
   assert.equal(detect("claude-code", "2.1.233", claudeHook).verification.selected_mode, "hook_dispatch");
-  for (const adapter of ["opencode", "antigravity", "hermes"]) assert.equal(detect(adapter, "1.0.0", codexHook).verification.selected_mode, "explicit_dispatch");
+  for (const adapter of ["opencode", "antigravity", "hermes", "copilot"]) assert.equal(detect(adapter, "1.0.0", codexHook).verification.selected_mode, "explicit_dispatch");
 
   const passRoot = path.join(temporaryRoot, "pass");
   const passing = await prepare(passRoot, 1, "test \"$(printf TRIAD_PASS)\" = \"TRIAD_PASS\"");
@@ -158,6 +158,10 @@ try {
 
   const coreSources = [await readFile(path.join(repositoryRoot, "bin", "triad-plus.js"), "utf8"), await readFile(capabilityDetector, "utf8")].join("\n");
   assert.doesNotMatch(coreSources, /(?:if|switch|===)[\s\S]{0,80}hermes/i);
+  assert.doesNotMatch(coreSources, /(?:if|switch|===)[\s\S]{0,80}copilot/i);
+  const packageMetadata = JSON.parse(await readFile(path.join(repositoryRoot, "package.json"), "utf8"));
+  assert.ok(packageMetadata.files.includes("adapters/"), "package must ship adapter assets");
+  assert.match(await readFile(path.join(repositoryRoot, "adapters", "copilot", "runtime.json"), "utf8"), /"id":\s*"copilot"/);
   const orchestratorContracts = await Promise.all([
     "skills/triad-loop-orchestrator/SKILL.md",
     "adapters/codex/prompts/triad.md",
@@ -166,7 +170,9 @@ try {
     "adapters/opencode/.opencode/agents/triad-orchestrator.md",
     "adapters/antigravity/.agents/agents/triad-orchestrator/agent.md",
     "adapters/antigravity/.agents/skills/triad/SKILL.md",
-    "adapters/hermes/skills/triad/SKILL.md"
+    "adapters/hermes/skills/triad/SKILL.md",
+    "adapters/copilot/.github/agents/triad-orchestrator.agent.md",
+    "adapters/copilot/.github/skills/triad/SKILL.md"
   ].map((file) => readFile(path.join(repositoryRoot, file), "utf8")));
   for (const contract of orchestratorContracts) {
     assert.match(contract, /evaluator\.enabled/i, "configured Evaluator+ must be recognized");

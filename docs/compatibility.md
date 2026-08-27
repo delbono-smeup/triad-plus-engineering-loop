@@ -7,6 +7,7 @@
 | OpenCode | Yes | Yes | Yes | Yes | Yes | Explicit dispatch | No adapter hook |
 | Antigravity | Yes | Yes | Yes | Yes | Yes | Explicit dispatch | No adapter hook |
 | Hermes Agent | Yes | Yes | Yes | Yes | Yes | Explicit dispatch | No adapter hook |
+| GitHub Copilot (candidate) | Candidate | Candidate | Candidate | Candidate | Candidate | Explicit dispatch | No adapter hook; desktop validation pending |
 
 All adapters consume the same role IDs and project-control records. Runtime
 model/effort application is limited to the facilities each host exposes; the

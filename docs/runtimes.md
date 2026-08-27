@@ -10,6 +10,7 @@ host-specific entry points and configuration behavior.
 | OpenCode | OpenCode | `/triad` | Explicit dispatch | No Triad lifecycle hook. |
 | Antigravity | Antigravity | `/triad` | Explicit dispatch | No Triad lifecycle hook. |
 | Hermes Agent | Hermes Agent | `/triad` | Explicit dispatch | No Triad lifecycle hook. |
+| GitHub Copilot (candidate) | GitHub Copilot CLI and desktop app | `/triad` when the project skill is exposed, otherwise `/agent` → `triad-orchestrator` | Explicit dispatch | No adapter hook; desktop-app lifecycle gate pending. |
 
 Install with `npx triad-plus init --host <runtime> --control <path>`; use
 `--global` when you want host-level command assets. `doctor` reports the runtime
@@ -22,6 +23,27 @@ adapter instructions. It is supported, not experimental.
 See the concise host guides for [Codex](codex-replication.md),
 [Claude Code](claude-code-replication.md), [OpenCode](opencode-replication.md),
 and [Antigravity](antigravity-replication.md).
+
+## GitHub Copilot (candidate)
+
+The Copilot adapter uses the documented custom-agent and agent-skill primitives.
+Install it with:
+
+```bash
+npx triad-plus init --host copilot --control /absolute/path/to/triad-control --global
+npx triad-plus doctor --host copilot --control /absolute/path/to/triad-control
+```
+
+Project agents are generated under `.github/agents/` and the Triad skill under
+`.github/skills/triad/`; `--global` also installs the corresponding assets under
+`~/.copilot/`. Open the control workspace in the Copilot desktop app. Use
+`/triad <absolute-prd-path>` when the skill is available as a command; otherwise
+select `triad-orchestrator` through `/agent` and provide the same request.
+Verification is explicit by default and no Copilot lifecycle hook is required.
+
+The adapter remains a candidate until a desktop-app smoke demonstrates distinct
+Orchestrator, Developer, and Reviewer contexts through a complete unattended
+Triad run. The CLI and asset path are validated independently.
 
 ## OpenCode
 

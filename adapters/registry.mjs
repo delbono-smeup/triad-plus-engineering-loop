@@ -210,6 +210,48 @@ const definitions = [
       const root = join(hermesProfileHome(), 'skills');
       return [join(root, 'triad'), ...sharedSkillNames.map((name) => join(root, name))];
     }
+  },
+  {
+    id: 'copilot',
+    label: 'GitHub Copilot',
+    binary: 'copilot',
+    entry: '/triad',
+    fallbackEntry: '/agent',
+    lifecycle: null,
+    modelBinding: 'project-frontmatter',
+    modelFields: ['model', 'reasoningEffort'],
+    modelRoles: roleDefinitions.map((role) => role.id),
+    projectAssets: [
+      { source: 'adapters/copilot/.github/agents', destination: '.github/agents' },
+      { source: 'adapters/copilot/.github/skills/triad', destination: '.github/skills/triad' },
+      sharedSkills('.github/skills'),
+      ...projectRuntimeAssets('copilot')
+    ],
+    globalAssets: [
+      { source: 'adapters/copilot/.github/agents', destination: () => hostHome('.copilot', 'agents') },
+      { source: 'adapters/copilot/.github/skills/triad', destination: () => hostHome('.copilot', 'skills', 'triad') },
+      sharedSkills(() => hostHome('.copilot', 'skills'))
+    ],
+    projectPaths(controlRoot) {
+      const root = join(controlRoot, '.github');
+      return [
+        ...roleDefinitions.map((role) => join(root, 'agents', `triad-${role.id}.agent.md`)),
+        join(root, 'skills', 'triad'),
+        ...sharedSkillNames.map((name) => join(root, 'skills', name)),
+        join(controlRoot, '.triad-runtime')
+      ];
+    },
+    globalPaths() {
+      const root = hostHome('.copilot');
+      return [
+        ...roleDefinitions.map((role) => join(root, 'agents', `triad-${role.id}.agent.md`)),
+        join(root, 'skills', 'triad'),
+        ...sharedSkillNames.map((name) => join(root, 'skills', name))
+      ];
+    },
+    roleModelPaths(controlRoot) {
+      return roleDefinitions.map((role) => join(controlRoot, '.github', 'agents', `triad-${role.id}.agent.md`));
+    }
   }
 ];
 

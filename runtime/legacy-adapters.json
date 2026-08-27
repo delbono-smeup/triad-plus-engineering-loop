@@ -14,5 +14,12 @@
     "lifecycle": { "kind": "SubagentStop", "agent_type": "triad-developer", "requires_async": false }
   },
   "antigravity": { "schema_version": 1, "id": "antigravity", "binary": "agy", "lifecycle": null },
-  "hermes": { "schema_version": 1, "id": "hermes", "binary": "hermes", "lifecycle": null }
+  "hermes": { "schema_version": 1, "id": "hermes", "binary": "hermes", "lifecycle": null },
+  "copilot": {
+    "schema_version": 1,
+    "id": "copilot",
+    "binary": "copilot",
+    "verification": { "default_mode": "explicit_dispatch" },
+    "lifecycle": null
+  }
 }

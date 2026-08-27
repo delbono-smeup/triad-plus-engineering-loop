@@ -32,6 +32,12 @@ mode uses explicit dispatch. The async `SubagentStop` route remains an
 experimental opt-in; this does not change the rule that hooks produce evidence
 and the Orchestrator governs progress.
 
+The GitHub Copilot adapter is currently a candidate. It uses project custom
+agents and the `triad` skill, with explicit verification dispatch and no
+lifecycle hook. Its desktop-app smoke gate is separate from the CLI asset and
+doctor checks; do not treat the candidate as fully supported until that gate
+passes.
+
 The Reviewer sees the card, diff, Developer report, previous findings, and
 verifier evidence. `rework` returns a bounded finding to Developer; `blocked`
 asks the Orchestrator to escalate the stated decision. Normal pushes may happen

@@ -11,7 +11,7 @@ const codexHome = join(fixtureRoot, 'codex-home');
 const userFacingIdentityInvariant = "Before the first owner-facing reply, read `.triad-plus/team.json` when it exists.\nUser-facing identity is permanent: adopt its non-empty\n`roles.orchestrator.displayName` as the sole user-facing identity for every\nowner-facing reply, including the first. If the file is absent or has no\nnon-empty display name, use `Triad Orchestrator`; never present a hidden\nintermediary or another Triad role to the owner. You may report delegated roles'\noutputs, but never claim their identity.";
 
 try {
-  for (const host of ['codex', 'opencode', 'claude-code', 'antigravity', 'hermes']) {
+  for (const host of ['codex', 'opencode', 'claude-code', 'antigravity', 'hermes', 'copilot']) {
     const controlRoot = join(fixtureRoot, host, 'control');
     const cliArgs = ['bin/triad-plus.js', 'init', '--host', host, '--control', controlRoot];
     if (host === 'codex') cliArgs.push('--global');
@@ -157,6 +157,32 @@ try {
   assert.equal(hermes.status, 0, hermes.stderr);
   await readFile(join(hermesControl, '.triad-runtime', 'adapter.json'), 'utf8');
   assert.ok((await readFile(join(fixtureRoot, 'hermes-home', 'skills', 'triad', 'SKILL.md'), 'utf8')).includes(userFacingIdentityInvariant));
+  const copilotControl = join(fixtureRoot, 'copilot-configured-control');
+  const copilot = spawnSync(process.execPath, [
+    'bin/triad-plus.js', 'init', '--host', 'copilot', '--control', copilotControl, '--team-config', teamConfigSource
+  ], { cwd: repositoryRoot, encoding: 'utf8' });
+  assert.equal(copilot.status, 0, copilot.stderr);
+  const copilotDeveloper = await readFile(join(copilotControl, '.github', 'agents', 'triad-developer.agent.md'), 'utf8');
+  assert.match(copilotDeveloper, /model: "gpt-5\.6-luna"/);
+  assert.match(copilotDeveloper, /reasoningEffort: "max"/);
+  assert.match(await readFile(join(copilotControl, '.github', 'skills', 'triad', 'SKILL.md'), 'utf8'), /explicitly run[\s\S]*triad-verify/);
+  const copilotDoctor = spawnSync(process.execPath, [
+    'bin/triad-plus.js', 'doctor', '--host', 'copilot', '--control', copilotControl
+  ], { cwd: repositoryRoot, encoding: 'utf8' });
+  assert.equal(copilotDoctor.status, 0, copilotDoctor.stderr);
+  assert.match(copilotDoctor.stdout, /GitHub Copilot\s+OK/);
+  const copilotHome = join(fixtureRoot, 'copilot-home');
+  const copilotGlobalControl = join(fixtureRoot, 'copilot-global-control');
+  const globalCopilot = spawnSync(process.execPath, [
+    'bin/triad-plus.js', 'init', '--host', 'copilot', '--control', copilotGlobalControl, '--global'
+  ], {
+    cwd: repositoryRoot,
+    env: { ...process.env, HOME: copilotHome },
+    encoding: 'utf8'
+  });
+  assert.equal(globalCopilot.status, 0, globalCopilot.stderr);
+  await readFile(join(copilotHome, '.copilot', 'agents', 'triad-orchestrator.agent.md'), 'utf8');
+  await readFile(join(copilotHome, '.copilot', 'skills', 'triad', 'SKILL.md'), 'utf8');
   const evaluatorEnabledSource = join(fixtureRoot, 'team-evaluator-enabled.json');
   const evaluatorEnabled = JSON.parse(await readFile(teamConfigSource, 'utf8'));
   evaluatorEnabled.roles.evaluator.enabled = true;

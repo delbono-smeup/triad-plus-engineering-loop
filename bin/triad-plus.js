@@ -192,14 +192,20 @@ async function writeTeamConfig(controlRoot, team) {
   await writeFile(target, `${JSON.stringify(team, null, 2)}\n`, 'utf8');
 }
 
-async function applyMarkdownModel(target, model) {
-  if (!model) return;
+async function applyMarkdownModel(target, configuration, fields = ['model']) {
+  if (!fields.some((field) => configuration?.[field === 'reasoningEffort' ? 'reasoning_effort' : field])) return;
   const source = await readFile(target, 'utf8');
   if (!source.startsWith('---\n')) throw new Error(`Agent definition has no YAML frontmatter: ${target}`);
   const closing = source.indexOf('\n---\n', 4);
   if (closing === -1) throw new Error(`Agent definition has invalid YAML frontmatter: ${target}`);
-  const frontmatter = source.slice(4, closing).replace(/^model:\s*.*\n?/m, '');
-  await writeFile(target, `---\n${frontmatter}model: ${JSON.stringify(model)}${source.slice(closing)}`, 'utf8');
+  let frontmatter = source.slice(4, closing);
+  for (const field of fields) frontmatter = frontmatter.replace(new RegExp(`^${field}:\\s*.*\\n?`, 'm'), '');
+  const values = fields
+    .map((field) => ({ field, value: field === 'reasoningEffort' ? configuration.reasoning_effort : configuration[field] }))
+    .filter(({ value }) => value !== null && value !== undefined && value !== '');
+  if (values.length === 0) return;
+  const additions = values.map(({ field, value }) => `${field}: ${JSON.stringify(value)}`).join('\n');
+  await writeFile(target, `---\n${frontmatter}${additions}\n${source.slice(closing)}`, 'utf8');
 }
 
 async function writeRoleProfiles(paths, team) {
@@ -231,7 +237,9 @@ async function applyTeamBinding(adapter, controlRoot, team, installContext) {
     const paths = adapter.roleModelPaths(controlRoot, installContext);
     const roles = (adapter.modelRoles ?? roleDefinitions.map((role) => role.id))
       .map((roleId) => roleDefinitions.find((role) => role.id === roleId));
-    for (const [index, role] of roles.entries()) await applyMarkdownModel(paths[index], team.roles[role.id].model);
+    for (const [index, role] of roles.entries()) {
+      await applyMarkdownModel(paths[index], team.roles[role.id], adapter.modelFields ?? ['model']);
+    }
     return;
   }
   if (adapter.modelBinding === 'global-profiles') {
@@ -254,6 +262,11 @@ async function collisions(paths) {
   return result;
 }
 
+async function allExist(paths) {
+  for (const target of paths) if (!(await exists(target))) return false;
+  return true;
+}
+
 function commandVersion(binary) {
   const candidates = Array.isArray(binary) ? binary : [binary];
   for (const candidate of candidates) {
@@ -261,6 +274,17 @@ function commandVersion(binary) {
     if (result.status === 0) return String(result.stdout).trim().split('\n')[0];
   }
   return null;
+}
+
+function capabilitySnapshot(controlRoot, manifestPath) {
+  if (!manifestPath) return null;
+  const detector = join(packageRoot, 'runtime', 'triad-runtime-capabilities.mjs');
+  const result = spawnSync(process.execPath, [detector, '--adapter', manifestPath], {
+    cwd: controlRoot,
+    encoding: 'utf8'
+  });
+  if (result.status !== 0) return null;
+  try { return JSON.parse(result.stdout); } catch { return null; }
 }
 
 async function collectTeamConfiguration(prompt, adapter) {
@@ -390,10 +414,17 @@ async function doctor(options) {
     const manifestPath = join(controlRoot, '.triad-runtime', 'adapter.json');
     let manifest = false;
     try { manifest = (JSON.parse(await readFile(manifestPath, 'utf8'))?.id === adapter.id); } catch {}
+    const targets = adapter.projectPaths(controlRoot, installContext);
+    const roleTargets = targets.filter((target) => /[/\\]agents[/\\]triad-/.test(target));
+    const triadSkillTargets = targets.filter((target) => /[/\\]skills[/\\]triad$/.test(target));
+    const capability = manifest ? capabilitySnapshot(controlRoot, manifestPath) : null;
     process.stdout.write(`${adapter.label.padEnd(14)} ${absent.length ? 'not installed' : 'OK'}\n`);
     process.stdout.write(`  Host runtime ${binary ? `OK (${binary})` : 'not installed or version unavailable'}\n`);
     process.stdout.write(`  Verifier     ${node && await exists(join(controlRoot, '.triad-runtime', 'triad-verify.mjs')) ? 'OK' : 'incomplete'}\n`);
     process.stdout.write(`  Adapter      ${manifest ? 'OK' : 'missing or different adapter'}\n`);
+    if (roleTargets.length) process.stdout.write(`  Role agents  ${await allExist(roleTargets) ? 'OK' : 'missing'}\n`);
+    if (triadSkillTargets.length) process.stdout.write(`  Triad skill  ${await allExist(triadSkillTargets) ? 'OK' : 'missing'}\n`);
+    process.stdout.write(`  Verification ${capability?.verification?.selected_mode ?? 'unavailable'}${capability?.verification?.reason ? ` (${capability.verification.reason})` : ''}\n`);
     process.stdout.write(`  Team config  ${team === 'invalid' ? 'invalid' : team ? 'OK' : 'not configured'}\n`);
     process.stdout.write(`  Evaluator+   ${team?.roles?.evaluator?.enabled === true ? 'configured' : 'not configured'}\n`);
     const overlay = await overlayPlan(controlRoot, team).catch(() => null);

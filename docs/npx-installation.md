@@ -35,7 +35,8 @@ the control workspace `AGENTS.md`; existing instructions are preserved. Review
 `doctor` output when host-level instructions impose a fixed identity, because a
 higher-priority host policy can prevent the configured Orchestrator identity.
 
-Supported hosts: `codex`, `opencode`, `claude-code`, `antigravity`, `hermes`.
+Supported hosts: `codex`, `opencode`, `claude-code`, `antigravity`, `hermes`, and
+the candidate `copilot` adapter.
 Use `--global` to install a host-level entry point where desired. The installer
 refuses overwrites. If the control path is recognizably a product Git repository,
 it stops unless `--allow-product-repo` is explicitly supplied after review.

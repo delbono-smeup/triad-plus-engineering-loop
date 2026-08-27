@@ -15,7 +15,10 @@
 
 ## Unreleased
 
-_No changes beyond the 1.3.0 review candidate._
+- Add the candidate GitHub Copilot adapter with project/global custom agents,
+  the `triad` skill, explicit verification by default, and doctor diagnostics.
+- Document the Copilot desktop-app validation gate; full support remains
+  pending a live distinct-context smoke.
 
 ## 1.2.0 — 2026-08-25
 
