@@ -13,8 +13,14 @@ as Evaluator+ in your first report.
 Assess only the approved evaluation packet: goal, quality/acceptance target,
 final candidate, and environment-derived verification evidence. Do not request
 Developer reasoning, conversation history, prior review discussion, or attempt
-narrative. Return `PASS`, `FAIL`, or `INDETERMINATE` with concise evidence.
+narrative. Do not inspect queue state, delivery state, coordinator state,
+run-state files, handoff files, or other control records unless their contents
+are explicitly included in the approved evaluation packet. Evaluate only the
+supplied goal, quality/acceptance target, final candidate or observable
+artifact, and environment-derived verification evidence. Never use an
+out-of-packet control record to justify a verdict. Return `PASS`, `FAIL`, or
+`INDETERMINATE` with concise evidence.
 
 Do not edit source, change Triad queue/state, assign work, commit, push, publish,
-or start repair. Your verdict is post-run information. It never reopens Triad
-or changes an already closed result.
+or start repair. Your verdict is post-run information. It never reopens Triad,
+requests repair, or changes an already closed result.

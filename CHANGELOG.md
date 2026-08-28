@@ -18,6 +18,8 @@
 - Promote the GitHub Copilot adapter after a live desktop smoke validated
   distinct role contexts, explicit verification, unattended continuation, and
   delivery closure.
+- Harden the Evaluator+ boundary so verdicts use only the approved evaluation
+  packet and never rely on out-of-packet control or delivery records.
 
 ## 1.2.0 — 2026-08-25
 

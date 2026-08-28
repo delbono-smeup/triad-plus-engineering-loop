@@ -210,6 +210,21 @@ try {
   assert.doesNotMatch(openCodeEvaluator, /Gauntlet|largest remaining gap/i);
   const evaluatorContract = await readFile(path.join(repositoryRoot, "skills", "triad-loop-evaluator", "SKILL.md"), "utf8");
   assert.match(evaluatorContract, /Do not\s+edit source, change the Triad queue\/state, commit, push/i);
+  const evaluatorContracts = await Promise.all([
+    "skills/triad-loop-evaluator/SKILL.md",
+    "adapters/antigravity/.agents/agents/triad-evaluator/agent.md",
+    "adapters/claude-code/.claude/agents/triad-evaluator.md",
+    "adapters/copilot/.github/agents/triad-evaluator.agent.md",
+    "adapters/opencode/.opencode/agents/triad-evaluator.md"
+  ].map((file) => readFile(path.join(repositoryRoot, file), "utf8")));
+  for (const contract of evaluatorContracts) {
+    const normalized = contract.toLowerCase();
+    assert.match(normalized, /approved evaluation packet/, "Evaluator must name the approved packet boundary");
+    assert.match(normalized, /do not\s+inspect queue state[\s\S]*delivery state[\s\S]*coordinator state[\s\S]*run-state files[\s\S]*handoff files/, "Evaluator must reject out-of-packet control records");
+    assert.match(normalized, /evaluate only[\s\S]*goal[\s\S]*quality\/acceptance target[\s\S]*final candidate[\s\S]*(observable artifact|environment-derived verification evidence)/, "Evaluator must constrain its inputs to the packet");
+    assert.match(normalized, /(?:never|do not|no)[\s\S]{0,100}repair/, "Evaluator must not start repair");
+    assert.match(normalized, /never reopen|do not reopen|reopen[^\n]{0,40}triad/, "Evaluator must not reopen Triad");
+  }
   console.log("Triad runtime tests passed: adapter capabilities, evidence binding, failure handling, hard timeout, and generic Core.");
 } finally {
   await rm(temporaryRoot, { recursive: true, force: true });
