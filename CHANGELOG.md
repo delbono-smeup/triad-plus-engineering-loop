@@ -1,10 +1,13 @@
 # Changelog
 
-## Unreleased
+## 1.4.1 — 2026-08-28
 
-- Keep the Codex Orchestrator parent turn alive across delegated-agent wait
-  timeouts by refreshing status and re-waiting instead of returning control to
-  the owner.
+- Fix Codex Orchestrator liveness across `wait_agent` polling timeouts. While a
+  delegated Developer or Reviewer assignment remains active, a timeout is
+  non-terminal: the Orchestrator refreshes status and waits again in the same
+  parent turn instead of returning control to the owner. Validated with real
+  Codex Developer and Reviewer wait timeouts, explicit verification,
+  independent review, dependent-card continuation, and zero owner follow-ups.
 
 ## 1.3.0 — 2026-08-26
 

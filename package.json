@@ -1,6 +1,6 @@
 {
   "name": "triad-plus",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "A lightweight, evidence-backed engineering loop for coding agents.",
   "license": "Apache-2.0",
   "type": "module",
@@ -14,6 +14,7 @@
     "runtime/",
     "schemas/",
     "skills/",
+    "tests/codex-liveness-test.mjs",
     "docs/",
     "assets/",
     "README.md",
