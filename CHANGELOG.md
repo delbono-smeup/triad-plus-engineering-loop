@@ -13,13 +13,15 @@
 - Use explicit verification dispatch by default on Codex; retain the async
   `SubagentStop` hook as an experimental opt-in path.
 
-## Unreleased
+## 1.4.0 — 2026-08-28
 
-- Promote the GitHub Copilot adapter after a live desktop smoke validated
-  distinct role contexts, explicit verification, unattended continuation, and
-  delivery closure.
-- Harden the Evaluator+ boundary so verdicts use only the approved evaluation
-  packet and never rely on out-of-packet control or delivery records.
+- Promote the GitHub Copilot adapter to supported status with official Copilot
+  CLI/Desktop integration and distinct Orchestrator, Developer, Reviewer, and
+  Evaluator+ custom-agent contexts.
+- Validate explicit verification dispatch and unattended dependent-card
+  continuation in Copilot Desktop.
+- Harden the Evaluator+ packet boundary so verdicts use only the approved
+  packet and not out-of-packet control or delivery records.
 
 ## 1.2.0 — 2026-08-25
 
