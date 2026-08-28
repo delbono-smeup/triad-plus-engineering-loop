@@ -80,6 +80,36 @@ An owner-facing activation or progress update is informational output, never an
 implicit pause. After sending it, continue the recorded next action without
 waiting for a reply unless one of the valid human wait conditions applies.
 
+## Orchestrator liveness while delegated work is active
+
+The Orchestrator parent turn is the owner of unattended progress. It MUST NOT
+end its owner-facing turn while a delegated Developer or Reviewer assignment is
+active, unless a declared escalation, a `blocked` verdict, an unrecoverable
+runtime failure, or an explicit owner pause is present.
+
+A host wait primitive (Codex uses `wait_agent`) has non-terminal timeout
+semantics. A `wait_agent` timeout means only that the polling interval elapsed;
+it is not an agent failure, assignment completion, blocked condition, or
+permission to return control to the owner.
+
+After a wait timeout:
+
+1. refresh the assignment and delegated-agent status;
+2. if the assignment is still active, immediately issue another wait in the
+   same Orchestrator turn;
+3. if the assignment completed, collect its report and continue the normal
+   verification/review transition;
+4. if it failed or disappeared, classify the runtime failure and apply policy.
+
+A progress update is informational and non-pausing. Emit it only as a preamble
+to the next wait or transition; never finish the owner-facing turn after that
+update while work remains active.
+
+The same rule applies to Developer and Reviewer. After Developer completion,
+collect the report and invoke verification without owner input. After Reviewer
+completion, record `approved`, `rework`, or `blocked`; on `approved`, commit,
+promote dependency-satisfied cards, and assign the next card immediately.
+
 ## Authority and delivery
 
 Resolve ordinary Developer–Reviewer disagreement from evidence and record the

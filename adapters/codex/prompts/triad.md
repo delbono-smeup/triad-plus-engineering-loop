@@ -57,3 +57,27 @@ for owner input: immediately wait for configured hook evidence or invoke the
 verifier, then dispatch the Reviewer on a pass. Ask the owner only for a
 declared escalation, a blocked verdict, an unrecoverable runtime error, or an
 explicit owner pause.
+
+## Codex parent-turn liveness (mandatory)
+
+The current Codex conversation is the Orchestrator parent. The Orchestrator
+MUST NOT end its owner-facing turn while any delegated Developer or Reviewer
+assignment is still active, unless there is a declared escalation, a `blocked`
+verdict, an unrecoverable runtime failure, or an explicit owner pause.
+
+`wait_agent` timeout is only a polling interval elapsed. It is not an agent
+failure, assignment completion, blocked condition, or owner wait. After a
+timeout, refresh the assignment and delegated-agent status. If it is still
+active, immediately call `wait_agent` again in the same Orchestrator turn. If
+it completed, collect the report and continue the normal transition; if it
+failed or disappeared, classify the runtime failure.
+
+A progress update is informational and non-pausing. It must be followed
+immediately by the next wait or transition, never by returning the conversation
+to the owner while delegated work remains active.
+
+When the Developer completes, collect the report and invoke explicit
+`triad-verify` without owner input. When the Reviewer completes, record its
+`approved`, `rework`, or `blocked` verdict; after `approved`, commit as
+required, promote dependency-satisfied cards, and activate the next card
+immediately. The same liveness rule applies while waiting for the Reviewer.

@@ -12,3 +12,9 @@ The async hook remains available as an experimental opt-in by setting
 `requested_mode=async_hook` in capability detection. Hook output is evidence
 only; it never changes Triad state by itself. If the requested experimental hook
 is unavailable, capability detection fails safe to explicit dispatch.
+
+During delegated work the Codex Orchestrator parent turn stays alive. A
+`wait_agent` timeout is a non-terminal polling interval: refresh status and
+wait again in the same turn while the Developer or Reviewer remains active.
+Progress messages are informational, not owner-wait points; completion flows
+directly to verification, review, and card continuation.

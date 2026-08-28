@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Keep the Codex Orchestrator parent turn alive across delegated-agent wait
+  timeouts by refreshing status and re-waiting instead of returning control to
+  the owner.
+
 ## 1.3.0 — 2026-08-26
 
 - Keep the declared card chain unattended from Developer completion through

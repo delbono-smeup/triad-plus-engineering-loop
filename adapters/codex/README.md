@@ -39,3 +39,10 @@ verification dispatch even when an async hook is available. The async
 `SubagentStop` route remains an experimental opt-in (`async_hook`) and falls
 back to explicit dispatch when unavailable. On Codex CLI 0.142, explicit
 dispatch is the safe expected route.
+
+The Codex conversation remains the Orchestrator parent while a delegated
+Developer or Reviewer is active. A `wait_agent` timeout is only a polling
+interval: the parent refreshes status and waits again in the same turn. A
+progress update never returns control to the owner while delegated work
+remains active; completion is collected automatically and proceeds to
+verification, review, and the next dependency-satisfied card.
