@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.2 — 2026-09-01
+
+- Align package repository, homepage, and issue links with the renamed GitHub
+  account (`ainz-dg`).
+
 ## 1.4.1 — 2026-08-28
 
 - Fix Codex Orchestrator liveness across `wait_agent` polling timeouts. While a

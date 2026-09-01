@@ -1,6 +1,6 @@
 {
   "name": "triad-plus",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "A lightweight, evidence-backed engineering loop for coding agents.",
   "license": "Apache-2.0",
   "type": "module",
@@ -33,12 +33,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/delbono-smeup/triad-plus-engineering-loop.git"
+    "url": "git+https://github.com/ainz-dg/triad-plus-engineering-loop.git"
   },
   "bugs": {
-    "url": "https://github.com/delbono-smeup/triad-plus-engineering-loop/issues"
+    "url": "https://github.com/ainz-dg/triad-plus-engineering-loop/issues"
   },
-  "homepage": "https://github.com/delbono-smeup/triad-plus-engineering-loop#readme",
+  "homepage": "https://github.com/ainz-dg/triad-plus-engineering-loop#readme",
   "keywords": [
     "agent-skills",
     "codex",
