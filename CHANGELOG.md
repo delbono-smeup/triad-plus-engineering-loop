@@ -1,10 +1,13 @@
 # Changelog
 
-## Unreleased
+## 1.5.0 — 2026-09-05
 
-- Add cause-coded, bounded retry accounting and an opt-in deterministic
-  candidate scope preflight. Scope checks retain independent Reviewer review
-  after deterministic verification succeeds.
+- Add cause-coded retry/recovery accounting with independent finite runtime and
+  candidate-remediation budgets, plus fail-closed retry-policy validation while
+  retaining backward-compatible legacy retry behavior.
+- Add opt-in deterministic candidate scope contracts with card-level baselines,
+  changed-path evidence, and scope verification before expensive gates.
+- Keep independent Reviewer approval mandatory after deterministic verification.
 
 ## 1.4.2 — 2026-09-01
 
