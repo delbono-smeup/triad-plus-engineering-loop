@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.6.0 — 2026-09-05
+
+- Add card-declared repository `required_gates` with additive per-card gate
+  selection; globally required gates are always preserved.
+- Promote selected optional repository gates to mandatory for the card, with
+  trusted assignment binding, fail-closed unavailable-gate handling, and
+  generic gate-selection evidence.
+- Preserve the existing legacy behavior when a card has no selected gates.
+
 ## 1.5.0 — 2026-09-05
 
 - Add cause-coded retry/recovery accounting with independent finite runtime and
