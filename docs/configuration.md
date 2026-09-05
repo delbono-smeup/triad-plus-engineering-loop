@@ -40,3 +40,10 @@ bind a versioned JSON scope contract at its first assignment; without one, the
 deterministic scope preflight is not configured and independent review remains
 the semantic scope check. See [verification.md](verification.md) for the
 contract and matching rules.
+
+Cards may also declare `required_gates` as an additive list of trusted
+repository gate IDs. Globally required gates are never suppressed; a selected
+optional gate becomes required for that card, and an absent or empty list keeps
+the legacy gate behavior. Selected IDs are validated before Developer dispatch
+and are bound to the assignment; Triad does not attach visual or other
+domain-specific meaning to a gate ID.

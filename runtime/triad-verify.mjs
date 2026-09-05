@@ -5,7 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { writeAtomicJson } from "./lib/evidence.mjs";
 import { calculateCandidateFingerprint, collectCandidateChanges, worktreeBranch } from "./lib/fingerprint.mjs";
-import { executeGates, loadTrustedGates } from "./lib/gates.mjs";
+import { executeGates, gateSelectionEvidence, loadTrustedGates, resolveGateSelection } from "./lib/gates.mjs";
 import { evaluateScopeContract, parseScopeContract } from "./lib/scope-contract.mjs";
 
 const argv = process.argv.slice(2);
@@ -65,7 +65,7 @@ async function resolveAssignment(projectRoot, trigger, explicitAssignment) {
   return { assignmentPath, assignment: JSON.parse(source), assignmentHash: sha256(source) };
 }
 
-async function buildInvalidEvidence({ runId, trigger, assignment, reason, outputPath }) {
+async function buildInvalidEvidence({ runId, trigger, assignment, reason, outputPath, failureCode = "verification_context_invalid", gateSelection = null }) {
   const evidence = {
     schema_version: 1,
     run_id: runId,
@@ -83,9 +83,10 @@ async function buildInvalidEvidence({ runId, trigger, assignment, reason, output
     gates: [],
     required_gates_passed: false,
     status: "invalid_context",
-    failure: { code: "verification_context_invalid", reason },
+    failure: { code: failureCode, reason },
     created_at: new Date().toISOString(),
   };
+  if (gateSelection) evidence.gate_selection = gateSelectionEvidence(gateSelection);
   if (outputPath) await writeAtomicJson(outputPath, evidence);
   return evidence;
 }
@@ -145,6 +146,7 @@ async function main() {
   let assignment;
   let assignmentPath;
   let outputPath;
+  let gateSelection = null;
   try {
     let assignmentHash;
     ({ assignmentPath, assignment, assignmentHash } = await resolveAssignment(projectRoot, trigger, option("--assignment")));
@@ -170,6 +172,23 @@ async function main() {
     const before = await calculateCandidateFingerprint(worktree);
     const branch = await worktreeBranch(worktree);
     if (assignment.expected_branch && assignment.expected_branch !== branch) throw new Error("worktree branch does not match assignment");
+    const gatesPath = path.resolve(projectRoot, assignment.gates_path ?? ".loop/quality-gates.yaml");
+    const trusted = await loadTrustedGates(gatesPath, assignment.expected_gates_sha256);
+    if (!trusted.valid) throw new Error("quality gates are missing or changed from their declared hash");
+    try {
+      gateSelection = resolveGateSelection(trusted.gates, assignment.required_gate_ids);
+    } catch (error) {
+      error.code = "unavailable_required_gate";
+      throw error;
+    }
+    if (gateSelection.missing_gate_ids.length > 0 || gateSelection.invalid_gate_ids.length > 0) {
+      const missing = gateSelection.missing_gate_ids.join(", ");
+      const invalid = gateSelection.invalid_gate_ids.map(({ id, reason }) => `${id} (${reason})`).join(", ");
+      const details = [missing && `missing: ${missing}`, invalid && `invalid: ${invalid}`].filter(Boolean).join("; ");
+      const error = new Error(`unavailable_required_gate: ${details}`);
+      error.code = "unavailable_required_gate";
+      throw error;
+    }
     const scope = await scopePreflight(projectRoot, worktree, assignment);
     if (scope.status === "fail") {
       const evidence = {
@@ -192,6 +211,7 @@ async function main() {
         repository_skills: repositorySkills,
         scope,
         gates: [],
+        gate_selection: gateSelectionEvidence(gateSelection),
         required_gates_passed: false,
         status: "fail",
         failure: { code: "candidate_scope_violation", reason: "candidate changed paths exceed the declared scope contract" },
@@ -202,11 +222,8 @@ async function main() {
       process.exitCode = 2;
       return;
     }
-    const gatesPath = path.resolve(projectRoot, assignment.gates_path ?? ".loop/quality-gates.yaml");
-    const trusted = await loadTrustedGates(gatesPath, assignment.expected_gates_sha256);
-    if (!trusted.valid) throw new Error("quality gates are missing or changed from their declared hash");
     const logDirectory = path.join(evidenceDirectory, "logs");
-    const gates = await executeGates(trusted.gates, worktree, logDirectory);
+    const gates = await executeGates(gateSelection.effective_gates, worktree, logDirectory);
     const after = await calculateCandidateFingerprint(worktree);
     const candidateChanged = before.value !== after.value;
     const requiredGatesPassed = !candidateChanged && gates.filter((gate) => gate.required).every((gate) => gate.status === "pass");
@@ -229,6 +246,7 @@ async function main() {
       },
       repository_skills: repositorySkills,
       scope,
+      gate_selection: gateSelectionEvidence(gateSelection),
       gates,
       required_gates_passed: requiredGatesPassed,
       status: candidateChanged ? "invalidated" : requiredGatesPassed ? "pass" : "fail",
@@ -244,7 +262,15 @@ async function main() {
       const directory = path.join(projectRoot, ".loop", "evidence", fallbackAssignment.feature_id, `attempt-${String(fallbackAssignment.attempt).padStart(3, "0")}`);
       outputPath = path.join(directory, "verification.json");
     }
-    const evidence = await buildInvalidEvidence({ runId, trigger, assignment: fallbackAssignment, reason: error.message, outputPath });
+    const evidence = await buildInvalidEvidence({
+      runId,
+      trigger,
+      assignment: fallbackAssignment,
+      reason: error.message,
+      outputPath,
+      failureCode: error.code ?? "verification_context_invalid",
+      gateSelection
+    });
     process.stdout.write(`${JSON.stringify({ run_id: runId, status: evidence.status, evidence: outputPath ?? null })}\n`);
     process.exitCode = 3;
   }

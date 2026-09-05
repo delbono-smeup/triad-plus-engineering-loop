@@ -54,6 +54,120 @@ export async function loadTrustedGates(gatesPath, expectedHash) {
   return { valid: true, actualHash, gates: parseQualityGates(source) };
 }
 
+function normalizeRequiredGateIds(requiredGateIds) {
+  if (requiredGateIds === undefined) return [];
+  if (!Array.isArray(requiredGateIds)) throw new Error("required_gate_ids must be an array");
+  const seen = new Set();
+  const normalized = [];
+  for (const value of requiredGateIds) {
+    if (typeof value !== "string" || !value.trim()) throw new Error("required_gate_ids must contain non-empty strings");
+    const id = value.trim();
+    if (!seen.has(id)) {
+      seen.add(id);
+      normalized.push(id);
+    }
+  }
+  return normalized;
+}
+
+function selectedGateIssues(gate) {
+  if (!gate || typeof gate !== "object" || typeof gate.id !== "string" || !gate.id.trim()) return "invalid_definition";
+  if (typeof gate.command !== "string" || !gate.command.trim() || /^REPLACE_ME/.test(gate.command.trim())) return "missing_trusted_command";
+  if ((gate.executor ?? "control-plane") !== "control-plane") return "unsupported_executor";
+  return null;
+}
+
+/**
+ * Resolve the repository gate catalog and an optional card-level additive
+ * selection. The returned gate objects are copies so a selected optional gate
+ * can be promoted to required without mutating the trusted catalog.
+ */
+export function resolveGateSelection(gates, requiredGateIds = undefined) {
+  if (!Array.isArray(gates)) throw new Error("trusted gates must be an array");
+  const cardRequiredGateIds = normalizeRequiredGateIds(requiredGateIds);
+  const selected = new Set(cardRequiredGateIds);
+  const definitions = new Map();
+  const duplicateGateIds = new Set();
+  for (const gate of gates) {
+    if (typeof gate?.id !== "string" || !gate.id.trim()) continue;
+    const id = gate.id.trim();
+    if (definitions.has(id)) duplicateGateIds.add(id);
+    else definitions.set(id, gate);
+  }
+
+  const missingGateIds = cardRequiredGateIds.filter((id) => !definitions.has(id));
+  const invalidGateIds = cardRequiredGateIds
+    .filter((id) => definitions.has(id) && (duplicateGateIds.has(id) || selectedGateIssues(definitions.get(id))))
+    .map((id) => ({ id, reason: duplicateGateIds.has(id) ? "duplicate_definition" : selectedGateIssues(definitions.get(id)) }));
+  const baselineRequiredGateIds = [];
+  const baselineRequired = new Set();
+  for (const gate of gates) {
+    const id = typeof gate?.id === "string" ? gate.id.trim() : "";
+    if (id && gate.required !== false && !baselineRequired.has(id)) {
+      baselineRequired.add(id);
+      baselineRequiredGateIds.push(id);
+    }
+  }
+
+  const mode = cardRequiredGateIds.length > 0 ? "selected" : "legacy";
+  if (mode === "legacy") {
+    return {
+      mode,
+      card_required_gate_ids: [],
+      baseline_required_gate_ids: baselineRequiredGateIds,
+      effective_gate_ids: gates.map((gate) => typeof gate?.id === "string" && gate.id.trim() ? gate.id.trim() : "unknown"),
+      effective_required_gate_ids: baselineRequiredGateIds,
+      missing_gate_ids: [],
+      invalid_gate_ids: [],
+      effective_gates: gates.map((gate) => ({ ...gate }))
+    };
+  }
+
+  const effectiveGateIds = [];
+  const effectiveRequiredGateIds = [];
+  const effectiveGates = [];
+  const emitted = new Set();
+  for (const gate of gates) {
+    const id = typeof gate?.id === "string" ? gate.id.trim() : "";
+    if (!id || emitted.has(id)) continue;
+    const isSelected = selected.has(id);
+    const isGlobalRequired = gate.required !== false;
+    if (mode === "selected" && !isGlobalRequired && !isSelected) continue;
+    emitted.add(id);
+    effectiveGateIds.push(id);
+    if (isGlobalRequired || isSelected) effectiveRequiredGateIds.push(id);
+    effectiveGates.push(isSelected ? { ...gate, required: true } : { ...gate });
+  }
+  for (const id of cardRequiredGateIds) {
+    if (!effectiveGateIds.includes(id)) effectiveGateIds.push(id);
+    if (!effectiveRequiredGateIds.includes(id)) effectiveRequiredGateIds.push(id);
+  }
+
+  return {
+    mode,
+    card_required_gate_ids: cardRequiredGateIds,
+    baseline_required_gate_ids: baselineRequiredGateIds,
+    effective_gate_ids: effectiveGateIds,
+    effective_required_gate_ids: effectiveRequiredGateIds,
+    missing_gate_ids: missingGateIds,
+    invalid_gate_ids: invalidGateIds,
+    effective_gates: effectiveGates
+  };
+}
+
+export function gateSelectionEvidence(selection) {
+  if (!selection) return null;
+  return {
+    mode: selection.mode,
+    card_required_gate_ids: selection.card_required_gate_ids,
+    baseline_required_gate_ids: selection.baseline_required_gate_ids,
+    effective_gate_ids: selection.effective_gate_ids,
+    effective_required_gate_ids: selection.effective_required_gate_ids,
+    missing_gate_ids: selection.missing_gate_ids,
+    invalid_gate_ids: selection.invalid_gate_ids
+  };
+}
+
 export async function executeGates(gates, worktree, logDirectory) {
   const results = [];
   for (const gate of gates) {

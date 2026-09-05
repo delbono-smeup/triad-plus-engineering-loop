@@ -23,6 +23,26 @@
         "offending_paths": { "type": "array" }
       }
     },
+    "gate_selection": {
+      "type": "object",
+      "required": ["mode", "card_required_gate_ids", "baseline_required_gate_ids", "effective_gate_ids", "effective_required_gate_ids", "missing_gate_ids", "invalid_gate_ids"],
+      "properties": {
+        "mode": { "enum": ["legacy", "selected"] },
+        "card_required_gate_ids": { "type": "array", "items": { "type": "string" } },
+        "baseline_required_gate_ids": { "type": "array", "items": { "type": "string" } },
+        "effective_gate_ids": { "type": "array", "items": { "type": "string" } },
+        "effective_required_gate_ids": { "type": "array", "items": { "type": "string" } },
+        "missing_gate_ids": { "type": "array", "items": { "type": "string" } },
+        "invalid_gate_ids": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "reason"],
+            "properties": { "id": { "type": "string" }, "reason": { "type": "string" } }
+          }
+        }
+      }
+    },
     "gates": { "type": "array" },
     "required_gates_passed": { "type": "boolean" },
     "status": { "enum": ["pass", "fail", "invalid_context", "infrastructure_error", "invalidated"] },

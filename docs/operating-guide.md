@@ -45,6 +45,12 @@ closure gate: it records the final push, optional evaluation, handoff, final run
 record, and practical test before the project is called delivered. Demo start and
 stop remain owner-controlled.
 
+Cards may add a `required_gates` list containing trusted repository gate IDs.
+The list is additive: globally required gates still run, selected optional gates
+become required for that card, and unselected optional gates may be skipped. An
+absent or empty list preserves the legacy behavior. Triad binds and records the
+IDs but does not attach visual or other domain-specific meaning to them.
+
 ## Retry accounting and candidate scope
 
 Attempts are historical execution records. New workspaces separately bound

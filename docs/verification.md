@@ -29,6 +29,30 @@ it does not itself approve, rework, or transition a run.
 Evidence files and logs are diagnostics. Users normally need only the
 Orchestrator's summary and the Reviewer verdict.
 
+## Card-declared required gates
+
+The work queue may carry a machine-readable `required_gates` list for an
+individual card. The values are repository-owned gate IDs; Triad does not infer
+their purpose or know whether a gate checks UI, an API, a migration, or another
+concern.
+
+An absent or empty list preserves the v1.5 legacy execution behavior. When the
+list is non-empty, the Orchestrator resolves one effective set by taking the
+union of every trusted repository gate whose definition has `required: true`
+and the card-selected IDs. The set is deduplicated. A selected optional gate is
+promoted to required for that card, while unselected optional gates may be
+skipped. The trusted catalog remains authoritative for command, timeout, and
+executor details.
+
+Every selected ID is validated before Developer dispatch. A missing ID,
+placeholder command, or unsupported executor is an
+`unavailable_required_gate` capability gap: the Developer is not dispatched and
+no retry budget is consumed. The verifier repeats the binding check so a stale
+assignment fails closed. Verification evidence records the mode, card-selected
+IDs, baseline required IDs, effective IDs, and effective required IDs. A verifier
+pass still always leads to an independent Reviewer; gate pass is not semantic
+approval.
+
 ## Optional deterministic candidate scope
 
 Cards may add a versioned JSON scope contract, bound by path and SHA-256 in the

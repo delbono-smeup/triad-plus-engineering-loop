@@ -1,14 +1,16 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { mkdtemp, readFile, rm, writeFile, mkdir } from "node:fs/promises";
+import { access, mkdtemp, readFile, rm, writeFile, mkdir } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
+import { resolveGateSelection } from "../runtime/lib/gates.mjs";
 
 const repositoryRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
 const runner = path.join(repositoryRoot, "runtime", "triad-verify.mjs");
 const capabilityDetector = path.join(repositoryRoot, "runtime", "triad-runtime-capabilities.mjs");
 const digest = async (file) => createHash("sha256").update(await readFile(file)).digest("hex");
+const exists = async (file) => access(file).then(() => true, () => false);
 const userFacingIdentityInvariant = "Before the first owner-facing reply, read `.triad-plus/team.json` when it exists.\nUser-facing identity is permanent: adopt its non-empty\n`roles.orchestrator.displayName` as the sole user-facing identity for every\nowner-facing reply, including the first. If the file is absent or has no\nnon-empty display name, use `Triad Orchestrator`; never present a hidden\nintermediary or another Triad role to the owner. You may report delegated roles'\noutputs, but never claim their identity.";
 
 function command(commandName, args, cwd) {
@@ -53,6 +55,18 @@ async function prepare(root, attempt, gateCommand, executor = "control-plane") {
   return { assignment, worktree, assignmentPath };
 }
 
+async function prepareGateSelection(root, attempt, requiredGateIds, { selectedCommand = "true", includeVisual = true, includeApi = false } = {}) {
+  const fixture = await prepare(root, attempt, "true");
+  const gatesPath = path.join(root, ".loop", "quality-gates.yaml");
+  const visualGate = includeVisual ? `  - id: visual-check\n    command: ${selectedCommand}\n    required: false\n    executor: control-plane\n    timeout_seconds: 1\n` : "";
+  const apiGate = includeApi ? `  - id: api-contract\n    command: true\n    required: false\n    executor: control-plane\n    timeout_seconds: 1\n` : "";
+  await writeFile(gatesPath, `version: 2\ngates:\n  - id: test\n    command: true\n    required: true\n    executor: control-plane\n    timeout_seconds: 1\n  - id: lint\n    command: true\n    required: true\n    executor: control-plane\n    timeout_seconds: 1\n${visualGate}${apiGate}  - id: optional-diagnostic\n    command: true\n    required: false\n    executor: control-plane\n    timeout_seconds: 1\n`);
+  fixture.assignment.expected_gates_sha256 = await digest(gatesPath);
+  fixture.assignment.required_gate_ids = requiredGateIds;
+  await writeJson(fixture.assignmentPath, fixture.assignment);
+  return fixture;
+}
+
 async function invoke(root, agentId, extraArgs = []) {
   const result = spawnSync("node", [runner, "--project", root, ...extraArgs], {
     input: JSON.stringify({ event: "SubagentStop", agent_id: agentId, agent_type: "triad_developer" }), encoding: "utf8", timeout: 10_000
@@ -68,8 +82,90 @@ function detect(adapter, version, hookConfig, requestedMode = "auto") {
   return JSON.parse(result.stdout);
 }
 
+function assertGateSelectionResolution() {
+  const catalog = [
+    { id: "test", command: "true", required: true, executor: "control-plane" },
+    { id: "lint", command: "true", required: true, executor: "control-plane" },
+    { id: "visual-check", command: "true", required: false, executor: "control-plane" },
+    { id: "api-contract", command: "true", required: false, executor: "control-plane" },
+    { id: "optional-diagnostic", command: "true", required: false, executor: "control-plane" }
+  ];
+  const legacy = resolveGateSelection(catalog, []);
+  assert.equal(legacy.mode, "legacy");
+  assert.deepEqual(legacy.effective_gate_ids, ["test", "lint", "visual-check", "api-contract", "optional-diagnostic"]);
+  assert.deepEqual(legacy.effective_required_gate_ids, ["test", "lint"]);
+
+  const selected = resolveGateSelection(catalog, ["test", "visual-check", "visual-check"]);
+  assert.equal(selected.mode, "selected");
+  assert.deepEqual(selected.card_required_gate_ids, ["test", "visual-check"]);
+  assert.deepEqual(selected.effective_gate_ids, ["test", "lint", "visual-check"]);
+  assert.deepEqual(selected.effective_required_gate_ids, ["test", "lint", "visual-check"]);
+  assert.equal(selected.effective_gates.filter((gate) => gate.id === "test").length, 1, "globally required gate must execute once");
+  assert.equal(selected.effective_gates.find((gate) => gate.id === "visual-check").required, true, "selected optional gate is promoted to required");
+  assert.equal(selected.effective_gates.some((gate) => gate.id === "optional-diagnostic"), false, "unselected optional gate is omitted");
+
+  const generic = resolveGateSelection(catalog, ["api-contract"]);
+  assert.deepEqual(generic.effective_gate_ids, ["test", "lint", "api-contract"], "non-visual gate IDs use the same mechanism");
+  assert.deepEqual(generic.missing_gate_ids, []);
+
+  const missing = resolveGateSelection(catalog, ["does-not-exist"]);
+  assert.deepEqual(missing.missing_gate_ids, ["does-not-exist"]);
+  assert.throws(() => resolveGateSelection(catalog, "visual-check"), /required_gate_ids must be an array/);
+  const invalid = resolveGateSelection([{ id: "broken", command: "REPLACE_ME_COMMAND", required: false, executor: "control-plane" }], ["broken"]);
+  assert.deepEqual(invalid.invalid_gate_ids, [{ id: "broken", reason: "missing_trusted_command" }]);
+}
+
+async function assertVerifierGateSelectionBehavior(root) {
+  const legacy = await prepareGateSelection(path.join(root, "legacy"), 20, []);
+  const legacyRun = await invoke(path.join(root, "legacy"), legacy.assignment.agent_id);
+  assert.equal(legacyRun.result.status, 0, JSON.stringify(legacyRun.evidence));
+  assert.equal(legacyRun.evidence.gate_selection.mode, "legacy");
+  assert.deepEqual(legacyRun.evidence.gate_selection.effective_gate_ids, ["test", "lint", "visual-check", "optional-diagnostic"]);
+  assert.deepEqual(legacyRun.evidence.gates.map((gate) => gate.id), ["test", "lint", "visual-check", "optional-diagnostic"]);
+  assert.deepEqual(legacyRun.evidence.gates.map((gate) => gate.required), [true, true, false, false]);
+
+  const selectedRoot = path.join(root, "selected");
+  const selectedMarker = path.join(root, "selected-gate-ran");
+  const selected = await prepareGateSelection(selectedRoot, 21, ["visual-check"], { selectedCommand: `touch ${selectedMarker}` });
+  const selectedRun = await invoke(selectedRoot, selected.assignment.agent_id);
+  assert.equal(selectedRun.result.status, 0, JSON.stringify(selectedRun.evidence));
+  assert.equal(selectedRun.evidence.gate_selection.mode, "selected");
+  assert.deepEqual(selectedRun.evidence.gate_selection.card_required_gate_ids, ["visual-check"]);
+  assert.deepEqual(selectedRun.evidence.gate_selection.baseline_required_gate_ids, ["test", "lint"]);
+  assert.deepEqual(selectedRun.evidence.gate_selection.effective_gate_ids, ["test", "lint", "visual-check"]);
+  assert.deepEqual(selectedRun.evidence.gate_selection.effective_required_gate_ids, ["test", "lint", "visual-check"]);
+  assert.deepEqual(selectedRun.evidence.gates.map((gate) => gate.id), ["test", "lint", "visual-check"]);
+  assert.ok(selectedRun.evidence.gates.every((gate) => gate.required), "all effective gates are required for the selected card");
+  assert.equal(await exists(selectedMarker), true, "selected optional gate must execute");
+
+  const failRoot = path.join(root, "selected-fail");
+  const failing = await prepareGateSelection(failRoot, 22, ["visual-check"], { selectedCommand: "false" });
+  const failRun = await invoke(failRoot, failing.assignment.agent_id);
+  assert.equal(failRun.result.status, 2);
+  assert.equal(failRun.evidence.status, "fail");
+  assert.equal(failRun.evidence.gates.find((gate) => gate.id === "visual-check").required, true);
+
+  const missingRoot = path.join(root, "missing-selected");
+  const missing = await prepareGateSelection(missingRoot, 23, ["does-not-exist"], { includeVisual: false });
+  const missingRun = await invoke(missingRoot, missing.assignment.agent_id);
+  assert.equal(missingRun.result.status, 3);
+  assert.equal(missingRun.evidence.status, "invalid_context");
+  assert.equal(missingRun.evidence.failure.code, "unavailable_required_gate");
+  assert.deepEqual(missingRun.evidence.gate_selection.missing_gate_ids, ["does-not-exist"]);
+  assert.deepEqual(missingRun.evidence.gates, [], "a stale selected gate must fail before execution");
+
+  const apiRoot = path.join(root, "generic-api");
+  const api = await prepareGateSelection(apiRoot, 24, ["api-contract"], { includeApi: true, includeVisual: false });
+  const apiRun = await invoke(apiRoot, api.assignment.agent_id);
+  assert.equal(apiRun.result.status, 0, "generic non-visual gate should use the same selected mechanism");
+  assert.deepEqual(apiRun.evidence.gate_selection.card_required_gate_ids, ["api-contract"]);
+  assert.deepEqual(apiRun.evidence.gate_selection.effective_gate_ids, ["test", "lint", "api-contract"]);
+  assert.deepEqual(apiRun.evidence.gates.map((gate) => gate.id), ["test", "lint", "api-contract"]);
+}
+
 const temporaryRoot = await mkdtemp(path.join(os.tmpdir(), "triad-runtime-test-"));
 try {
+  assertGateSelectionResolution();
   const codexHook = path.join(temporaryRoot, "codex-hooks.json");
   const claudeHook = path.join(temporaryRoot, "claude-hooks.json");
   await writeJson(codexHook, { minimum_version: "0.148.0", hooks: { SubagentStop: [{ matcher: "^triad_developer$", hooks: [{ type: "command", command: "node /tmp/triad-verify.mjs --project /tmp", async: true }] }] } });
@@ -156,6 +252,8 @@ try {
   assert.equal(timeoutResult.result.status, 2);
   assert.equal(timeoutResult.evidence.gates[0].status, "timeout");
 
+  await assertVerifierGateSelectionBehavior(temporaryRoot);
+
   const coreSources = [await readFile(path.join(repositoryRoot, "bin", "triad-plus.js"), "utf8"), await readFile(capabilityDetector, "utf8")].join("\n");
   assert.doesNotMatch(coreSources, /(?:if|switch|===)[\s\S]{0,80}hermes/i);
   assert.doesNotMatch(coreSources, /(?:if|switch|===)[\s\S]{0,80}copilot/i);
@@ -183,6 +281,10 @@ try {
   }
   assert.match(orchestratorContracts[0], /Do not ask the owner to continue, pause between cards/i);
   assert.match(orchestratorContracts[0], /required_repository_skills/i);
+  assert.match(orchestratorContracts[0], /required_gates/i);
+  assert.match(orchestratorContracts[0], /global(?:ly)?\s+required/i);
+  assert.match(orchestratorContracts[0], /card(?:'s|’s)\s+selected IDs/i);
+  assert.match(orchestratorContracts[0], /unavailable_required_gate/i);
   assert.match(orchestratorContracts[0], /Developer report is never a human-input wait condition/i);
   assert.match(orchestratorContracts[0], /The normal chain is unattended/i);
   assert.match(orchestratorContracts[0], /informational output, never an\s+implicit pause/i);
@@ -199,6 +301,10 @@ try {
   assert.match(projectTemplate, /remote_url:/);
   const runStateTemplate = await readFile(path.join(repositoryRoot, 'skills', 'triad-loop-bootstrap', 'assets', 'loop-template', 'run-state.yaml'), 'utf8');
   assert.match(runStateTemplate, /^delivery:\n  status: not_delivered/m);
+  const assignmentTemplate = await readFile(path.join(repositoryRoot, 'skills', 'triad-loop-bootstrap', 'assets', 'loop-template', 'runtime', 'assignments', 'assignment.template.json'), 'utf8');
+  assert.match(assignmentTemplate, /"required_gate_ids": \[\]/);
+  const evidenceSchema = JSON.parse(await readFile(path.join(repositoryRoot, 'schemas', 'verification-evidence.schema.json'), 'utf8'));
+  assert.ok(evidenceSchema.properties.gate_selection, 'verification schema must describe gate selection evidence');
   const roleContracts = await Promise.all([
     'skills/triad-loop-developer/SKILL.md',
     'skills/triad-loop-reviewer/SKILL.md',

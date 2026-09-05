@@ -23,6 +23,10 @@ conditions, runnable quality gates, practical-test need, and integration need.
 5. Replace every gate placeholder. Gate executors in v1 are only
    `control-plane`; remove a non-applicable gate with a recorded reason instead
    of declaring manual or MCP execution.
+   Preserve each card's structured `required_gates` list in the work queue. An
+   absent or empty list keeps the legacy project-gate behavior; selected IDs are
+   additive and must be validated against the trusted gate catalog before a
+   Developer assignment is created.
 6. Create `.loop/runtime/assignments/` and record the active adapter metadata in
    `.loop/runtime/capabilities.json` by running
    `.triad-runtime/triad-runtime-capabilities.mjs --adapter

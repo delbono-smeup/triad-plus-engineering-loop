@@ -31,6 +31,17 @@ presentation for this invocation, do not repeat it.
 1. Verify the PRD hash, declared worktree/branch, repository instructions,
    runnable gates, and capability snapshot. The snapshot must reflect
    `project.control_plane.dispatch_mode` as `requested_mode` (default `auto`).
+   Read each card's structured `required_gates` list from the queue; do not
+   infer gate requirements from prose, filenames, or repository type. An absent
+   or empty list is legacy mode. For a non-empty list, load the trusted gate
+   catalog and normalize/dedupe the IDs, then validate that every selected gate
+   exists, has a configured non-placeholder command, and uses a supported
+   executor. An unavailable or invalid selected gate is an owner-visible
+   capability gap (`unavailable_required_gate`): do not dispatch the Developer
+   and consume no retry budget. Bind the normalized IDs as
+   `required_gate_ids` in the assignment together with the existing gate path
+   and hash; the trusted catalog remains authoritative for command, timeout, and
+   executor details.
    When repository instructions define
    a skill router, read it, select the router, routed skills, and completion
    skill required by the card, and bind their worktree-relative paths plus
@@ -45,8 +56,11 @@ presentation for this invocation, do not repeat it.
    attempt, and create an active assignment before delegating. Before each
    delegation, publish an owner-facing activation notice that attributes the
    configured display name, technical role, and card/attempt to that role.
-3. Give the Developer the card, relevant PRD excerpt, allowed surface, gates,
-   risks, and prior findings. Treat its command results and report as
+3. Give the Developer the card, relevant PRD excerpt, allowed surface, the
+   effective gate IDs (all trusted `required: true` gates plus the card's
+   selected IDs), risks, and prior findings. Globally required gates are never
+   suppressed. In selected mode, a selected optional gate is required for that card and unselected optional gates may be
+   skipped; dedupe the effective set. Treat its command results and report as
    **agent-reported claims**, never as control-plane gate truth.
 4. After completion, move to `verifying`. Follow the recorded dispatch route:
    wait for a valid hook-produced file when one is configured, otherwise invoke
@@ -61,7 +75,11 @@ presentation for this invocation, do not repeat it.
    A Developer report is never a human-input wait condition: immediately wait
    for the configured hook evidence or invoke the verifier, then immediately
    dispatch the Reviewer on a verifier pass. Do not ask the owner to continue
-   between Developer completion, verification, and review.
+   between Developer completion, verification, and review. The verifier
+   resolves the assignment's `required_gate_ids` against the same trusted
+   catalog and fails closed if a stale assignment names a missing or invalid
+   gate. It records the selection mode, card IDs, effective IDs, and required
+   IDs in the verification evidence.
 5. A passing verifier result is **environment-derived evidence**. Move only then
    to `in_review`. Missing, stale, failed, timed-out, invalid-context, or
    invalidated evidence never advances the card.

@@ -20,7 +20,7 @@
 | --- | --- | --- |
 | `<metric>` | `<exact target>` | `<command/measurement>` |
 
-- Required gates: `<gate IDs>`
+- Required gates (`required_gates`): `<gate IDs; additive to globally required gates; empty/absent preserves existing project behavior>`
 - Allowed dependencies: `<names or none>`
 - Test fixtures/examples: `<paths>`
 

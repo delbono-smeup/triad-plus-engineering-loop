@@ -44,6 +44,13 @@ registra push finale, eventuale valutazione, handoff, stato finale della run e
 prova pratica prima di dichiarare il progetto consegnato. Avvio e stop della demo
 restano del proprietario.
 
+Una card può aggiungere una lista `required_gates` di gate ID del repository.
+La lista è additiva: i gate globalmente obbligatori continuano a essere eseguiti,
+quelli opzionali selezionati diventano obbligatori per la card e gli opzionali non
+selezionati possono essere saltati. Lista assente o vuota mantiene il
+comportamento legacy. Triad collega e registra gli ID senza attribuire loro un
+significato visuale o di altro dominio.
+
 ## Retry e scope del candidato
 
 Gli attempt sono record storici di esecuzione. I nuovi workspace separano e
