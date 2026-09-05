@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "mode": "enforce",
+  "repositories": {
+    "product-repository": {
+      "allowed_paths": [
+        "src/example/**",
+        "test/example-*.test.js"
+      ],
+      "allowed_incidental_paths": [],
+      "forbidden_paths": [
+        "package.json",
+        "package-lock.json"
+      ]
+    }
+  }
+}

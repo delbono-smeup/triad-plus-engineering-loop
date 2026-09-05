@@ -35,7 +35,12 @@ presentation for this invocation, do not repeat it.
    a skill router, read it, select the router, routed skills, and completion
    skill required by the card, and bind their worktree-relative paths plus
    SHA-256 values in `required_repository_skills` on the Developer assignment.
-   Do not assign the card if this binding cannot be made.
+   Do not assign the card if this binding cannot be made. If the card declares
+   an opt-in scope contract, capture its repository ID, file path, SHA-256, and
+   a clean card baseline commit before its first Developer assignment. Reuse
+   that exact card baseline for every rework attempt: preserved candidate changes
+   are normal during rework. Do not create the first scope-bound assignment from
+   unattributable dirty product changes; record `invalid_context` instead.
 2. Choose one dependency-approved `ready` card, mark it `in_progress`, append an
    attempt, and create an active assignment before delegating. Before each
    delegation, publish an owner-facing activation notice that attributes the
@@ -47,7 +52,12 @@ presentation for this invocation, do not repeat it.
    wait for a valid hook-produced file when one is configured, otherwise invoke
    the verifier explicitly. Accept only current evidence whose assignment ID,
    feature, attempt, PRD/card/gate hashes, expected branch, and candidate
-   fingerprint match the active candidate.
+   fingerprint match the active candidate. When an opt-in scope contract is
+   configured, `triad-verify` first compares the complete candidate delta from
+   the card baseline with that contract. A scope fail records offending paths,
+   runs no expensive gates, and returns only bounded `scope_cleanup` work to the
+   Developer; it never dispatches the Reviewer. `scope_not_configured` preserves
+   legacy behavior.
    A Developer report is never a human-input wait condition: immediately wait
    for the configured hook evidence or invoke the verifier, then immediately
    dispatch the Reviewer on a verifier pass. Do not ask the owner to continue
@@ -60,10 +70,22 @@ presentation for this invocation, do not repeat it.
    - `approved`: verify scope/evidence, commit the card locally, promote every
      dependency-satisfied draft card to `ready`, then immediately select and
      assign the next ready card;
-   - `rework`: preserve findings and return the card to `in_progress` for a new
-     attempt and new verification;
+   - `rework`: preserve findings as `reviewer_rework` and return the card to
+     `in_progress` for a new attempt and new verification;
    - `blocked`: record the exact external condition or owner decision required.
-7. Stop automatic retry at the declared limit and escalate the decision needed.
+7. Attempts are historical execution numbers, not a retry budget. Before an
+   automatic restart, record `resolution.kind`, `evidence_refs`, and whether
+   the transition is automatic. For a cause-coded policy, count only previous
+   automatic transitions in the relevant family: runtime
+   (`runtime_recovery`, `verifier_infrastructure_failure`) or candidate
+   remediation (`verifier_candidate_failure`, `reviewer_rework`,
+   `scope_cleanup`). A maximum of two permits transition #1 and #2, then
+   escalates transition #3. `blocked` never retries. Only verifier/log evidence
+   may classify infrastructure; an ambiguous verifier failure is candidate
+   remediation or an escalation. A legacy policy declaring only
+   `max_rework_attempts_per_item` retains its single-budget behavior; do not
+   silently reset its history. Stop automatic retry at the relevant declared
+   limit and escalate the decision needed.
    Do not ask the owner to continue, pause between cards, or finish the run
    while a dependency-satisfied card remains `ready`; stop only for a declared
    escalation, a blocked card, or when every required card is terminal.

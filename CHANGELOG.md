@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Add cause-coded, bounded retry accounting and an opt-in deterministic
+  candidate scope preflight. Scope checks retain independent Reviewer review
+  after deterministic verification succeeds.
+
 ## 1.4.2 — 2026-09-01
 
 - Align package repository, homepage, and issue links with the renamed GitHub

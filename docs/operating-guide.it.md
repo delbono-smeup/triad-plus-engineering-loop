@@ -44,6 +44,15 @@ registra push finale, eventuale valutazione, handoff, stato finale della run e
 prova pratica prima di dichiarare il progetto consegnato. Avvio e stop della demo
 restano del proprietario.
 
+## Retry e scope del candidato
+
+Gli attempt sono record storici di esecuzione. I nuovi workspace separano e
+limitano le transizioni di recovery runtime e di remediation del candidato: un
+rework o uno scope cleanup non consuma il budget di recovery. Una card può
+attivare un contratto deterministico sui path; il verifier confronta il delta
+completo con il baseline originario della card prima dei gate costosi. Uno scope
+PASS non sostituisce mai la review indipendente.
+
 ## Evaluator+
 
 Evaluator+ è opzionale e fuori dal loop produttivo. Se abilitato in `team.json`,

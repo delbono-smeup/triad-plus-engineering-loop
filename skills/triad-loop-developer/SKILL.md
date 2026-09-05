@@ -7,8 +7,12 @@ description: Implement one bounded Triad feature card, add focused tests, and re
 
 Change the artifact to satisfy the assigned goal. Read the card, PRD excerpt,
 project manifest, repository instructions, allowed surface, prior findings, and
-gates. Verify the declared worktree and branch before editing. Do not change
-scope, policy, assignments, queue, state, or evidence records.
+gates. When the assignment contains a scope contract, read it as a deterministic
+path boundary in addition to the human card scope: keep every cumulative change
+from the card baseline within its allowed paths, and use the recorded offending
+paths for `scope_cleanup`. Verify the declared worktree and branch before
+editing. Do not change scope, policy, assignments, queue, state, or evidence
+records.
 
 At the beginning of every activation, read `.triad-plus/team.json` when it
 exists. Your first report to the Orchestrator must identify you as its configured

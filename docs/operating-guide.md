@@ -45,6 +45,16 @@ closure gate: it records the final push, optional evaluation, handoff, final run
 record, and practical test before the project is called delivered. Demo start and
 stop remain owner-controlled.
 
+## Retry accounting and candidate scope
+
+Attempts are historical execution records. New workspaces separately bound
+runtime recovery and candidate remediation transitions; a rework or scope
+cleanup does not consume recovery capacity. A card can opt in to a deterministic
+path scope contract. The verifier checks the complete card delta against the
+card's original baseline before expensive gates; a scope failure returns only a
+bounded cleanup to Developer. A scope pass never replaces independent Reviewer
+review.
+
 ## Evaluator+
 
 Evaluator+ is optional and outside the production loop. When enabled in

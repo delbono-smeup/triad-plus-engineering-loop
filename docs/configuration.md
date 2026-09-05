@@ -30,3 +30,13 @@ different hosts. The team file records role-level models and effort, but an
 adapter writes those into host-native profiles only where the selected host
 supports that facility. A blank model means the host default. Never put tokens,
 API keys, or private deployment data in this file.
+
+## Retry and scope policy
+
+New control workspaces use separate finite budgets for environment recovery and
+candidate remediation. Existing workspaces that only declare
+`max_rework_attempts_per_item` retain that legacy policy. A card may optionally
+bind a versioned JSON scope contract at its first assignment; without one, the
+deterministic scope preflight is not configured and independent review remains
+the semantic scope check. See [verification.md](verification.md) for the
+contract and matching rules.

@@ -29,6 +29,27 @@ it does not itself approve, rework, or transition a run.
 Evidence files and logs are diagnostics. Users normally need only the
 Orchestrator's summary and the Reviewer verdict.
 
+## Optional deterministic candidate scope
+
+Cards may add a versioned JSON scope contract, bound by path and SHA-256 in the
+Developer assignment. The contract names repository-relative `allowed_paths`,
+optional `allowed_incidental_paths`, and `forbidden_paths` for each target
+repository. It uses a small glob syntax: `*` does not cross a directory,
+`**` may cross directories, and `?` matches one non-separator character.
+
+For a scope-bound card, the Orchestrator captures a clean card baseline commit
+before the first assignment and reuses it for every rework attempt. The verifier
+compares the full cumulative candidate delta against that baseline before running
+expensive gates. It records changed paths and offending paths in evidence. A
+scope failure skips expensive gates and Reviewer dispatch; it is bounded
+`scope_cleanup`, not approval. A card without a scope contract records
+`scope_not_configured` and retains legacy behavior.
+
+Package manifests and lockfiles require an explicit `allowed_incidental_paths`
+entry. Snapshot patterns must be narrow; broad `snapshots/**` contracts are
+rejected. A scope pass is only a deterministic path check: Reviewer remains
+mandatory for semantic scope, correctness, design, and risk.
+
 ## Codex dispatch modes
 
 Codex uses `explicit_dispatch` by default, including when a compatible async

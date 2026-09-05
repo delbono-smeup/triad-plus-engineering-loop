@@ -30,6 +30,14 @@
 - Required skills: `<router, routed skills, and completion skill>`
 - Assignment evidence: `<relative SKILL.md paths and SHA-256 values>`
 
+## Optional deterministic scope contract
+
+- Scope contract: `<scope-contracts/<feature ID>.json or not configured>`
+- Repository IDs: `<one or more declared repository IDs>`
+- Card baseline: `<clean commit captured before the first Developer assignment>`
+- The human-readable scope above remains authoritative for semantic review. A
+  configured scope contract only permits deterministic changed-path checks.
+
 ## Integration, practical test, and risk
 
 - Local-worktree setup: `<not applicable or command>`

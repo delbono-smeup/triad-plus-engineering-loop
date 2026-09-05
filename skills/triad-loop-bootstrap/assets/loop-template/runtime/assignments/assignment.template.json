@@ -16,6 +16,7 @@
   "expected_prd_sha256": "REPLACE_ME_SHA256",
   "expected_card_sha256": "REPLACE_ME_SHA256",
   "expected_gates_sha256": "REPLACE_ME_SHA256",
+  "scope_contract": null,
   "required_repository_skills": [
     {
       "path": ".agents/skills/router/SKILL.md",

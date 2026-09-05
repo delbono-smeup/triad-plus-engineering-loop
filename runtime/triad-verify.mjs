@@ -4,8 +4,9 @@ import { access, readFile, realpath } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { writeAtomicJson } from "./lib/evidence.mjs";
-import { calculateCandidateFingerprint, worktreeBranch } from "./lib/fingerprint.mjs";
+import { calculateCandidateFingerprint, collectCandidateChanges, worktreeBranch } from "./lib/fingerprint.mjs";
 import { executeGates, loadTrustedGates } from "./lib/gates.mjs";
+import { evaluateScopeContract, parseScopeContract } from "./lib/scope-contract.mjs";
 
 const argv = process.argv.slice(2);
 const option = (name) => {
@@ -89,6 +90,51 @@ async function buildInvalidEvidence({ runId, trigger, assignment, reason, output
   return evidence;
 }
 
+function withinRoot(root, candidate, label) {
+  const resolved = path.resolve(root, candidate);
+  if (!resolved.startsWith(`${root}${path.sep}`)) throw new Error(`${label} escapes project root`);
+  return resolved;
+}
+
+async function scopePreflight(projectRoot, worktree, assignment) {
+  const specification = assignment.scope_contract;
+  if (specification === undefined) {
+    const candidate = await collectCandidateChanges(worktree);
+    return {
+      configured: false,
+      status: "not_configured",
+      baseline: null,
+      changed_paths: candidate.changes,
+      ignored_paths: candidate.ignored_paths,
+      offending_paths: []
+    };
+  }
+  if (!specification || typeof specification !== "object") throw new Error("scope_contract must be an object when declared");
+  if (typeof specification.path !== "string" || typeof specification.sha256 !== "string" || typeof specification.repository_id !== "string") {
+    throw new Error("scope_contract requires path, sha256, and repository_id");
+  }
+  const baseline = specification.card_baseline;
+  if (!baseline || baseline.initial_state !== "clean" || typeof baseline.git_head !== "string" || typeof baseline.repository_id !== "string") {
+    throw new Error("scope_contract requires a clean card_baseline with repository_id and git_head");
+  }
+  if (baseline.repository_id !== specification.repository_id) throw new Error("scope contract repository does not match card baseline repository");
+  const contractPath = withinRoot(projectRoot, specification.path, "scope contract");
+  const source = await readFile(contractPath, "utf8");
+  const actualHash = sha256(source);
+  if (actualHash !== specification.sha256) throw new Error("scope contract hash mismatch");
+  const contract = parseScopeContract(source);
+  const candidate = await collectCandidateChanges(worktree, { baseCommit: baseline.git_head });
+  const changes = candidate.changes.map((change) => ({ ...change, repository: specification.repository_id }));
+  const result = evaluateScopeContract({ contract, repository: specification.repository_id, changes });
+  return {
+    ...result,
+    contract_ref: path.relative(projectRoot, contractPath),
+    contract_sha256: actualHash,
+    baseline: { repository_id: baseline.repository_id, git_head: baseline.git_head },
+    ignored_paths: candidate.ignored_paths
+  };
+}
+
 async function main() {
   const payload = await readStdin();
   const trigger = triggerFrom(payload);
@@ -124,6 +170,38 @@ async function main() {
     const before = await calculateCandidateFingerprint(worktree);
     const branch = await worktreeBranch(worktree);
     if (assignment.expected_branch && assignment.expected_branch !== branch) throw new Error("worktree branch does not match assignment");
+    const scope = await scopePreflight(projectRoot, worktree, assignment);
+    if (scope.status === "fail") {
+      const evidence = {
+        schema_version: 1,
+        run_id: runId,
+        feature_id: assignment.feature_id,
+        attempt: assignment.attempt,
+        assignment_id: assignment.assignment_id,
+        assignment_sha256: assignmentHash,
+        trigger,
+        assignment_ref: path.relative(projectRoot, assignmentPath),
+        baseline: {
+          prd_sha256: assignment.expected_prd_sha256,
+          card_sha256: assignment.expected_card_sha256,
+          gates_sha256: null,
+          git_head: before.git_head,
+          candidate_fingerprint: before.value,
+          branch,
+        },
+        repository_skills: repositorySkills,
+        scope,
+        gates: [],
+        required_gates_passed: false,
+        status: "fail",
+        failure: { code: "candidate_scope_violation", reason: "candidate changed paths exceed the declared scope contract" },
+        created_at: new Date().toISOString(),
+      };
+      await writeAtomicJson(outputPath, evidence);
+      process.stdout.write(`${JSON.stringify({ run_id: runId, status: evidence.status, evidence: outputPath })}\n`);
+      process.exitCode = 2;
+      return;
+    }
     const gatesPath = path.resolve(projectRoot, assignment.gates_path ?? ".loop/quality-gates.yaml");
     const trusted = await loadTrustedGates(gatesPath, assignment.expected_gates_sha256);
     if (!trusted.valid) throw new Error("quality gates are missing or changed from their declared hash");
@@ -150,6 +228,7 @@ async function main() {
         branch,
       },
       repository_skills: repositorySkills,
+      scope,
       gates,
       required_gates_passed: requiredGatesPassed,
       status: candidateChanged ? "invalidated" : requiredGatesPassed ? "pass" : "fail",
