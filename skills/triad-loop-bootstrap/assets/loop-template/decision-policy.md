@@ -15,8 +15,21 @@
 Only the Orchestrator records transitions. The verifier writes evidence only.
 Developer and Reviewer reports are agent-reported claims; a `control-plane` gate
 is authoritative only through matching verifier evidence. Every new patch needs
-a new verifier run. Stop automatic retry at the declared limit and record the
-owner decision needed. Normal delivery requires all non-deferred cards approved,
-project gates passed, one local commit per approved card, and declared branches
-pushed. Pull requests, releases, publication, force pushes, and demo start/stop
-remain owner decisions.
+a new verifier run.
+
+For a cause-coded policy, `max_runtime_recoveries_per_item` and
+`max_candidate_remediations_per_item` each mean the number of automatic
+transitions permitted for that family. Before starting a retry, count only prior
+automatic resolutions in that family: if the count is lower than the declared
+maximum, record the resolution and start the next attempt; otherwise record an
+escalation and do not start it. Runtime family: `runtime_recovery`,
+`verifier_infrastructure_failure`. Candidate-remediation family:
+`verifier_candidate_failure`, `reviewer_rework`, `scope_cleanup`. `blocked`
+never starts an automatic retry. An ambiguous verifier failure is candidate
+remediation or an escalation; a Developer claim cannot classify it as
+infrastructure. Existing policies that declare only
+`max_rework_attempts_per_item` retain legacy single-budget accounting.
+
+Normal delivery requires all non-deferred cards approved, project gates passed,
+one local commit per approved card, and declared branches pushed. Pull requests,
+releases, publication, force pushes, and demo start/stop remain owner decisions.

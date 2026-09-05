@@ -1,6 +1,7 @@
 version: 2
 policy:
-  max_rework_attempts_per_item: 2
+  max_runtime_recoveries_per_item: 2
+  max_candidate_remediations_per_item: 2
   require_reviewer_approval: true
   require_feature_plan_declaration: true
   require_clean_diff_check: true
