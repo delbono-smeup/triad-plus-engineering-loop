@@ -4,7 +4,7 @@ import { mkdtemp, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises"
 import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
-import { classifyVerifierResolution, evaluateAutomaticRetry, resolutionRecord } from "../runtime/lib/retry-accounting.mjs";
+import { classifyVerifierResolution, evaluateAutomaticRetry, resolutionRecord, retryPolicyMode } from "../runtime/lib/retry-accounting.mjs";
 import { collectCandidateChanges } from "../runtime/lib/fingerprint.mjs";
 import { evaluateScopeContract, parseScopeContract } from "../runtime/lib/scope-contract.mjs";
 
@@ -36,6 +36,33 @@ function causeAttempt(kind) {
 
 function assertRetryAccounting() {
   const policy = { max_runtime_recoveries_per_item: 2, max_candidate_remediations_per_item: 2 };
+
+  assert.equal(retryPolicyMode({ max_rework_attempts_per_item: 2 }), "legacy", "a complete valid legacy policy remains legacy");
+  assert.equal(retryPolicyMode(policy), "cause_coded", "a complete valid modern policy is cause-coded");
+  assert.equal(
+    retryPolicyMode({ max_rework_attempts_per_item: 2, ...policy }),
+    "cause_coded",
+    "a valid modern policy takes precedence when the legacy key is also present"
+  );
+  for (const invalidPolicy of [
+    { max_runtime_recoveries_per_item: 2 },
+    { max_candidate_remediations_per_item: 2 },
+    { max_runtime_recoveries_per_item: 2, max_candidate_remediations_per_item: "2" },
+    { max_runtime_recoveries_per_item: 2, max_candidate_remediations_per_item: -1 },
+    {}
+  ]) {
+    assert.throws(
+      () => retryPolicyMode(invalidPolicy),
+      /retry policy must define either a valid legacy max_rework_attempts_per_item or both max_runtime_recoveries_per_item and max_candidate_remediations_per_item/,
+      "partial, malformed, or empty retry policies must fail closed"
+    );
+  }
+  assert.throws(
+    () => evaluateAutomaticRetry({ policy: { max_runtime_recoveries_per_item: 2 }, attempts: [], kind: "runtime_recovery" }),
+    /retry policy must define either a valid legacy max_rework_attempts_per_item or both max_runtime_recoveries_per_item and max_candidate_remediations_per_item/,
+    "accounting rejects an ambiguous policy at evaluation time"
+  );
+
   const runtimeHistory = [];
   assert.equal(evaluateAutomaticRetry({ policy, attempts: runtimeHistory, kind: "runtime_recovery" }).allowed, true, "runtime recovery #1 must continue");
   runtimeHistory.push(causeAttempt("runtime_recovery"));

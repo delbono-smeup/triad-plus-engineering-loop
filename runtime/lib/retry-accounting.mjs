@@ -18,10 +18,26 @@ export function budgetFamily(kind) {
 }
 
 export function retryPolicyMode(policy = {}) {
+  if (!policy || typeof policy !== "object" || Array.isArray(policy)) {
+    throw new Error("retry policy must define either a valid legacy max_rework_attempts_per_item or both max_runtime_recoveries_per_item and max_candidate_remediations_per_item");
+  }
+
+  const hasRuntime = Object.hasOwn(policy, "max_runtime_recoveries_per_item");
+  const hasCandidate = Object.hasOwn(policy, "max_candidate_remediations_per_item");
   const runtime = policy.max_runtime_recoveries_per_item;
   const candidate = policy.max_candidate_remediations_per_item;
-  if (Number.isInteger(runtime) && runtime >= 0 && Number.isInteger(candidate) && candidate >= 0) return "cause_coded";
-  return "legacy";
+
+  if (hasRuntime || hasCandidate) {
+    if (hasRuntime && hasCandidate && Number.isInteger(runtime) && runtime >= 0 && Number.isInteger(candidate) && candidate >= 0) {
+      return "cause_coded";
+    }
+    throw new Error("retry policy must define either a valid legacy max_rework_attempts_per_item or both max_runtime_recoveries_per_item and max_candidate_remediations_per_item");
+  }
+
+  const legacy = policy.max_rework_attempts_per_item;
+  if (Number.isInteger(legacy) && legacy >= 0) return "legacy";
+
+  throw new Error("retry policy must define either a valid legacy max_rework_attempts_per_item or both max_runtime_recoveries_per_item and max_candidate_remediations_per_item");
 }
 
 export function classifyVerifierResolution(evidence = {}) {

@@ -29,6 +29,10 @@ never starts an automatic retry. An ambiguous verifier failure is candidate
 remediation or an escalation; a Developer claim cannot classify it as
 infrastructure. Existing policies that declare only
 `max_rework_attempts_per_item` retain legacy single-budget accounting.
+When both valid cause-coded limits are present, they take precedence even if the
+legacy limit is also present. The cause-coded limits are an atomic pair: they
+must both be non-negative integers, or both be absent. A partial or malformed
+pair is invalid and must not fall back to legacy accounting.
 
 Normal delivery requires all non-deferred cards approved, project gates passed,
 one local commit per approved card, and declared branches pushed. Pull requests,
